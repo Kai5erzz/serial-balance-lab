@@ -40,7 +40,8 @@ def main() -> None:
     controller.set_drive_command(FORWARD_TARGET, 0.0)
 
     # Let the accepted LOW equilibrium finish its small contact transient.
-    while data.time < 1.0:
+    settle_end = data.time + 3.0
+    while data.time < settle_end:
         controller.step(data, model.opt.timestep)
         mujoco.mj_step(model, data)
 

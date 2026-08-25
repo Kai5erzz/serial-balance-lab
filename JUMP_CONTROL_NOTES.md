@@ -30,8 +30,13 @@ claim for the real motor.
 
 ## Control allocation
 
-1. **Preload and thrust:** the VMC length route compresses to `0.125 m` and
-   thrusts toward `0.305 m`. While wheel contact still exists, a pitch-rate
+1. **Preload and thrust:** the VMC length route compresses and thrusts toward
+   `0.305 m`. The firmware readiness line `0.145 m` (preload from
+   `LEN_LEN_LOW=0.130 m`) is raised to `0.155 m` here because this sim's
+   user-calibrated LOW stand is `0.150 m` and the MATLAB-wheel plant settles
+   near `0.154 m`; the preload confirms a settled leg length instead of
+   demanding a deep compression the heavier wheels cannot reach in the
+   firmware's `0.85 s` window. While wheel contact still exists, a pitch-rate
    loop establishes the angular momentum needed to cancel the later leg
    motion. The stationary target is `1.48 rad/s`; moving launch subtracts a
    term proportional to measured launch velocity.
@@ -39,6 +44,8 @@ claim for the real motor.
    `3.50 m/s`. The compact interval is `0.23 s`, which includes the apex.
    Body pitch and leg angle share the hip common axis; pitch is prioritized at
    the apex while the drive wheels provide a real reaction-inertia axis.
+   The air-phase LQR pitch gain is `1.00` (raised from `0.75` for the
+   MATLAB-wheel plant).
 3. **Landing deployment:** the length target returns to `0.270 m`; leg-angle
    authority rises after the compact interval so both wheels point toward the
    ground before contact. The wheel reaction term includes feed-forward from
@@ -56,11 +63,21 @@ claim for the real motor.
 
 ## Acceptance results
 
+Plant: MATLAB wheel inertia (`mw=0.577 kg`, `Iw=mw*R^2=0.001941 kg m^2`),
+restored CAD inertias and original leg stops / 40 Nm hip envelope.
+
 | Model / launch | Base rise | Apex wheel clearance | Apex pitch | Air pitch range | First wheel pitch | Touchdown-window pitch | Final pitch/roll | Non-wheel ground contact |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Fast, stationary | `0.342 m` | `0.330 m` | `+0.64 deg` | within `+/-7.23 deg` | `+3.68 deg` | within `+/-6.11 deg` | `+0.09/+0.22 deg` | none |
-| Fast, `+0.20 m/s` | `0.342 m` | `0.329 m` | `+2.03 deg` | within `+/-8.79 deg` | `+6.99 deg` | within `+/-8.79 deg` | `-0.10/+0.22 deg` | none |
-| Full collision, stationary | `0.346 m` | `0.330 m` | `-2.05 deg` | within `+/-7.22 deg` | `-2.56 deg` | within `+/-6.93 deg` | `+0.23/+0.00 deg` | none |
+| Fast, stationary | `0.317 m` | `0.300 m` | `+1.76 deg` | within `+/-4.96 deg` | `-2.29 deg` | within `+/-5.09 deg` | `+0.24/+0.21 deg` | none |
+| Fast, `+0.20 m/s` | `0.315 m` | `0.298 m` (2 mm short) | `+2.75 deg` | within `+/-5.23 deg` | `-3.95 deg` | within `+/-10.00 deg` | `-0.03/+0.21 deg` | none |
+| Full collision, stationary | `0.314 m` | `0.298 m` (2 mm short) | `+1.96 deg` | within `+/-5.40 deg` | `-5.23 deg` | within `+/-5.53 deg` | `+0.28/+0.00 deg` | loop links touch at touchdown |
+
+The stationary fast run passes the full acceptance. The `+0.20 m/s` and full
+collision variants miss by millimeters on apex clearance, and the full
+collision model brushes the loop links during the touchdown window; both are
+plant-dependent edges of the MATLAB-wheel retune and are the next tuning
+targets. All three runs traverse `PRELOAD -> THRUST -> FLIGHT -> LANDING ->
+IDLE`, finish with `fault=none`, and keep both wheels grounded after settling.
 
 All three runs traverse `PRELOAD -> THRUST -> FLIGHT -> LANDING -> IDLE`,
 finish with `fault=none`, keep both wheels grounded after settling, and avoid

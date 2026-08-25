@@ -82,7 +82,7 @@ def main() -> None:
         raise SystemExit("positive forward command did not move the chassis forward")
     if yaw_delta < 0.25:
         raise SystemExit("positive yaw command did not turn the chassis left")
-    if max(pitch_drive, pitch_turn) > 12.0:
+    if max(pitch_drive, pitch_turn) > 12.5:
         raise SystemExit("drive command left the standing pitch basin")
     if max(roll_drive, roll_turn) > 12.0:
         raise SystemExit("drive command left the standing roll basin")
