@@ -42,6 +42,13 @@ CALIBRATION_HIP_TORQUE_LIMIT = 24.0
 DRIVE_SPEED_STEP_MPS = 0.20
 DRIVE_YAW_STEP_RAD_S = 0.15
 DRIVE_KEYBOARD_YAW_MAX_RAD_S = 0.90
+# Real-RC semantics: holding an arrow key sets the LQR speed reference,
+# releasing it returns the reference to zero (chassis brakes).  The viewer
+# key callback only reports key events (no release action), so "held" is
+# inferred from event recency.
+RC_TARGET_SPEED_MPS = 0.60
+RC_TARGET_YAW_RAD_S = 0.60
+RC_HOLD_TIMEOUT_S = 0.35
 
 
 def main() -> None:
@@ -57,6 +64,10 @@ def main() -> None:
     paused = {"value": True}
     mode = {"name": "hover"}
     timing = {"rtf": 0.0}
+    # RC hold-state: key -> last event time.  Events arrive on press (and on
+    # key repeat while held); a key with no event for RC_HOLD_TIMEOUT_S is
+    # treated as released (drive reference returns to zero).
+    rc_last_event: dict[int, float] = {}
     pending_keys: list[int] = []
     pending_keys_lock = threading.Lock()
     pitch_test_until = {"time": -1.0}
@@ -351,28 +362,9 @@ def main() -> None:
                         glfw.KEY_RIGHT,
                     }
                 ):
-                    forward = controller.drive_forward_target
-                    yaw_rate = controller.drive_yaw_rate_target
-                    if key == glfw.KEY_UP:
-                        forward += DRIVE_SPEED_STEP_MPS
-                    elif key == glfw.KEY_DOWN:
-                        forward -= DRIVE_SPEED_STEP_MPS
-                    elif key == glfw.KEY_LEFT:
-                        yaw_rate += DRIVE_YAW_STEP_RAD_S
-                    elif key == glfw.KEY_RIGHT:
-                        yaw_rate -= DRIVE_YAW_STEP_RAD_S
-                    yaw_rate = float(np.clip(
-                        yaw_rate,
-                        -DRIVE_KEYBOARD_YAW_MAX_RAD_S,
-                        DRIVE_KEYBOARD_YAW_MAX_RAD_S,
-                    ))
-                    controller.set_drive_command(forward, yaw_rate)
-                    print(
-                        f"drive command: forward={controller.drive_forward_target:+.2f} "
-                        f"m/s, yaw={controller.drive_yaw_rate_target:+.2f} rad/s "
-                        f"(limits {DRIVE_SPEED_MAX:.2f}/{DRIVE_YAW_RATE_MAX:.2f})"
-                    )
+                    rc_last_event[key] = data.time
                 elif key == glfw.KEY_X and mode["name"] in {"lqr", "recovery"}:
+                    rc_last_event.clear()
                     controller.stop_drive()
                     print("drive command: STOP")
                 elif key == glfw.KEY_J and mode["name"] in {"lqr", "recovery"}:
@@ -423,6 +415,32 @@ def main() -> None:
         while viewer.is_running():
             frame_start = time.perf_counter()
             process_pending_keys(viewer)
+            # Real-RC drive: held arrows set the LQR speed reference; a key
+            # with no event for RC_HOLD_TIMEOUT_S is released (ref -> 0).
+            if mode["name"] in {"lqr", "recovery"}:
+                now = data.time
+                for key in list(rc_last_event):
+                    if now - rc_last_event[key] >= RC_HOLD_TIMEOUT_S:
+                        del rc_last_event[key]
+                forward = 0.0
+                yaw = 0.0
+                if glfw.KEY_UP in rc_last_event:
+                    forward += RC_TARGET_SPEED_MPS
+                if glfw.KEY_DOWN in rc_last_event:
+                    forward -= RC_TARGET_SPEED_MPS
+                if glfw.KEY_LEFT in rc_last_event:
+                    yaw += RC_TARGET_YAW_RAD_S
+                if glfw.KEY_RIGHT in rc_last_event:
+                    yaw -= RC_TARGET_YAW_RAD_S
+                if (forward, yaw) != (
+                    controller.drive_forward_target,
+                    controller.drive_yaw_rate_target,
+                ):
+                    controller.set_drive_command(forward, yaw)
+                    print(
+                        f"RC drive: forward={forward:+.2f} m/s "
+                        f"yaw={yaw:+.2f} rad/s"
+                    )
             running = not paused["value"]
             if not running:
                 timing["rtf"] = 0.0

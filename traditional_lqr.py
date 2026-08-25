@@ -142,13 +142,13 @@ JUMP_HIP_MOTOR_TORQUE_LIMIT = 40.0
 LANDING_LOW_CONTACT_SPLIT_MAX = 0.008
 LANDING_LOW_RATCHET_MARGIN = 0.035
 LANDING_LOW_RATCHET_REF_RATE = 1.20
-LANDING_HOLD_MIN_TIME = 0.18
-LANDING_HOLD_MAX_TIME = 0.45
+LANDING_HOLD_MIN_TIME = 0.12
+LANDING_HOLD_MAX_TIME = 0.30
 LANDING_SETTLE_LENGTH_ERROR = 0.015
 LANDING_SETTLE_LENGTH_SPEED = 0.10
-LANDING_RETURN_REF_RATE_LOW = 0.80
-LANDING_PID_RETURN_TIME = 0.30
-LANDING_EXIT_STABLE_TIME = 0.18
+LANDING_RETURN_REF_RATE_LOW = 1.20
+LANDING_PID_RETURN_TIME = 0.20
+LANDING_EXIT_STABLE_TIME = 0.12
 LANDING_EXIT_LENGTH_SPEED = 0.12
 LANDING_CAPTURE_TIME = 0.040
 LANDING_SUPPORT_BLEND_TIME = LANDING_CAPTURE_TIME
@@ -241,7 +241,7 @@ LQR_POSITION_CAPTURE_VX_MAX = 0.05
 LQR_POSITION_CAPTURE_TIME = 0.10
 LQR_POSITION_LIMIT = 1.50
 LQR_POSITION_BRAKE_RELEASE_RATE = 1.50
-THETA_DX_OFFSET_M = 0.0182
+THETA_DX_OFFSET_M = 0.013
 THETA_COMP_APPLY_RATE = 1.5
 THETA_COMP_POLY_L0_MIN = 0.130
 THETA_COMP_POLY_L0_MAX = 0.300
@@ -661,8 +661,8 @@ class TraditionalLQR:
         self.jump_air_pitch_kp = 195.0
         self.jump_air_pitch_kd = 13.0
         self.jump_air_pitch_limit = 40.0
-        self.jump_air_tuck_pitch_bias = np.radians(14.0)
-        self.jump_air_deploy_pitch_bias = np.radians(6.0)
+        self.jump_air_tuck_pitch_bias = np.radians(2.0)
+        self.jump_air_deploy_pitch_bias = np.radians(0.0)
         self.jump_air_pitch_reference_limit = np.radians(15.0)
         self.jump_air_moving_pitch_gain = np.radians(3.0)
         self.jump_air_tuck_length = JUMP_AIR_TUCK_LENGTH
@@ -677,7 +677,7 @@ class TraditionalLQR:
         self.jump_air_retract_force_limit = JUMP_AIR_RETRACT_FORCE_LIMIT
         self.jump_air_retract_force_peak = JUMP_AIR_RETRACT_FORCE_PEAK
         self.jump_air_theta_kp = 80.0
-        self.jump_air_theta_kd = 16.0
+        self.jump_air_theta_kd = 10.0
         self.jump_air_theta_limit = 40.0
         self.jump_air_theta_weight_tuck = 2.0
         self.jump_air_theta_weight_deploy = 8.0
@@ -2601,6 +2601,18 @@ class TraditionalLQR:
                 -self.jump_air_wheel_torque_limit,
                 self.jump_air_wheel_torque_limit,
             ))
+            # Deploy the reaction-wheel torque away before touchdown so the
+            # rotors reach ~0 wheel speed at first contact; otherwise the
+            # stored wheel angular momentum becomes a horizontal ground
+            # impulse that slides the chassis away from the launch spot.
+            air_elapsed = self.jump_air_elapsed
+            tuck_total = self.jump_air_tuck_time + self.jump_air_tuck_hold_time
+            deploy_window = 0.30
+            if air_elapsed > tuck_total:
+                deploy_progress = float(np.clip(
+                    (air_elapsed - tuck_total) / deploy_window, 0.0, 1.0
+                ))
+                self.jump_air_wheel_torque *= (1.0 - deploy_progress)
             lqr_differential = JUMP_AIR_LQR_TP_GAIN * 0.5 * (
                 self.last_output["l"][1] - self.last_output["r"][1]
             )

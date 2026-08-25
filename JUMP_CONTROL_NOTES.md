@@ -45,11 +45,14 @@ claim for the real motor.
    Body pitch and leg angle share the hip common axis; pitch is prioritized at
    the apex while the drive wheels provide a real reaction-inertia axis.
    The air-phase LQR pitch gain is `1.00` (raised from `0.75` for the
-   MATLAB-wheel plant).
+   MATLAB-wheel plant); tuck/deploy pitch bias is `2 deg / 0 deg` so the
+   chassis tucks level instead of holding the old `14 deg` rearward rake.
 3. **Landing deployment:** the length target returns to `0.270 m`; leg-angle
    authority rises after the compact interval so both wheels point toward the
-   ground before contact. The wheel reaction term includes feed-forward from
-   the commanded leg swing, rather than waiting for body pitch to diverge.
+   ground before contact. The reaction-wheel torque is ramped out over the
+   `0.30 s` deploy window so the rotors reach ~zero speed at touchdown;
+   otherwise the stored wheel angular momentum becomes a ground impulse that
+   slides the chassis away from the launch spot.
 4. **Touchdown capture and buffer:** the first raw wheel contact immediately
    starts a `40 ms` capture window. The wheel path stops using the airborne
    reaction-wheel request and approaches wheel pitch PD (`Kp=10`, `Kd=1`) with
@@ -59,7 +62,13 @@ claim for the real motor.
    from the airborne force into the landing buffer over the same capture
    window. Contact debounce now decides only the state transition; it no longer
    leaves all actuators in air mode after a real wheel has touched the ground.
-   The buffer then hands all three paths back to the original LOW LQR.
+   Hold/return timing was tightened for the heavier plant (hold `0.12..0.30 s`,
+   return ref rate `1.20 m/s`, exit-stable `0.12 s`): measured
+   touch-to-LQR-handoff is about `0.5 s`.
+5. **Pre-jump settle:** the jump entry now waits `3 s` (was `1 s`) for the LOW
+   equilibrium to finish its leg-length transient; jumping from a moving
+   chassis produced a long ballistic glide (measured `~1.2 m` horizontal
+   travel), now `~0.04 m`.
 
 ## Acceptance results
 
