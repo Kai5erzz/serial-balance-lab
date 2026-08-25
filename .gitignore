@@ -1,0 +1,7 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# MuJoCo auto-generated logs
+MUJOCO_LOG.TXT

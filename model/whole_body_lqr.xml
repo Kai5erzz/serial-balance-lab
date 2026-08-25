@@ -1,0 +1,1175 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="whole_body">
+  <compiler angle="radian" fusestatic="false" />
+  <option gravity="0 0 -9.81" timestep=".001" solver="Newton" iterations="100" integrator="implicitfast" />
+  <asset>
+    <mesh name="base_link_part_000" content_type="model/stl" file="full_resolution_meshes/base_link_part_000.STL" />
+    <mesh name="base_link_part_001" content_type="model/stl" file="full_resolution_meshes/base_link_part_001.STL" />
+    <mesh name="base_link_part_002" content_type="model/stl" file="full_resolution_meshes/base_link_part_002.STL" />
+    <mesh name="base_link_part_003" content_type="model/stl" file="full_resolution_meshes/base_link_part_003.STL" />
+    <mesh name="base_link_part_004" content_type="model/stl" file="full_resolution_meshes/base_link_part_004.STL" />
+    <mesh name="base_link_part_005" content_type="model/stl" file="full_resolution_meshes/base_link_part_005.STL" />
+    <mesh name="l_j2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_j2.STL" />
+    <mesh name="l_link1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_link1.STL" />
+    <mesh name="l_link2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_link2.STL" />
+    <mesh name="l_link3" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_link3.STL" />
+    <mesh name="l_j1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_j1.STL" />
+    <mesh name="l_leg" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_leg.STL" />
+    <mesh name="l_wheel" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_wheel.STL" />
+    <mesh name="r_j1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_j1.STL" />
+    <mesh name="r_leg" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_leg.STL" />
+    <mesh name="r_wheel" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_wheel.STL" />
+    <mesh name="r_j2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_j2.STL" />
+    <mesh name="r_link1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_link1.STL" />
+    <mesh name="r_link2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_link2.STL" />
+    <mesh name="r_link3" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_link3.STL" />
+    <mesh name="gimbal_yaw_part_000" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_000.STL" />
+    <mesh name="gimbal_yaw_part_001" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_001.STL" />
+    <mesh name="gimbal_yaw_part_002" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_002.STL" />
+    <mesh name="gimbal_yaw_part_003" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_003.STL" />
+    <mesh name="gimbal_yaw_part_004" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_004.STL" />
+    <texture name="lqr_ground_checker" type="2d" builtin="checker" width="512" height="512" rgb1=".055 .075 .11" rgb2=".36 .43 .52" mark="edge" markrgb=".98 .56 .10" />
+    <material name="lqr_ground_material" texture="lqr_ground_checker" texrepeat="12 12" texuniform="true" reflectance=".06" specular=".12" shininess=".35" />
+    <mesh name="base_link_collision_000" file="collision_meshes/base_link_collision_000.STL" />
+    <mesh name="base_link_collision_001" file="collision_meshes/base_link_collision_001.STL" />
+    <mesh name="base_link_collision_002" file="collision_meshes/base_link_collision_002.STL" />
+    <mesh name="base_link_collision_003" file="collision_meshes/base_link_collision_003.STL" />
+    <mesh name="base_link_collision_004" file="collision_meshes/base_link_collision_004.STL" />
+    <mesh name="base_link_collision_005" file="collision_meshes/base_link_collision_005.STL" />
+    <mesh name="base_link_collision_006" file="collision_meshes/base_link_collision_006.STL" />
+    <mesh name="base_link_collision_007" file="collision_meshes/base_link_collision_007.STL" />
+    <mesh name="base_link_collision_008" file="collision_meshes/base_link_collision_008.STL" />
+    <mesh name="base_link_collision_009" file="collision_meshes/base_link_collision_009.STL" />
+    <mesh name="base_link_collision_010" file="collision_meshes/base_link_collision_010.STL" />
+    <mesh name="base_link_collision_011" file="collision_meshes/base_link_collision_011.STL" />
+    <mesh name="base_link_collision_012" file="collision_meshes/base_link_collision_012.STL" />
+    <mesh name="base_link_collision_013" file="collision_meshes/base_link_collision_013.STL" />
+    <mesh name="base_link_collision_014" file="collision_meshes/base_link_collision_014.STL" />
+    <mesh name="base_link_collision_015" file="collision_meshes/base_link_collision_015.STL" />
+    <mesh name="base_link_collision_016" file="collision_meshes/base_link_collision_016.STL" />
+    <mesh name="base_link_collision_017" file="collision_meshes/base_link_collision_017.STL" />
+    <mesh name="base_link_collision_018" file="collision_meshes/base_link_collision_018.STL" />
+    <mesh name="base_link_collision_019" file="collision_meshes/base_link_collision_019.STL" />
+    <mesh name="base_link_collision_020" file="collision_meshes/base_link_collision_020.STL" />
+    <mesh name="base_link_collision_021" file="collision_meshes/base_link_collision_021.STL" />
+    <mesh name="base_link_collision_022" file="collision_meshes/base_link_collision_022.STL" />
+    <mesh name="base_link_collision_023" file="collision_meshes/base_link_collision_023.STL" />
+    <mesh name="base_link_collision_024" file="collision_meshes/base_link_collision_024.STL" />
+    <mesh name="base_link_collision_025" file="collision_meshes/base_link_collision_025.STL" />
+    <mesh name="base_link_collision_026" file="collision_meshes/base_link_collision_026.STL" />
+    <mesh name="base_link_collision_027" file="collision_meshes/base_link_collision_027.STL" />
+    <mesh name="base_link_collision_028" file="collision_meshes/base_link_collision_028.STL" />
+    <mesh name="base_link_collision_029" file="collision_meshes/base_link_collision_029.STL" />
+    <mesh name="base_link_collision_030" file="collision_meshes/base_link_collision_030.STL" />
+    <mesh name="base_link_collision_031" file="collision_meshes/base_link_collision_031.STL" />
+    <mesh name="base_link_collision_032" file="collision_meshes/base_link_collision_032.STL" />
+    <mesh name="base_link_collision_033" file="collision_meshes/base_link_collision_033.STL" />
+    <mesh name="base_link_collision_034" file="collision_meshes/base_link_collision_034.STL" />
+    <mesh name="base_link_collision_035" file="collision_meshes/base_link_collision_035.STL" />
+    <mesh name="base_link_collision_036" file="collision_meshes/base_link_collision_036.STL" />
+    <mesh name="base_link_collision_037" file="collision_meshes/base_link_collision_037.STL" />
+    <mesh name="base_link_collision_038" file="collision_meshes/base_link_collision_038.STL" />
+    <mesh name="base_link_collision_039" file="collision_meshes/base_link_collision_039.STL" />
+    <mesh name="base_link_collision_040" file="collision_meshes/base_link_collision_040.STL" />
+    <mesh name="base_link_collision_041" file="collision_meshes/base_link_collision_041.STL" />
+    <mesh name="base_link_collision_042" file="collision_meshes/base_link_collision_042.STL" />
+    <mesh name="base_link_collision_043" file="collision_meshes/base_link_collision_043.STL" />
+    <mesh name="base_link_collision_044" file="collision_meshes/base_link_collision_044.STL" />
+    <mesh name="base_link_collision_045" file="collision_meshes/base_link_collision_045.STL" />
+    <mesh name="base_link_collision_046" file="collision_meshes/base_link_collision_046.STL" />
+    <mesh name="base_link_collision_047" file="collision_meshes/base_link_collision_047.STL" />
+    <mesh name="base_link_collision_048" file="collision_meshes/base_link_collision_048.STL" />
+    <mesh name="base_link_collision_049" file="collision_meshes/base_link_collision_049.STL" />
+    <mesh name="base_link_collision_050" file="collision_meshes/base_link_collision_050.STL" />
+    <mesh name="base_link_collision_051" file="collision_meshes/base_link_collision_051.STL" />
+    <mesh name="base_link_collision_052" file="collision_meshes/base_link_collision_052.STL" />
+    <mesh name="base_link_collision_053" file="collision_meshes/base_link_collision_053.STL" />
+    <mesh name="base_link_collision_054" file="collision_meshes/base_link_collision_054.STL" />
+    <mesh name="base_link_collision_055" file="collision_meshes/base_link_collision_055.STL" />
+    <mesh name="base_link_collision_056" file="collision_meshes/base_link_collision_056.STL" />
+    <mesh name="base_link_collision_057" file="collision_meshes/base_link_collision_057.STL" />
+    <mesh name="base_link_collision_058" file="collision_meshes/base_link_collision_058.STL" />
+    <mesh name="base_link_collision_059" file="collision_meshes/base_link_collision_059.STL" />
+    <mesh name="base_link_collision_060" file="collision_meshes/base_link_collision_060.STL" />
+    <mesh name="base_link_collision_061" file="collision_meshes/base_link_collision_061.STL" />
+    <mesh name="base_link_collision_062" file="collision_meshes/base_link_collision_062.STL" />
+    <mesh name="base_link_collision_063" file="collision_meshes/base_link_collision_063.STL" />
+    <mesh name="base_link_collision_064" file="collision_meshes/base_link_collision_064.STL" />
+    <mesh name="base_link_collision_065" file="collision_meshes/base_link_collision_065.STL" />
+    <mesh name="base_link_collision_066" file="collision_meshes/base_link_collision_066.STL" />
+    <mesh name="base_link_collision_067" file="collision_meshes/base_link_collision_067.STL" />
+    <mesh name="base_link_collision_068" file="collision_meshes/base_link_collision_068.STL" />
+    <mesh name="base_link_collision_069" file="collision_meshes/base_link_collision_069.STL" />
+    <mesh name="base_link_collision_070" file="collision_meshes/base_link_collision_070.STL" />
+    <mesh name="base_link_collision_071" file="collision_meshes/base_link_collision_071.STL" />
+    <mesh name="base_link_collision_072" file="collision_meshes/base_link_collision_072.STL" />
+    <mesh name="base_link_collision_073" file="collision_meshes/base_link_collision_073.STL" />
+    <mesh name="base_link_collision_074" file="collision_meshes/base_link_collision_074.STL" />
+    <mesh name="base_link_collision_075" file="collision_meshes/base_link_collision_075.STL" />
+    <mesh name="base_link_collision_076" file="collision_meshes/base_link_collision_076.STL" />
+    <mesh name="base_link_collision_077" file="collision_meshes/base_link_collision_077.STL" />
+    <mesh name="base_link_collision_078" file="collision_meshes/base_link_collision_078.STL" />
+    <mesh name="base_link_collision_079" file="collision_meshes/base_link_collision_079.STL" />
+    <mesh name="base_link_collision_080" file="collision_meshes/base_link_collision_080.STL" />
+    <mesh name="base_link_collision_081" file="collision_meshes/base_link_collision_081.STL" />
+    <mesh name="base_link_collision_082" file="collision_meshes/base_link_collision_082.STL" />
+    <mesh name="base_link_collision_083" file="collision_meshes/base_link_collision_083.STL" />
+    <mesh name="base_link_collision_084" file="collision_meshes/base_link_collision_084.STL" />
+    <mesh name="base_link_collision_085" file="collision_meshes/base_link_collision_085.STL" />
+    <mesh name="base_link_collision_086" file="collision_meshes/base_link_collision_086.STL" />
+    <mesh name="base_link_collision_087" file="collision_meshes/base_link_collision_087.STL" />
+    <mesh name="base_link_collision_088" file="collision_meshes/base_link_collision_088.STL" />
+    <mesh name="base_link_collision_089" file="collision_meshes/base_link_collision_089.STL" />
+    <mesh name="base_link_collision_090" file="collision_meshes/base_link_collision_090.STL" />
+    <mesh name="base_link_collision_091" file="collision_meshes/base_link_collision_091.STL" />
+    <mesh name="base_link_collision_092" file="collision_meshes/base_link_collision_092.STL" />
+    <mesh name="base_link_collision_093" file="collision_meshes/base_link_collision_093.STL" />
+    <mesh name="base_link_collision_094" file="collision_meshes/base_link_collision_094.STL" />
+    <mesh name="base_link_collision_095" file="collision_meshes/base_link_collision_095.STL" />
+    <mesh name="base_link_collision_096" file="collision_meshes/base_link_collision_096.STL" />
+    <mesh name="base_link_collision_097" file="collision_meshes/base_link_collision_097.STL" />
+    <mesh name="base_link_collision_098" file="collision_meshes/base_link_collision_098.STL" />
+    <mesh name="base_link_collision_099" file="collision_meshes/base_link_collision_099.STL" />
+    <mesh name="base_link_collision_100" file="collision_meshes/base_link_collision_100.STL" />
+    <mesh name="base_link_collision_101" file="collision_meshes/base_link_collision_101.STL" />
+    <mesh name="base_link_collision_102" file="collision_meshes/base_link_collision_102.STL" />
+    <mesh name="base_link_collision_103" file="collision_meshes/base_link_collision_103.STL" />
+    <mesh name="base_link_collision_104" file="collision_meshes/base_link_collision_104.STL" />
+    <mesh name="base_link_collision_105" file="collision_meshes/base_link_collision_105.STL" />
+    <mesh name="base_link_collision_106" file="collision_meshes/base_link_collision_106.STL" />
+    <mesh name="base_link_collision_107" file="collision_meshes/base_link_collision_107.STL" />
+    <mesh name="base_link_collision_108" file="collision_meshes/base_link_collision_108.STL" />
+    <mesh name="base_link_collision_109" file="collision_meshes/base_link_collision_109.STL" />
+    <mesh name="base_link_collision_110" file="collision_meshes/base_link_collision_110.STL" />
+    <mesh name="base_link_collision_111" file="collision_meshes/base_link_collision_111.STL" />
+    <mesh name="base_link_collision_112" file="collision_meshes/base_link_collision_112.STL" />
+    <mesh name="base_link_collision_113" file="collision_meshes/base_link_collision_113.STL" />
+    <mesh name="base_link_collision_114" file="collision_meshes/base_link_collision_114.STL" />
+    <mesh name="base_link_collision_115" file="collision_meshes/base_link_collision_115.STL" />
+    <mesh name="base_link_collision_116" file="collision_meshes/base_link_collision_116.STL" />
+    <mesh name="base_link_collision_117" file="collision_meshes/base_link_collision_117.STL" />
+    <mesh name="base_link_collision_118" file="collision_meshes/base_link_collision_118.STL" />
+    <mesh name="base_link_collision_119" file="collision_meshes/base_link_collision_119.STL" />
+    <mesh name="base_link_collision_120" file="collision_meshes/base_link_collision_120.STL" />
+    <mesh name="base_link_collision_121" file="collision_meshes/base_link_collision_121.STL" />
+    <mesh name="base_link_collision_122" file="collision_meshes/base_link_collision_122.STL" />
+    <mesh name="base_link_collision_123" file="collision_meshes/base_link_collision_123.STL" />
+    <mesh name="base_link_collision_124" file="collision_meshes/base_link_collision_124.STL" />
+    <mesh name="base_link_collision_125" file="collision_meshes/base_link_collision_125.STL" />
+    <mesh name="base_link_collision_126" file="collision_meshes/base_link_collision_126.STL" />
+    <mesh name="base_link_collision_127" file="collision_meshes/base_link_collision_127.STL" />
+    <mesh name="base_link_collision_128" file="collision_meshes/base_link_collision_128.STL" />
+    <mesh name="base_link_collision_129" file="collision_meshes/base_link_collision_129.STL" />
+    <mesh name="base_link_collision_130" file="collision_meshes/base_link_collision_130.STL" />
+    <mesh name="base_link_collision_131" file="collision_meshes/base_link_collision_131.STL" />
+    <mesh name="base_link_collision_132" file="collision_meshes/base_link_collision_132.STL" />
+    <mesh name="base_link_collision_133" file="collision_meshes/base_link_collision_133.STL" />
+    <mesh name="base_link_collision_134" file="collision_meshes/base_link_collision_134.STL" />
+    <mesh name="base_link_collision_135" file="collision_meshes/base_link_collision_135.STL" />
+    <mesh name="base_link_collision_136" file="collision_meshes/base_link_collision_136.STL" />
+    <mesh name="base_link_collision_137" file="collision_meshes/base_link_collision_137.STL" />
+    <mesh name="base_link_collision_138" file="collision_meshes/base_link_collision_138.STL" />
+    <mesh name="base_link_collision_139" file="collision_meshes/base_link_collision_139.STL" />
+    <mesh name="base_link_collision_140" file="collision_meshes/base_link_collision_140.STL" />
+    <mesh name="base_link_collision_141" file="collision_meshes/base_link_collision_141.STL" />
+    <mesh name="base_link_collision_142" file="collision_meshes/base_link_collision_142.STL" />
+    <mesh name="base_link_collision_143" file="collision_meshes/base_link_collision_143.STL" />
+    <mesh name="base_link_collision_144" file="collision_meshes/base_link_collision_144.STL" />
+    <mesh name="base_link_collision_145" file="collision_meshes/base_link_collision_145.STL" />
+    <mesh name="base_link_collision_146" file="collision_meshes/base_link_collision_146.STL" />
+    <mesh name="base_link_collision_147" file="collision_meshes/base_link_collision_147.STL" />
+    <mesh name="base_link_collision_148" file="collision_meshes/base_link_collision_148.STL" />
+    <mesh name="base_link_collision_149" file="collision_meshes/base_link_collision_149.STL" />
+    <mesh name="base_link_collision_150" file="collision_meshes/base_link_collision_150.STL" />
+    <mesh name="base_link_collision_151" file="collision_meshes/base_link_collision_151.STL" />
+    <mesh name="base_link_collision_152" file="collision_meshes/base_link_collision_152.STL" />
+    <mesh name="base_link_collision_153" file="collision_meshes/base_link_collision_153.STL" />
+    <mesh name="base_link_collision_154" file="collision_meshes/base_link_collision_154.STL" />
+    <mesh name="base_link_collision_155" file="collision_meshes/base_link_collision_155.STL" />
+    <mesh name="base_link_collision_156" file="collision_meshes/base_link_collision_156.STL" />
+    <mesh name="base_link_collision_157" file="collision_meshes/base_link_collision_157.STL" />
+    <mesh name="base_link_collision_158" file="collision_meshes/base_link_collision_158.STL" />
+    <mesh name="base_link_collision_159" file="collision_meshes/base_link_collision_159.STL" />
+    <mesh name="base_link_collision_160" file="collision_meshes/base_link_collision_160.STL" />
+    <mesh name="base_link_collision_161" file="collision_meshes/base_link_collision_161.STL" />
+    <mesh name="base_link_collision_162" file="collision_meshes/base_link_collision_162.STL" />
+    <mesh name="base_link_collision_163" file="collision_meshes/base_link_collision_163.STL" />
+    <mesh name="base_link_collision_164" file="collision_meshes/base_link_collision_164.STL" />
+    <mesh name="base_link_collision_165" file="collision_meshes/base_link_collision_165.STL" />
+    <mesh name="base_link_collision_166" file="collision_meshes/base_link_collision_166.STL" />
+    <mesh name="base_link_collision_167" file="collision_meshes/base_link_collision_167.STL" />
+    <mesh name="base_link_collision_168" file="collision_meshes/base_link_collision_168.STL" />
+    <mesh name="base_link_collision_169" file="collision_meshes/base_link_collision_169.STL" />
+    <mesh name="base_link_collision_170" file="collision_meshes/base_link_collision_170.STL" />
+    <mesh name="base_link_collision_171" file="collision_meshes/base_link_collision_171.STL" />
+    <mesh name="base_link_collision_172" file="collision_meshes/base_link_collision_172.STL" />
+    <mesh name="base_link_collision_173" file="collision_meshes/base_link_collision_173.STL" />
+    <mesh name="base_link_collision_174" file="collision_meshes/base_link_collision_174.STL" />
+    <mesh name="base_link_collision_175" file="collision_meshes/base_link_collision_175.STL" />
+    <mesh name="base_link_collision_176" file="collision_meshes/base_link_collision_176.STL" />
+    <mesh name="base_link_collision_177" file="collision_meshes/base_link_collision_177.STL" />
+    <mesh name="collision_l_j1_000" file="collision_meshes_vhacd/l_j1_000.STL" />
+    <mesh name="collision_l_j1_001" file="collision_meshes_vhacd/l_j1_001.STL" />
+    <mesh name="collision_l_j1_002" file="collision_meshes_vhacd/l_j1_002.STL" />
+    <mesh name="collision_l_j1_003" file="collision_meshes_vhacd/l_j1_003.STL" />
+    <mesh name="collision_l_j1_004" file="collision_meshes_vhacd/l_j1_004.STL" />
+    <mesh name="collision_l_j1_005" file="collision_meshes_vhacd/l_j1_005.STL" />
+    <mesh name="collision_l_j1_006" file="collision_meshes_vhacd/l_j1_006.STL" />
+    <mesh name="collision_l_j1_007" file="collision_meshes_vhacd/l_j1_007.STL" />
+    <mesh name="collision_l_j1_008" file="collision_meshes_vhacd/l_j1_008.STL" />
+    <mesh name="collision_l_j1_009" file="collision_meshes_vhacd/l_j1_009.STL" />
+    <mesh name="collision_l_j1_010" file="collision_meshes_vhacd/l_j1_010.STL" />
+    <mesh name="collision_l_j1_011" file="collision_meshes_vhacd/l_j1_011.STL" />
+    <mesh name="collision_l_j1_012" file="collision_meshes_vhacd/l_j1_012.STL" />
+    <mesh name="collision_l_j1_013" file="collision_meshes_vhacd/l_j1_013.STL" />
+    <mesh name="collision_l_j1_014" file="collision_meshes_vhacd/l_j1_014.STL" />
+    <mesh name="collision_l_j1_015" file="collision_meshes_vhacd/l_j1_015.STL" />
+    <mesh name="collision_l_j2_000" file="collision_meshes_vhacd/l_j2_000.STL" />
+    <mesh name="collision_l_j2_001" file="collision_meshes_vhacd/l_j2_001.STL" />
+    <mesh name="collision_l_j2_002" file="collision_meshes_vhacd/l_j2_002.STL" />
+    <mesh name="collision_l_j2_003" file="collision_meshes_vhacd/l_j2_003.STL" />
+    <mesh name="collision_l_j2_004" file="collision_meshes_vhacd/l_j2_004.STL" />
+    <mesh name="collision_l_j2_005" file="collision_meshes_vhacd/l_j2_005.STL" />
+    <mesh name="collision_l_j2_006" file="collision_meshes_vhacd/l_j2_006.STL" />
+    <mesh name="collision_l_j2_007" file="collision_meshes_vhacd/l_j2_007.STL" />
+    <mesh name="collision_l_j2_008" file="collision_meshes_vhacd/l_j2_008.STL" />
+    <mesh name="collision_l_j2_009" file="collision_meshes_vhacd/l_j2_009.STL" />
+    <mesh name="collision_l_j2_010" file="collision_meshes_vhacd/l_j2_010.STL" />
+    <mesh name="collision_l_j2_011" file="collision_meshes_vhacd/l_j2_011.STL" />
+    <mesh name="collision_l_j2_012" file="collision_meshes_vhacd/l_j2_012.STL" />
+    <mesh name="collision_l_leg_000" file="collision_meshes_vhacd/l_leg_000.STL" />
+    <mesh name="collision_l_leg_001" file="collision_meshes_vhacd/l_leg_001.STL" />
+    <mesh name="collision_l_leg_002" file="collision_meshes_vhacd/l_leg_002.STL" />
+    <mesh name="collision_l_leg_003" file="collision_meshes_vhacd/l_leg_003.STL" />
+    <mesh name="collision_l_leg_004" file="collision_meshes_vhacd/l_leg_004.STL" />
+    <mesh name="collision_l_leg_005" file="collision_meshes_vhacd/l_leg_005.STL" />
+    <mesh name="collision_l_leg_006" file="collision_meshes_vhacd/l_leg_006.STL" />
+    <mesh name="collision_l_leg_007" file="collision_meshes_vhacd/l_leg_007.STL" />
+    <mesh name="collision_l_link1_000" file="collision_meshes_vhacd/l_link1_000.STL" />
+    <mesh name="collision_l_link1_001" file="collision_meshes_vhacd/l_link1_001.STL" />
+    <mesh name="collision_l_link1_002" file="collision_meshes_vhacd/l_link1_002.STL" />
+    <mesh name="collision_l_link1_003" file="collision_meshes_vhacd/l_link1_003.STL" />
+    <mesh name="collision_l_link1_004" file="collision_meshes_vhacd/l_link1_004.STL" />
+    <mesh name="collision_l_link1_005" file="collision_meshes_vhacd/l_link1_005.STL" />
+    <mesh name="collision_l_link1_006" file="collision_meshes_vhacd/l_link1_006.STL" />
+    <mesh name="collision_l_link2_000" file="collision_meshes_vhacd/l_link2_000.STL" />
+    <mesh name="collision_l_link2_001" file="collision_meshes_vhacd/l_link2_001.STL" />
+    <mesh name="collision_l_link2_002" file="collision_meshes_vhacd/l_link2_002.STL" />
+    <mesh name="collision_l_link2_003" file="collision_meshes_vhacd/l_link2_003.STL" />
+    <mesh name="collision_l_link2_004" file="collision_meshes_vhacd/l_link2_004.STL" />
+    <mesh name="collision_l_link2_005" file="collision_meshes_vhacd/l_link2_005.STL" />
+    <mesh name="collision_l_link2_006" file="collision_meshes_vhacd/l_link2_006.STL" />
+    <mesh name="collision_l_link2_007" file="collision_meshes_vhacd/l_link2_007.STL" />
+    <mesh name="collision_l_link2_008" file="collision_meshes_vhacd/l_link2_008.STL" />
+    <mesh name="collision_l_link2_009" file="collision_meshes_vhacd/l_link2_009.STL" />
+    <mesh name="collision_l_link2_010" file="collision_meshes_vhacd/l_link2_010.STL" />
+    <mesh name="collision_l_link2_011" file="collision_meshes_vhacd/l_link2_011.STL" />
+    <mesh name="collision_l_link2_012" file="collision_meshes_vhacd/l_link2_012.STL" />
+    <mesh name="collision_l_link2_013" file="collision_meshes_vhacd/l_link2_013.STL" />
+    <mesh name="collision_l_link3_000" file="collision_meshes_vhacd/l_link3_000.STL" />
+    <mesh name="collision_l_link3_001" file="collision_meshes_vhacd/l_link3_001.STL" />
+    <mesh name="collision_l_link3_002" file="collision_meshes_vhacd/l_link3_002.STL" />
+    <mesh name="collision_l_link3_003" file="collision_meshes_vhacd/l_link3_003.STL" />
+    <mesh name="collision_l_link3_004" file="collision_meshes_vhacd/l_link3_004.STL" />
+    <mesh name="collision_l_link3_005" file="collision_meshes_vhacd/l_link3_005.STL" />
+    <mesh name="collision_l_link3_006" file="collision_meshes_vhacd/l_link3_006.STL" />
+    <mesh name="collision_l_link3_007" file="collision_meshes_vhacd/l_link3_007.STL" />
+    <mesh name="collision_l_link3_008" file="collision_meshes_vhacd/l_link3_008.STL" />
+    <mesh name="collision_l_link3_009" file="collision_meshes_vhacd/l_link3_009.STL" />
+    <mesh name="collision_l_link3_010" file="collision_meshes_vhacd/l_link3_010.STL" />
+    <mesh name="collision_l_link3_011" file="collision_meshes_vhacd/l_link3_011.STL" />
+    <mesh name="collision_l_link3_012" file="collision_meshes_vhacd/l_link3_012.STL" />
+    <mesh name="collision_l_link3_013" file="collision_meshes_vhacd/l_link3_013.STL" />
+    <mesh name="collision_l_link3_014" file="collision_meshes_vhacd/l_link3_014.STL" />
+    <mesh name="collision_l_link3_015" file="collision_meshes_vhacd/l_link3_015.STL" />
+    <mesh name="collision_l_loop1_j1_000" file="collision_meshes_vhacd/l_loop1_j1_000.STL" />
+    <mesh name="collision_l_loop1_j1_001" file="collision_meshes_vhacd/l_loop1_j1_001.STL" />
+    <mesh name="collision_l_loop1_j1_002" file="collision_meshes_vhacd/l_loop1_j1_002.STL" />
+    <mesh name="collision_l_loop1_j1_003" file="collision_meshes_vhacd/l_loop1_j1_003.STL" />
+    <mesh name="collision_l_loop1_j1_004" file="collision_meshes_vhacd/l_loop1_j1_004.STL" />
+    <mesh name="collision_l_loop1_j1_005" file="collision_meshes_vhacd/l_loop1_j1_005.STL" />
+    <mesh name="collision_l_loop1_j1_006" file="collision_meshes_vhacd/l_loop1_j1_006.STL" />
+    <mesh name="collision_l_loop1_j1_007" file="collision_meshes_vhacd/l_loop1_j1_007.STL" />
+    <mesh name="collision_l_loop1_j1_008" file="collision_meshes_vhacd/l_loop1_j1_008.STL" />
+    <mesh name="collision_l_loop1_j1_009" file="collision_meshes_vhacd/l_loop1_j1_009.STL" />
+    <mesh name="collision_l_loop1_j1_010" file="collision_meshes_vhacd/l_loop1_j1_010.STL" />
+    <mesh name="collision_l_loop1_j1_011" file="collision_meshes_vhacd/l_loop1_j1_011.STL" />
+    <mesh name="collision_l_loop1_j1_012" file="collision_meshes_vhacd/l_loop1_j1_012.STL" />
+    <mesh name="collision_l_loop1_j1_013" file="collision_meshes_vhacd/l_loop1_j1_013.STL" />
+    <mesh name="collision_l_loop1_j1_014" file="collision_meshes_vhacd/l_loop1_j1_014.STL" />
+    <mesh name="collision_l_loop1_j1_015" file="collision_meshes_vhacd/l_loop1_j1_015.STL" />
+    <mesh name="collision_l_loop1_link2_000" file="collision_meshes_vhacd/l_loop1_link2_000.STL" />
+    <mesh name="collision_l_loop1_link2_001" file="collision_meshes_vhacd/l_loop1_link2_001.STL" />
+    <mesh name="collision_l_loop1_link2_002" file="collision_meshes_vhacd/l_loop1_link2_002.STL" />
+    <mesh name="collision_l_loop1_link2_003" file="collision_meshes_vhacd/l_loop1_link2_003.STL" />
+    <mesh name="collision_l_loop1_link2_004" file="collision_meshes_vhacd/l_loop1_link2_004.STL" />
+    <mesh name="collision_l_loop1_link2_005" file="collision_meshes_vhacd/l_loop1_link2_005.STL" />
+    <mesh name="collision_l_loop1_link2_006" file="collision_meshes_vhacd/l_loop1_link2_006.STL" />
+    <mesh name="collision_l_loop1_link2_007" file="collision_meshes_vhacd/l_loop1_link2_007.STL" />
+    <mesh name="collision_l_loop1_link2_008" file="collision_meshes_vhacd/l_loop1_link2_008.STL" />
+    <mesh name="collision_l_loop1_link2_009" file="collision_meshes_vhacd/l_loop1_link2_009.STL" />
+    <mesh name="collision_l_loop1_link2_010" file="collision_meshes_vhacd/l_loop1_link2_010.STL" />
+    <mesh name="collision_l_loop1_link2_011" file="collision_meshes_vhacd/l_loop1_link2_011.STL" />
+    <mesh name="collision_l_loop1_link2_012" file="collision_meshes_vhacd/l_loop1_link2_012.STL" />
+    <mesh name="collision_l_loop1_link2_013" file="collision_meshes_vhacd/l_loop1_link2_013.STL" />
+    <mesh name="collision_l_loop1_link2_014" file="collision_meshes_vhacd/l_loop1_link2_014.STL" />
+    <mesh name="collision_l_loop1_link2_015" file="collision_meshes_vhacd/l_loop1_link2_015.STL" />
+    <mesh name="collision_l_loop2_leg_000" file="collision_meshes_vhacd/l_loop2_leg_000.STL" />
+    <mesh name="collision_l_loop2_leg_001" file="collision_meshes_vhacd/l_loop2_leg_001.STL" />
+    <mesh name="collision_l_loop2_leg_002" file="collision_meshes_vhacd/l_loop2_leg_002.STL" />
+    <mesh name="collision_l_loop2_leg_003" file="collision_meshes_vhacd/l_loop2_leg_003.STL" />
+    <mesh name="collision_l_loop2_leg_004" file="collision_meshes_vhacd/l_loop2_leg_004.STL" />
+    <mesh name="collision_l_loop2_leg_005" file="collision_meshes_vhacd/l_loop2_leg_005.STL" />
+    <mesh name="collision_l_loop2_leg_006" file="collision_meshes_vhacd/l_loop2_leg_006.STL" />
+    <mesh name="collision_l_loop2_leg_007" file="collision_meshes_vhacd/l_loop2_leg_007.STL" />
+    <mesh name="collision_l_loop2_leg_008" file="collision_meshes_vhacd/l_loop2_leg_008.STL" />
+    <mesh name="collision_l_loop2_leg_009" file="collision_meshes_vhacd/l_loop2_leg_009.STL" />
+    <mesh name="collision_l_loop2_leg_010" file="collision_meshes_vhacd/l_loop2_leg_010.STL" />
+    <mesh name="collision_l_loop2_leg_011" file="collision_meshes_vhacd/l_loop2_leg_011.STL" />
+    <mesh name="collision_l_loop2_leg_012" file="collision_meshes_vhacd/l_loop2_leg_012.STL" />
+    <mesh name="collision_l_loop2_leg_013" file="collision_meshes_vhacd/l_loop2_leg_013.STL" />
+    <mesh name="collision_l_loop2_leg_014" file="collision_meshes_vhacd/l_loop2_leg_014.STL" />
+    <mesh name="collision_l_loop2_leg_015" file="collision_meshes_vhacd/l_loop2_leg_015.STL" />
+    <mesh name="collision_l_loop2_link3_000" file="collision_meshes_vhacd/l_loop2_link3_000.STL" />
+    <mesh name="collision_l_loop2_link3_001" file="collision_meshes_vhacd/l_loop2_link3_001.STL" />
+    <mesh name="collision_l_loop2_link3_002" file="collision_meshes_vhacd/l_loop2_link3_002.STL" />
+    <mesh name="collision_l_loop2_link3_003" file="collision_meshes_vhacd/l_loop2_link3_003.STL" />
+    <mesh name="collision_l_loop2_link3_004" file="collision_meshes_vhacd/l_loop2_link3_004.STL" />
+    <mesh name="collision_l_loop2_link3_005" file="collision_meshes_vhacd/l_loop2_link3_005.STL" />
+    <mesh name="collision_l_loop2_link3_006" file="collision_meshes_vhacd/l_loop2_link3_006.STL" />
+    <mesh name="collision_l_loop2_link3_007" file="collision_meshes_vhacd/l_loop2_link3_007.STL" />
+    <mesh name="collision_l_loop2_link3_008" file="collision_meshes_vhacd/l_loop2_link3_008.STL" />
+    <mesh name="collision_l_loop2_link3_009" file="collision_meshes_vhacd/l_loop2_link3_009.STL" />
+    <mesh name="collision_l_loop2_link3_010" file="collision_meshes_vhacd/l_loop2_link3_010.STL" />
+    <mesh name="collision_l_loop2_link3_011" file="collision_meshes_vhacd/l_loop2_link3_011.STL" />
+    <mesh name="collision_l_loop2_link3_012" file="collision_meshes_vhacd/l_loop2_link3_012.STL" />
+    <mesh name="collision_l_loop2_link3_013" file="collision_meshes_vhacd/l_loop2_link3_013.STL" />
+    <mesh name="collision_l_loop2_link3_014" file="collision_meshes_vhacd/l_loop2_link3_014.STL" />
+    <mesh name="collision_l_loop2_link3_015" file="collision_meshes_vhacd/l_loop2_link3_015.STL" />
+    <mesh name="collision_r_j1_000" file="collision_meshes_vhacd/r_j1_000.STL" />
+    <mesh name="collision_r_j1_001" file="collision_meshes_vhacd/r_j1_001.STL" />
+    <mesh name="collision_r_j1_002" file="collision_meshes_vhacd/r_j1_002.STL" />
+    <mesh name="collision_r_j1_003" file="collision_meshes_vhacd/r_j1_003.STL" />
+    <mesh name="collision_r_j1_004" file="collision_meshes_vhacd/r_j1_004.STL" />
+    <mesh name="collision_r_j1_005" file="collision_meshes_vhacd/r_j1_005.STL" />
+    <mesh name="collision_r_j1_006" file="collision_meshes_vhacd/r_j1_006.STL" />
+    <mesh name="collision_r_j1_007" file="collision_meshes_vhacd/r_j1_007.STL" />
+    <mesh name="collision_r_j1_008" file="collision_meshes_vhacd/r_j1_008.STL" />
+    <mesh name="collision_r_j1_009" file="collision_meshes_vhacd/r_j1_009.STL" />
+    <mesh name="collision_r_j1_010" file="collision_meshes_vhacd/r_j1_010.STL" />
+    <mesh name="collision_r_j1_011" file="collision_meshes_vhacd/r_j1_011.STL" />
+    <mesh name="collision_r_j1_012" file="collision_meshes_vhacd/r_j1_012.STL" />
+    <mesh name="collision_r_j1_013" file="collision_meshes_vhacd/r_j1_013.STL" />
+    <mesh name="collision_r_j1_014" file="collision_meshes_vhacd/r_j1_014.STL" />
+    <mesh name="collision_r_j1_015" file="collision_meshes_vhacd/r_j1_015.STL" />
+    <mesh name="collision_r_j2_000" file="collision_meshes_vhacd/r_j2_000.STL" />
+    <mesh name="collision_r_j2_001" file="collision_meshes_vhacd/r_j2_001.STL" />
+    <mesh name="collision_r_j2_002" file="collision_meshes_vhacd/r_j2_002.STL" />
+    <mesh name="collision_r_j2_003" file="collision_meshes_vhacd/r_j2_003.STL" />
+    <mesh name="collision_r_j2_004" file="collision_meshes_vhacd/r_j2_004.STL" />
+    <mesh name="collision_r_j2_005" file="collision_meshes_vhacd/r_j2_005.STL" />
+    <mesh name="collision_r_j2_006" file="collision_meshes_vhacd/r_j2_006.STL" />
+    <mesh name="collision_r_j2_007" file="collision_meshes_vhacd/r_j2_007.STL" />
+    <mesh name="collision_r_j2_008" file="collision_meshes_vhacd/r_j2_008.STL" />
+    <mesh name="collision_r_j2_009" file="collision_meshes_vhacd/r_j2_009.STL" />
+    <mesh name="collision_r_j2_010" file="collision_meshes_vhacd/r_j2_010.STL" />
+    <mesh name="collision_r_j2_011" file="collision_meshes_vhacd/r_j2_011.STL" />
+    <mesh name="collision_r_j2_012" file="collision_meshes_vhacd/r_j2_012.STL" />
+    <mesh name="collision_r_j2_013" file="collision_meshes_vhacd/r_j2_013.STL" />
+    <mesh name="collision_r_j2_014" file="collision_meshes_vhacd/r_j2_014.STL" />
+    <mesh name="collision_r_j2_015" file="collision_meshes_vhacd/r_j2_015.STL" />
+    <mesh name="collision_r_leg_000" file="collision_meshes_vhacd/r_leg_000.STL" />
+    <mesh name="collision_r_leg_001" file="collision_meshes_vhacd/r_leg_001.STL" />
+    <mesh name="collision_r_leg_002" file="collision_meshes_vhacd/r_leg_002.STL" />
+    <mesh name="collision_r_leg_003" file="collision_meshes_vhacd/r_leg_003.STL" />
+    <mesh name="collision_r_leg_004" file="collision_meshes_vhacd/r_leg_004.STL" />
+    <mesh name="collision_r_leg_005" file="collision_meshes_vhacd/r_leg_005.STL" />
+    <mesh name="collision_r_leg_006" file="collision_meshes_vhacd/r_leg_006.STL" />
+    <mesh name="collision_r_leg_007" file="collision_meshes_vhacd/r_leg_007.STL" />
+    <mesh name="collision_r_leg_008" file="collision_meshes_vhacd/r_leg_008.STL" />
+    <mesh name="collision_r_leg_009" file="collision_meshes_vhacd/r_leg_009.STL" />
+    <mesh name="collision_r_link1_000" file="collision_meshes_vhacd/r_link1_000.STL" />
+    <mesh name="collision_r_link1_001" file="collision_meshes_vhacd/r_link1_001.STL" />
+    <mesh name="collision_r_link1_002" file="collision_meshes_vhacd/r_link1_002.STL" />
+    <mesh name="collision_r_link1_003" file="collision_meshes_vhacd/r_link1_003.STL" />
+    <mesh name="collision_r_link1_004" file="collision_meshes_vhacd/r_link1_004.STL" />
+    <mesh name="collision_r_link1_005" file="collision_meshes_vhacd/r_link1_005.STL" />
+    <mesh name="collision_r_link2_000" file="collision_meshes_vhacd/r_link2_000.STL" />
+    <mesh name="collision_r_link2_001" file="collision_meshes_vhacd/r_link2_001.STL" />
+    <mesh name="collision_r_link2_002" file="collision_meshes_vhacd/r_link2_002.STL" />
+    <mesh name="collision_r_link2_003" file="collision_meshes_vhacd/r_link2_003.STL" />
+    <mesh name="collision_r_link2_004" file="collision_meshes_vhacd/r_link2_004.STL" />
+    <mesh name="collision_r_link2_005" file="collision_meshes_vhacd/r_link2_005.STL" />
+    <mesh name="collision_r_link2_006" file="collision_meshes_vhacd/r_link2_006.STL" />
+    <mesh name="collision_r_link2_007" file="collision_meshes_vhacd/r_link2_007.STL" />
+    <mesh name="collision_r_link2_008" file="collision_meshes_vhacd/r_link2_008.STL" />
+    <mesh name="collision_r_link2_009" file="collision_meshes_vhacd/r_link2_009.STL" />
+    <mesh name="collision_r_link2_010" file="collision_meshes_vhacd/r_link2_010.STL" />
+    <mesh name="collision_r_link2_011" file="collision_meshes_vhacd/r_link2_011.STL" />
+    <mesh name="collision_r_link2_012" file="collision_meshes_vhacd/r_link2_012.STL" />
+    <mesh name="collision_r_link2_013" file="collision_meshes_vhacd/r_link2_013.STL" />
+    <mesh name="collision_r_link3_000" file="collision_meshes_vhacd/r_link3_000.STL" />
+    <mesh name="collision_r_link3_001" file="collision_meshes_vhacd/r_link3_001.STL" />
+    <mesh name="collision_r_link3_002" file="collision_meshes_vhacd/r_link3_002.STL" />
+    <mesh name="collision_r_link3_003" file="collision_meshes_vhacd/r_link3_003.STL" />
+    <mesh name="collision_r_link3_004" file="collision_meshes_vhacd/r_link3_004.STL" />
+    <mesh name="collision_r_link3_005" file="collision_meshes_vhacd/r_link3_005.STL" />
+    <mesh name="collision_r_link3_006" file="collision_meshes_vhacd/r_link3_006.STL" />
+    <mesh name="collision_r_link3_007" file="collision_meshes_vhacd/r_link3_007.STL" />
+    <mesh name="collision_r_link3_008" file="collision_meshes_vhacd/r_link3_008.STL" />
+    <mesh name="collision_r_link3_009" file="collision_meshes_vhacd/r_link3_009.STL" />
+    <mesh name="collision_r_link3_010" file="collision_meshes_vhacd/r_link3_010.STL" />
+    <mesh name="collision_r_link3_011" file="collision_meshes_vhacd/r_link3_011.STL" />
+    <mesh name="collision_r_link3_012" file="collision_meshes_vhacd/r_link3_012.STL" />
+    <mesh name="collision_r_link3_013" file="collision_meshes_vhacd/r_link3_013.STL" />
+    <mesh name="collision_r_link3_014" file="collision_meshes_vhacd/r_link3_014.STL" />
+    <mesh name="collision_r_link3_015" file="collision_meshes_vhacd/r_link3_015.STL" />
+    <mesh name="collision_r_loop1_j1_000" file="collision_meshes_vhacd/r_loop1_j1_000.STL" />
+    <mesh name="collision_r_loop1_j1_001" file="collision_meshes_vhacd/r_loop1_j1_001.STL" />
+    <mesh name="collision_r_loop1_j1_002" file="collision_meshes_vhacd/r_loop1_j1_002.STL" />
+    <mesh name="collision_r_loop1_j1_003" file="collision_meshes_vhacd/r_loop1_j1_003.STL" />
+    <mesh name="collision_r_loop1_j1_004" file="collision_meshes_vhacd/r_loop1_j1_004.STL" />
+    <mesh name="collision_r_loop1_j1_005" file="collision_meshes_vhacd/r_loop1_j1_005.STL" />
+    <mesh name="collision_r_loop1_j1_006" file="collision_meshes_vhacd/r_loop1_j1_006.STL" />
+    <mesh name="collision_r_loop1_j1_007" file="collision_meshes_vhacd/r_loop1_j1_007.STL" />
+    <mesh name="collision_r_loop1_j1_008" file="collision_meshes_vhacd/r_loop1_j1_008.STL" />
+    <mesh name="collision_r_loop1_j1_009" file="collision_meshes_vhacd/r_loop1_j1_009.STL" />
+    <mesh name="collision_r_loop1_j1_010" file="collision_meshes_vhacd/r_loop1_j1_010.STL" />
+    <mesh name="collision_r_loop1_j1_011" file="collision_meshes_vhacd/r_loop1_j1_011.STL" />
+    <mesh name="collision_r_loop1_j1_012" file="collision_meshes_vhacd/r_loop1_j1_012.STL" />
+    <mesh name="collision_r_loop1_j1_013" file="collision_meshes_vhacd/r_loop1_j1_013.STL" />
+    <mesh name="collision_r_loop1_j1_014" file="collision_meshes_vhacd/r_loop1_j1_014.STL" />
+    <mesh name="collision_r_loop1_j1_015" file="collision_meshes_vhacd/r_loop1_j1_015.STL" />
+    <mesh name="collision_r_loop1_link2_000" file="collision_meshes_vhacd/r_loop1_link2_000.STL" />
+    <mesh name="collision_r_loop1_link2_001" file="collision_meshes_vhacd/r_loop1_link2_001.STL" />
+    <mesh name="collision_r_loop1_link2_002" file="collision_meshes_vhacd/r_loop1_link2_002.STL" />
+    <mesh name="collision_r_loop1_link2_003" file="collision_meshes_vhacd/r_loop1_link2_003.STL" />
+    <mesh name="collision_r_loop1_link2_004" file="collision_meshes_vhacd/r_loop1_link2_004.STL" />
+    <mesh name="collision_r_loop1_link2_005" file="collision_meshes_vhacd/r_loop1_link2_005.STL" />
+    <mesh name="collision_r_loop1_link2_006" file="collision_meshes_vhacd/r_loop1_link2_006.STL" />
+    <mesh name="collision_r_loop1_link2_007" file="collision_meshes_vhacd/r_loop1_link2_007.STL" />
+    <mesh name="collision_r_loop1_link2_008" file="collision_meshes_vhacd/r_loop1_link2_008.STL" />
+    <mesh name="collision_r_loop1_link2_009" file="collision_meshes_vhacd/r_loop1_link2_009.STL" />
+    <mesh name="collision_r_loop1_link2_010" file="collision_meshes_vhacd/r_loop1_link2_010.STL" />
+    <mesh name="collision_r_loop1_link2_011" file="collision_meshes_vhacd/r_loop1_link2_011.STL" />
+    <mesh name="collision_r_loop1_link2_012" file="collision_meshes_vhacd/r_loop1_link2_012.STL" />
+    <mesh name="collision_r_loop1_link2_013" file="collision_meshes_vhacd/r_loop1_link2_013.STL" />
+    <mesh name="collision_r_loop1_link2_014" file="collision_meshes_vhacd/r_loop1_link2_014.STL" />
+    <mesh name="collision_r_loop1_link2_015" file="collision_meshes_vhacd/r_loop1_link2_015.STL" />
+    <mesh name="collision_r_loop2_leg_000" file="collision_meshes_vhacd/r_loop2_leg_000.STL" />
+    <mesh name="collision_r_loop2_leg_001" file="collision_meshes_vhacd/r_loop2_leg_001.STL" />
+    <mesh name="collision_r_loop2_leg_002" file="collision_meshes_vhacd/r_loop2_leg_002.STL" />
+    <mesh name="collision_r_loop2_leg_003" file="collision_meshes_vhacd/r_loop2_leg_003.STL" />
+    <mesh name="collision_r_loop2_leg_004" file="collision_meshes_vhacd/r_loop2_leg_004.STL" />
+    <mesh name="collision_r_loop2_leg_005" file="collision_meshes_vhacd/r_loop2_leg_005.STL" />
+    <mesh name="collision_r_loop2_leg_006" file="collision_meshes_vhacd/r_loop2_leg_006.STL" />
+    <mesh name="collision_r_loop2_leg_007" file="collision_meshes_vhacd/r_loop2_leg_007.STL" />
+    <mesh name="collision_r_loop2_leg_008" file="collision_meshes_vhacd/r_loop2_leg_008.STL" />
+    <mesh name="collision_r_loop2_leg_009" file="collision_meshes_vhacd/r_loop2_leg_009.STL" />
+    <mesh name="collision_r_loop2_leg_010" file="collision_meshes_vhacd/r_loop2_leg_010.STL" />
+    <mesh name="collision_r_loop2_leg_011" file="collision_meshes_vhacd/r_loop2_leg_011.STL" />
+    <mesh name="collision_r_loop2_leg_012" file="collision_meshes_vhacd/r_loop2_leg_012.STL" />
+    <mesh name="collision_r_loop2_leg_013" file="collision_meshes_vhacd/r_loop2_leg_013.STL" />
+    <mesh name="collision_r_loop2_leg_014" file="collision_meshes_vhacd/r_loop2_leg_014.STL" />
+    <mesh name="collision_r_loop2_leg_015" file="collision_meshes_vhacd/r_loop2_leg_015.STL" />
+    <mesh name="collision_r_loop2_link3_000" file="collision_meshes_vhacd/r_loop2_link3_000.STL" />
+    <mesh name="collision_r_loop2_link3_001" file="collision_meshes_vhacd/r_loop2_link3_001.STL" />
+    <mesh name="collision_r_loop2_link3_002" file="collision_meshes_vhacd/r_loop2_link3_002.STL" />
+    <mesh name="collision_r_loop2_link3_003" file="collision_meshes_vhacd/r_loop2_link3_003.STL" />
+    <mesh name="collision_r_loop2_link3_004" file="collision_meshes_vhacd/r_loop2_link3_004.STL" />
+    <mesh name="collision_r_loop2_link3_005" file="collision_meshes_vhacd/r_loop2_link3_005.STL" />
+    <mesh name="collision_r_loop2_link3_006" file="collision_meshes_vhacd/r_loop2_link3_006.STL" />
+    <mesh name="collision_r_loop2_link3_007" file="collision_meshes_vhacd/r_loop2_link3_007.STL" />
+    <mesh name="collision_r_loop2_link3_008" file="collision_meshes_vhacd/r_loop2_link3_008.STL" />
+    <mesh name="collision_r_loop2_link3_009" file="collision_meshes_vhacd/r_loop2_link3_009.STL" />
+    <mesh name="collision_r_loop2_link3_010" file="collision_meshes_vhacd/r_loop2_link3_010.STL" />
+    <mesh name="collision_r_loop2_link3_011" file="collision_meshes_vhacd/r_loop2_link3_011.STL" />
+    <mesh name="collision_r_loop2_link3_012" file="collision_meshes_vhacd/r_loop2_link3_012.STL" />
+    <mesh name="collision_r_loop2_link3_013" file="collision_meshes_vhacd/r_loop2_link3_013.STL" />
+    <mesh name="collision_r_loop2_link3_014" file="collision_meshes_vhacd/r_loop2_link3_014.STL" />
+    <mesh name="collision_r_loop2_link3_015" file="collision_meshes_vhacd/r_loop2_link3_015.STL" />
+    <mesh name="collision_gimbal_yaw_exterior_000" file="full_resolution_meshes/gimbal_yaw_part_000.STL" />
+    <mesh name="collision_gimbal_yaw_exterior_001" file="full_resolution_meshes/gimbal_yaw_part_001.STL" />
+    <mesh name="collision_gimbal_yaw_exterior_002" file="full_resolution_meshes/gimbal_yaw_part_002.STL" />
+    <mesh name="collision_gimbal_yaw_exterior_003" file="full_resolution_meshes/gimbal_yaw_part_003.STL" />
+    <mesh name="collision_gimbal_yaw_exterior_004" file="full_resolution_meshes/gimbal_yaw_part_004.STL" />
+    <mesh name="collision_l_wheel_exterior_000" file="../../rl_balance/chassis_export/whole_body/meshes/l_wheel.STL" />
+    <mesh name="collision_r_wheel_exterior_000" file="../../rl_balance/chassis_export/whole_body/meshes/r_wheel.STL" />
+  </asset>
+  <worldbody>
+    <body name="base_link" pos="0 0 0.255" quat=".70710678 .70710678 0 0">
+      <freejoint name="base_free" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base_link_part_000" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base_link_part_001" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base_link_part_002" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base_link_part_003" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base_link_part_004" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base_link_part_005" />
+      <body name="l_j2" pos="0.081224 0.00605 -0.16609" quat="0.65328 0.270598 -0.270599 -0.653282">
+        <inertial pos="0.00586169 0.033211 -0.00530952" quat="0.539612 0.45623 -0.543806 0.452712" mass="0.0678768" diaginertia="9.61116e-05 8.48592e-05 1.24481e-05" />
+        <joint name="l_j2" pos="0 0 0" axis="0 0 -1" damping=".35" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_j2" />
+        <body name="l_link1" pos="0.0164252 0.0930616 -0.0115" quat="0.405704 0 0 0.914004">
+          <inertial pos="-0.05625 0 -0.00512967" quat="0 0.707107 0 0.707107" mass="0.0362597" diaginertia="5.7146e-05 5.60277e-05 1.70575e-06" />
+          <joint name="l_link1" pos="0 0 0" axis="0 0 -1" damping=".35" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.898039 0.917647 0.929412 1" mesh="l_link1" />
+          <body name="l_link2" pos="-0.1125 0 0.013" quat="0.592083 0 0 0.805877">
+            <inertial pos="0.0900679 -0.00306607 -0.0065" quat="0.026032 0.706627 -0.026032 0.706627" mass="0.048145" diaginertia="0.00012109 0.000116453 5.34424e-06" />
+            <joint name="l_link2" pos="0 0 0" axis="0 0 -1" damping=".35" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_link2" />
+            <body name="l_link3" pos="0.175375 -0.0158623 0" quat="0.496364 0 0 0.868114">
+              <inertial pos="0.0216078 -0.0535552 0.00511811" quat="0.39555 0.586123 -0.39555 0.586123" mass="0.0398094" diaginertia="6.36823e-05 6.25324e-05 1.79654e-06" />
+              <joint name="l_link3" pos="0 0 0" axis="0 0 -1" damping=".35" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.898039 0.917647 0.929412 1" mesh="l_link3" />
+              <body name="l_loop2_link3" pos="0.0432156 -0.10711 -0.0155" quat="0 -0.952297 -0.305174 0">
+                <inertial pos="0 0 -0.0027889" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+                <joint name="l_loop2_link3" pos="0 0 0" axis="0 0 1" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_l_loop2_link3_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              </body>
+              <site name="l_link3_center" type="sphere" pos="0 0 0" size=".009" rgba=".82 .25 1 .88" />
+              <site name="l_link3_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".82 .25 1 .88" />
+              <site name="l_loop2_branch_marker" type="cylinder" pos="0.0432156441534 -0.107110494819 -0.0154999999999" zaxis="-1.82449528798e-15 2.6645352591e-15 -1" size=".0028 .060" rgba="1 .35 .35 .96" />
+              <site name="l_loop2_l_link3_a" type="sphere" pos="0.0432159383996 -0.107110881367 -0.0094999999999" size=".003" rgba="1 .35 .35 .96" />
+              <site name="l_loop2_l_link3_b" type="sphere" pos="0.0432159383996 -0.107110881367 -0.0214999999999" size=".003" rgba="1 .35 .35 .96" />
+              <geom type="mesh" mesh="collision_l_link3_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_link3_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            </body>
+            <body name="l_loop1_link2" pos="0.112498 0.00061655 -0.013" quat="0 0.262867 -0.964832 0">
+              <inertial pos="-0.152939 -0.00287967 -0.000288902" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+              <joint name="l_loop1_link2" pos="0 0 0" axis="0 0 1" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_l_loop1_link2_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            </body>
+            <site name="l_link2_center" type="sphere" pos="0 0 0" size=".009" rgba="1 .78 .10 .88" />
+            <site name="l_link2_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba="1 .78 .10 .88" />
+            <site name="l_loop1_branch_marker" type="cylinder" pos="0.112498310503 0.000616550009854 -0.013" zaxis="-1.66533453694e-15 2.77555756156e-15 -1" size=".0028 .060" rgba="0.10 1 1 .96" />
+            <site name="l_loop1_l_link2_a" type="sphere" pos="0.1124985861 0.000616829214091 -0.007" size=".003" rgba="0.10 1 1 .96" />
+            <site name="l_loop1_l_link2_b" type="sphere" pos="0.1124985861 0.000616829214091 -0.019" size=".003" rgba="0.10 1 1 .96" />
+            <geom type="mesh" mesh="collision_l_link2_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_link2_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          </body>
+          <site name="l_link1_center" type="sphere" pos="0 0 0" size=".009" rgba="1 .48 .08 .88" />
+          <site name="l_link1_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba="1 .48 .08 .88" />
+          <geom type="mesh" mesh="collision_l_link1_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_link1_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_link1_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_link1_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_link1_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_link1_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_link1_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        </body>
+        <site name="l_j2_center" type="sphere" pos="0 0 0" size=".009" rgba="1 .18 .12 .88" />
+        <site name="l_j2_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba="1 .18 .12 .88" />
+        <geom type="mesh" mesh="collision_l_j2_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j2_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      </body>
+      <body name="l_j1" pos="0.0688497 0.00605 -0.153717" quat="0.906948 -0.0729293 -0.37567 0.176067">
+        <inertial pos="-0.149625 0.000886098 -0.0119585" quat="-0.0120807 0.70642 0.0168707 0.707488" mass="0.32658" diaginertia="0.00170288 0.00161585 0.000136136" />
+        <joint name="l_j1" pos="0 0 0" axis="0 0 -1" damping=".35" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_j1" />
+        <body name="l_leg" pos="-0.21 0 0.004" quat="0 0.945913 0.324421 0">
+          <inertial pos="0.000337469 0.112348 0.0286792" quat="0.496335 0.500405 -0.500578 0.502661" mass="0.205252" diaginertia="0.00206487 0.0020002 7.18145e-05" />
+          <joint name="l_leg" pos="0 0 0" axis="0 0 1" range="-1.35 0.0" actuatorfrcrange="-120 120" damping=".35" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.929412 0.929412 0.929412 1" mesh="l_leg" />
+          <body name="l_wheel" pos="-0.00139071 0.251074 0.05705" quat="0 0.707107 -0.707107 0">
+            <inertial pos="0.00125874 -0.00157967 0.000823586" quat="0.5 0.5 -0.5 0.5" mass="0.577" diaginertia="0.001941 0.0009705 0.0009705" />
+            <joint name="l_wheel" pos="0 0 0" axis="0 0 1" damping=".08" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_wheel" />
+            <site name="l_wheel_center" type="sphere" pos="0 0 0" size=".009" rgba=".80 .80 .80 .88" />
+            <site name="l_wheel_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".80 .80 .80 .88" />
+            <geom type="mesh" mesh="collision_l_wheel_exterior_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          </body>
+          <body name="l_loop2_leg" pos="0.0168232 -0.0627852 0.0355" quat="0.866751 0 0 0.498741">
+            <inertial pos="0.152939 0.00287967 -0.0052889" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+            <joint name="l_loop2_leg" pos="0 0 0" axis="0 0 1" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_l_loop2_leg_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          </body>
+          <site name="l_leg_center" type="sphere" pos="0 0 0" size=".009" rgba=".95 .12 .65 .88" />
+          <site name="l_leg_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".95 .12 .65 .88" />
+          <site name="l_loop2_mate_marker" type="cylinder" pos="0.0168232379317 -0.0627851787089 0.0354999999999" zaxis="5.55111512313e-17 0 1" size=".0028 .060" rgba="1 .05 .05 .96" />
+          <site name="l_loop2_l_leg_a" type="sphere" pos="0.01682369451 -0.0627850097341 0.0294993799029" size=".003" rgba="1 .35 .35 .96" />
+          <site name="l_loop2_l_leg_b" type="sphere" pos="0.0168236786379 -0.0627849750172 0.0414993799028" size=".003" rgba="1 .35 .35 .96" />
+          <site name="l_gas_leg" type="sphere" pos="-0.0002786096526 0.05029922839 -1.734723476e-17" size=".006" rgba=".08 .8 .2 1" />
+          <geom type="mesh" mesh="collision_l_leg_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_leg_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        </body>
+        <body name="l_loop1_j1" pos="-0.0945 0 -0.0275" quat="0 0.981673 -0.190573 0">
+          <inertial pos="0 0 -0.0012889" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+          <joint name="l_loop1_j1" pos="0 0 0" axis="0 0 1" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_l_loop1_j1_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        </body>
+        <site name="l_j1_center" type="sphere" pos="0 0 0" size=".009" rgba=".48 .25 1 .88" />
+        <site name="l_j1_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".48 .25 1 .88" />
+        <site name="l_loop1_mate_marker" type="cylinder" pos="-0.0945 3.46944695195e-18 -0.0275" zaxis="-1.16573417586e-15 -2.94209101526e-15 -1" size=".0028 .060" rgba="1 .05 .05 .96" />
+        <site name="l_loop1_l_j1_a" type="sphere" pos="-0.0944996139717 -3.44244919272e-08 -0.0229990915359" size=".003" rgba="0.10 1 1 .96" />
+        <site name="l_loop1_l_j1_b" type="sphere" pos="-0.0944996051953 -7.15749943793e-08 -0.0349990915358" size=".003" rgba="0.10 1 1 .96" />
+        <site name="l_gas_thigh" type="sphere" pos="-0.01252918464 -0.04296097276 0.004" size=".006" rgba=".08 .8 .2 1" />
+        <geom type="mesh" mesh="collision_l_j1_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_l_j1_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      </body>
+      <body name="r_j1" pos="-0.148444 0.00605 0.063577" quat="0.376744 -0.162136 0.909541 -0.0671589">
+        <inertial pos="0.152493 0.000449517 -0.0200586" quat="0.0167243 0.70749 -0.0120115 0.706424" mass="0.349894" diaginertia="0.00170598 0.00161762 0.000138069" />
+        <joint name="r_j1" pos="0 0 0" axis="0 0 -1" damping=".35" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_j1" />
+        <body name="r_leg" pos="0.21 0 -0.056" quat="0.437829 0 0 -0.899058">
+          <inertial pos="0.109752 -0.000581896 0.0238308" quat="-0.00447091 0.707802 -0.000119973 0.706397" mass="0.208341" diaginertia="0.00206505 0.0020003 7.1914e-05" />
+          <joint name="r_leg" pos="0 0 0" axis="0 0 -1" range="0.0 1.35" actuatorfrcrange="-120 120" damping=".35" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_leg" />
+          <body name="r_wheel" pos="0.25 0 0.0115" quat="0 -1 0 0">
+            <inertial pos="-0.00023484 -0.000120807 0.0152264" quat="0.5 0.5 -0.5 0.5" mass="0.577" diaginertia="0.001941 0.0009705 0.0009705" />
+            <joint name="r_wheel" pos="0 0 0" axis="0 0 -1" damping=".08" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_wheel" />
+            <site name="r_wheel_center" type="sphere" pos="0 0 0" size=".009" rgba=".32 1 .12 .88" />
+            <site name="r_wheel_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".32 1 .12 .88" />
+            <geom type="mesh" mesh="collision_r_wheel_exterior_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          </body>
+          <body name="r_loop2_leg" pos="-0.0627852 -0.0168232 0.017" quat="0 0.961942 -0.273254 0">
+            <inertial pos="0 0 -0.0027889" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+            <joint name="r_loop2_leg" pos="0 0 0" axis="0 0 1" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_loop2_leg_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          </body>
+          <site name="r_leg_center" type="sphere" pos="0 0 0" size=".009" rgba=".10 .90 .42 .88" />
+          <site name="r_leg_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".10 .90 .42 .88" />
+          <site name="r_loop2_mate_marker" type="cylinder" pos="-0.0627851787087 -0.0168232379316 0.017" zaxis="-1.60982338571e-15 -2.72004641033e-15 -1" size=".0028 .060" rgba="1 .05 .05 .96" />
+          <site name="r_loop2_r_leg_a" type="sphere" pos="-0.0627871021264 -0.0168221319978 0.038" size=".003" rgba="1 .35 .35 .96" />
+          <site name="r_loop2_r_leg_b" type="sphere" pos="-0.0627871021264 -0.0168221319978 0.026" size=".003" rgba="1 .35 .35 .96" />
+          <site name="r_gas_leg" type="sphere" pos="0.0503 8.67361738e-18 -3.469446952e-18" size=".006" rgba=".08 .8 .2 1" />
+          <geom type="mesh" mesh="collision_r_leg_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_leg_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        </body>
+        <body name="r_loop1_j1" pos="0.0945 0 -0.0245" quat="0 0.175495 -0.98448 0">
+          <inertial pos="0 0 0.0117111" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+          <joint name="r_loop1_j1" pos="0 0 0" axis="0 0 1" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_loop1_j1_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        </body>
+        <site name="r_j1_center" type="sphere" pos="0 0 0" size=".009" rgba=".10 .85 1 .88" />
+        <site name="r_j1_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".10 .85 1 .88" />
+        <site name="r_loop1_mate_marker" type="cylinder" pos="0.0945 -6.93889390391e-18 -0.0245" zaxis="-1.16573417586e-15 2.99760216649e-15 -1" size=".0028 .060" rgba="1 .05 .05 .96" />
+        <site name="r_loop1_r_j1_a" type="sphere" pos="0.0945 -2.08166817117e-17 -0.0185" size=".003" rgba="0.10 1 1 .96" />
+        <site name="r_loop1_r_j1_b" type="sphere" pos="0.0945 1.56125112838e-17 -0.0305" size=".003" rgba="0.10 1 1 .96" />
+        <site name="r_gas_thigh" type="sphere" pos="0.01252918464 -0.04296097276 -0.056" size=".006" rgba=".08 .8 .2 1" />
+        <geom type="mesh" mesh="collision_r_j1_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j1_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      </body>
+      <body name="r_j2" pos="-0.1739 0.00605 0.0890328" quat="0.270598 0.653281 0.653281 0.270598">
+        <inertial pos="-0.006705 0.033051 0.00530952" quat="0.449273 0.54533 -0.445808 0.549568" mass="0.0678768" diaginertia="9.61116e-05 8.48592e-05 1.24481e-05" />
+        <joint name="r_j2" pos="0 0 0" axis="0 0 -1" damping=".35" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_j2" />
+        <body name="r_link1" pos="-0.0187883 0.0926134 -0.0015" quat="0 0.908008 0.418953 0">
+          <inertial pos="-0.05625 0 0.00487033" quat="0 0.707107 0 0.707107" mass="0.0362597" diaginertia="5.7146e-05 5.60277e-05 1.70575e-06" />
+          <joint name="r_link1" pos="0 0 0" axis="0 0 1" damping=".35" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.898039 0.917647 0.929412 1" mesh="r_link1" />
+          <body name="r_link2" pos="-0.1125 0 0.01" quat="0.591261 0 0 0.806481">
+            <inertial pos="0.0900679 -0.00306607 -0.0165" quat="0.026032 0.706627 -0.026032 0.706627" mass="0.048145" diaginertia="0.00012109 0.000116453 5.34424e-06" />
+            <joint name="r_link2" pos="0 0 0" axis="0 0 1" damping=".35" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_link2" />
+            <body name="r_loop1_link2" pos="0.112498 0.00061655 -0.0085" quat="-0.0798629 0.440329 -0.553272 -0.702582">
+              <inertial pos="0.00197205 -0.00197205 0" quat="0.382683 0 0 0.92388" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+              <joint name="r_loop1_link2" pos="0 0 0" axis="0.707107 -0.707107 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_loop1_link2_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            </body>
+            <body name="r_link3" pos="0.175375 -0.0158623 -0.01" quat="0.484581 0 0 0.874747">
+              <inertial pos="0.0199551 -0.0541928 -0.0166032" quat="0.404493 0.579988 -0.404493 0.579988" mass="0.0398094" diaginertia="6.36823e-05 6.25324e-05 1.79654e-06" />
+              <joint name="r_link3" pos="0 0 0" axis="0 0 1" damping=".35" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.898039 0.917647 0.929412 1" mesh="r_link3" />
+              <body name="r_loop2_link3" pos="0.03991 -0.10839 -0.0135" quat="0.707105 0 0 0.707108">
+                <inertial pos="0 0 0.0122111" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
+                <joint name="r_loop2_link3" pos="0 0 0" axis="0 0 1" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="collision_r_loop2_link3_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              </body>
+              <site name="r_link3_center" type="sphere" pos="0 0 0" size=".009" rgba=".80 .80 .80 .88" />
+              <site name="r_link3_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".80 .80 .80 .88" />
+              <site name="r_loop2_branch_marker" type="cylinder" pos="0.03991 -0.10839 -0.0135" zaxis="-1.68976751071e-17 1.11022302463e-16 1" size=".0028 .060" rgba="1 .35 .35 .96" />
+              <site name="r_loop2_r_link3_a" type="sphere" pos="0.0399100703793 -0.108387782418 -0.0195" size=".003" rgba="1 .35 .35 .96" />
+              <site name="r_loop2_r_link3_b" type="sphere" pos="0.0399100703793 -0.108387782418 -0.0075" size=".003" rgba="1 .35 .35 .96" />
+              <geom type="mesh" mesh="collision_r_link3_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="collision_r_link3_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            </body>
+            <site name="r_link2_center" type="sphere" pos="0 0 0" size=".009" rgba=".12 .75 .72 .88" />
+            <site name="r_link2_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".12 .75 .72 .88" />
+            <site name="r_loop1_branch_marker" type="cylinder" pos="0.112498310503 0.000616550009861 -0.023" zaxis="-1.7763568394e-15 -1.14352971536e-14 1" size=".0028 .060" rgba="0.10 1 1 .96" />
+            <site name="r_loop1_r_link2_a" type="sphere" pos="0.112498310503 0.000616550009861 -0.029" size=".003" rgba="0.10 1 1 .96" />
+            <site name="r_loop1_r_link2_b" type="sphere" pos="0.112498310503 0.00061655000986 -0.017" size=".003" rgba="0.10 1 1 .96" />
+            <geom type="mesh" mesh="collision_r_link2_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="collision_r_link2_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          </body>
+          <site name="r_link1_center" type="sphere" pos="0 0 0" size=".009" rgba=".15 .35 1 .88" />
+          <site name="r_link1_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".15 .35 1 .88" />
+          <geom type="mesh" mesh="collision_r_link1_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_link1_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_link1_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_link1_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_link1_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="collision_r_link1_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        </body>
+        <site name="r_j2_center" type="sphere" pos="0 0 0" size=".009" rgba=".08 .55 1 .88" />
+        <site name="r_j2_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".08 .55 1 .88" />
+        <geom type="mesh" mesh="collision_r_j2_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_r_j2_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      </body>
+      <body name="gimbal_yaw" pos="-0.042449 0.08805 -0.042418" quat="0.653144 0.647979 -0.270927 0.283064">
+        <inertial pos="0.0553258 0.00172495 -0.0784591" quat="0.615109 0.334013 0.335399 0.630542" mass="2.41015" diaginertia="0.00207928 0.00200586 0.00197636" />
+        <joint name="gimbal_yaw" pos="0 0 0" axis="0.0186529 0 -0.999826" damping=".35" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="gimbal_yaw_part_000" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="gimbal_yaw_part_001" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="gimbal_yaw_part_002" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="gimbal_yaw_part_003" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="gimbal_yaw_part_004" />
+        <site name="gimbal_yaw_center" type="sphere" pos="0 0 0" size=".009" rgba=".96 .25 .92 .92" />
+        <site name="gimbal_yaw_axis" type="cylinder" pos="0 0 0" zaxis="0.0186529 0 -0.999826" size=".0035 .070" rgba=".96 .25 .92 .92" />
+        <geom type="mesh" mesh="collision_gimbal_yaw_exterior_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_gimbal_yaw_exterior_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_gimbal_yaw_exterior_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_gimbal_yaw_exterior_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="collision_gimbal_yaw_exterior_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      </body>
+      <inertial pos="-0.0528146148783 -0.0138844980592 -0.0528008040866" mass="7.75024528" diaginertia="0.0113941470944 0.013233325008 0.011392429647" />
+      <geom type="mesh" mesh="base_link_collision_000" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_001" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_002" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_003" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_004" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_005" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_006" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_007" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_008" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_009" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_010" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_011" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_012" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_013" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_014" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_015" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_016" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_017" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_018" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_019" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_020" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_021" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_022" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_023" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_024" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_025" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_026" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_027" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_028" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_029" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_030" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_031" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_032" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_033" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_034" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_035" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_036" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_037" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_038" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_039" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_040" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_041" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_042" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_043" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_044" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_045" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_046" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_047" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_048" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_049" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_050" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_051" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_052" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_053" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_054" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_055" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_056" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_057" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_058" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_059" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_060" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_061" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_062" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_063" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_064" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_065" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_066" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_067" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_068" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_069" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_070" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_071" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_072" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_073" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_074" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_075" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_076" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_077" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_078" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_079" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_080" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_081" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_082" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_083" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_084" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_085" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_086" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_087" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_088" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_089" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_090" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_091" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_092" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_093" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_094" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_095" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_096" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_097" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_098" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_099" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_100" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_101" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_102" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_103" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_104" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_105" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_106" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_107" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_108" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_109" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_110" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_111" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_112" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_113" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_114" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_115" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_116" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_117" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_118" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_119" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_120" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_121" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_122" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_123" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_124" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_125" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_126" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_127" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_128" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_129" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_130" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_131" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_132" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_133" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_134" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_135" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_136" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_137" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_138" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_139" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_140" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_141" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_142" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_143" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_144" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_145" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_146" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_147" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_148" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_149" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_150" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_151" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_152" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_153" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_154" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_155" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_156" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_157" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_158" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_159" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_160" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_161" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_162" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_163" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_164" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_165" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_166" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_167" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_168" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_169" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_170" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_171" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_172" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_173" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_174" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_175" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_176" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="base_link_collision_177" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+    </body>
+    <geom name="ground" type="plane" pos="0 0 0" size="5 5 .1" friction="1.2 .02 .001" material="lqr_ground_material" contype="4" conaffinity="3" />
+  </worldbody>
+  <equality>
+    <connect name="r_loop1_a" site1="r_loop1_r_link2_a" site2="r_loop1_r_j1_a" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="r_loop1_b" site1="r_loop1_r_link2_b" site2="r_loop1_r_j1_b" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="r_loop2_a" site1="r_loop2_r_link3_a" site2="r_loop2_r_leg_a" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="r_loop2_b" site1="r_loop2_r_link3_b" site2="r_loop2_r_leg_b" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="l_loop1_a" site1="l_loop1_l_link2_a" site2="l_loop1_l_j1_a" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="l_loop1_b" site1="l_loop1_l_link2_b" site2="l_loop1_l_j1_b" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="l_loop2_a" site1="l_loop2_l_link3_a" site2="l_loop2_l_leg_a" solref=".004 1" solimp=".95 .99 .001" />
+    <connect name="l_loop2_b" site1="l_loop2_l_link3_b" site2="l_loop2_l_leg_b" solref=".004 1" solimp=".95 .99 .001" />
+  </equality>
+  <tendon>
+    <spatial name="r_gas_spring" width=".007" rgba=".08 .8 .2 1">
+      <site site="r_gas_thigh" />
+      <site site="r_gas_leg" />
+    </spatial>
+    <spatial name="l_gas_spring" width=".007" rgba=".08 .8 .2 1">
+      <site site="l_gas_thigh" />
+      <site site="l_gas_leg" />
+    </spatial>
+  </tendon>
+  <actuator>
+    <motor name="l_wheel_motor" joint="l_wheel" gear="1" ctrllimited="true" ctrlrange="-3.69 3.69" />
+    <motor name="r_wheel_motor" joint="r_wheel" gear="1" ctrllimited="true" ctrlrange="-3.69 3.69" />
+    <motor name="l_j1_motor" joint="l_j1" gear="1" ctrllimited="true" ctrlrange="-24 24" />
+    <motor name="l_j2_motor" joint="l_j2" gear="1" ctrllimited="true" ctrlrange="-24 24" />
+    <motor name="r_j1_motor" joint="r_j1" gear="1" ctrllimited="true" ctrlrange="-24 24" />
+    <motor name="r_j2_motor" joint="r_j2" gear="1" ctrllimited="true" ctrlrange="-24 24" />
+    <motor name="gimbal_yaw_motor" joint="gimbal_yaw" gear="1" ctrllimited="true" ctrlrange="-1.2 1.2" />
+  </actuator>
+</mujoco>
