@@ -44,11 +44,29 @@ DRIVE_YAW_STEP_RAD_S = 0.15
 DRIVE_KEYBOARD_YAW_MAX_RAD_S = 0.90
 # Real-RC semantics: holding an arrow key sets the LQR speed reference,
 # releasing it returns the reference to zero (chassis brakes).  The viewer
-# key callback only reports key events (no release action), so "held" is
-# inferred from event recency.
+# key callback only reports press events (no repeat/release), so the held
+# state is polled directly from the Windows keyboard state.
 RC_TARGET_SPEED_MPS = 0.60
 RC_TARGET_YAW_RAD_S = 0.60
 RC_HOLD_TIMEOUT_S = 0.35
+if os.name == "nt":
+    import ctypes as _ctypes
+
+    _user32 = _ctypes.windll.user32
+    _VK = {
+        "up": 0x26,
+        "down": 0x28,
+        "left": 0x25,
+        "right": 0x27,
+    }
+
+    def _rc_key_held(name: str) -> bool:
+        return bool(_user32.GetAsyncKeyState(_VK[name]) & 0x8000)
+
+else:
+
+    def _rc_key_held(name: str) -> bool:
+        return False
 
 
 def main() -> None:
@@ -64,10 +82,6 @@ def main() -> None:
     paused = {"value": True}
     mode = {"name": "hover"}
     timing = {"rtf": 0.0}
-    # RC hold-state: key -> last event time.  Events arrive on press (and on
-    # key repeat while held); a key with no event for RC_HOLD_TIMEOUT_S is
-    # treated as released (drive reference returns to zero).
-    rc_last_event: dict[int, float] = {}
     pending_keys: list[int] = []
     pending_keys_lock = threading.Lock()
     pitch_test_until = {"time": -1.0}
@@ -362,9 +376,10 @@ def main() -> None:
                         glfw.KEY_RIGHT,
                     }
                 ):
-                    rc_last_event[key] = data.time
+                    # Direction keys are polled every frame (see the main
+                    # loop); pressing them here only wakes the UI.
+                    pass
                 elif key == glfw.KEY_X and mode["name"] in {"lqr", "recovery"}:
-                    rc_last_event.clear()
                     controller.stop_drive()
                     print("drive command: STOP")
                 elif key == glfw.KEY_J and mode["name"] in {"lqr", "recovery"}:
@@ -415,22 +430,18 @@ def main() -> None:
         while viewer.is_running():
             frame_start = time.perf_counter()
             process_pending_keys(viewer)
-            # Real-RC drive: held arrows set the LQR speed reference; a key
-            # with no event for RC_HOLD_TIMEOUT_S is released (ref -> 0).
+            # Real-RC drive: poll the keyboard state every frame.  Arrow keys
+            # held -> LQR speed reference applied; released -> reference 0.
             if mode["name"] in {"lqr", "recovery"}:
-                now = data.time
-                for key in list(rc_last_event):
-                    if now - rc_last_event[key] >= RC_HOLD_TIMEOUT_S:
-                        del rc_last_event[key]
                 forward = 0.0
                 yaw = 0.0
-                if glfw.KEY_UP in rc_last_event:
+                if _rc_key_held("up"):
                     forward += RC_TARGET_SPEED_MPS
-                if glfw.KEY_DOWN in rc_last_event:
+                if _rc_key_held("down"):
                     forward -= RC_TARGET_SPEED_MPS
-                if glfw.KEY_LEFT in rc_last_event:
+                if _rc_key_held("left"):
                     yaw += RC_TARGET_YAW_RAD_S
-                if glfw.KEY_RIGHT in rc_last_event:
+                if _rc_key_held("right"):
                     yaw -= RC_TARGET_YAW_RAD_S
                 if (forward, yaw) != (
                     controller.drive_forward_target,

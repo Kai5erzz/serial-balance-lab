@@ -662,7 +662,7 @@ class TraditionalLQR:
         self.jump_air_pitch_kd = 13.0
         self.jump_air_pitch_limit = 40.0
         self.jump_air_tuck_pitch_bias = np.radians(2.0)
-        self.jump_air_deploy_pitch_bias = np.radians(0.0)
+        self.jump_air_deploy_pitch_bias = np.radians(3.0)
         self.jump_air_pitch_reference_limit = np.radians(15.0)
         self.jump_air_moving_pitch_gain = np.radians(3.0)
         self.jump_air_tuck_length = JUMP_AIR_TUCK_LENGTH
@@ -680,7 +680,7 @@ class TraditionalLQR:
         self.jump_air_theta_kd = 10.0
         self.jump_air_theta_limit = 40.0
         self.jump_air_theta_weight_tuck = 2.0
-        self.jump_air_theta_weight_deploy = 8.0
+        self.jump_air_theta_weight_deploy = 5.0
         self.jump_air_common_tp_limit = 40.0
         self.jump_air_wheel_pitch_kp = 20.0
         self.jump_air_wheel_pitch_kd = 2.0
@@ -2607,7 +2607,7 @@ class TraditionalLQR:
             # impulse that slides the chassis away from the launch spot.
             air_elapsed = self.jump_air_elapsed
             tuck_total = self.jump_air_tuck_time + self.jump_air_tuck_hold_time
-            deploy_window = 0.30
+            deploy_window = 0.15
             if air_elapsed > tuck_total:
                 deploy_progress = float(np.clip(
                     (air_elapsed - tuck_total) / deploy_window, 0.0, 1.0

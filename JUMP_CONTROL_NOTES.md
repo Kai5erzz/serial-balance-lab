@@ -50,9 +50,10 @@ claim for the real motor.
 3. **Landing deployment:** the length target returns to `0.270 m`; leg-angle
    authority rises after the compact interval so both wheels point toward the
    ground before contact. The reaction-wheel torque is ramped out over the
-   `0.30 s` deploy window so the rotors reach ~zero speed at touchdown;
+   `0.15 s` deploy window so the rotors reach ~zero speed at touchdown;
    otherwise the stored wheel angular momentum becomes a ground impulse that
-   slides the chassis away from the launch spot.
+   slides the chassis away from the launch spot. The deploy pitch bias is
+   `+3 deg`; measured touch-to-level recovery is about `0.9 s`.
 4. **Touchdown capture and buffer:** the first raw wheel contact immediately
    starts a `40 ms` capture window. The wheel path stops using the airborne
    reaction-wheel request and approaches wheel pitch PD (`Kp=10`, `Kd=1`) with
