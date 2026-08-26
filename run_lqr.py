@@ -309,6 +309,7 @@ def run_session(config: dict) -> dict | None:
             pending_keys.append(key)
 
     def process_pending_keys(viewer: mujoco.viewer.Handle) -> None:
+        nonlocal restart_request
         with pending_keys_lock:
             keys = pending_keys[:]
             pending_keys.clear()
