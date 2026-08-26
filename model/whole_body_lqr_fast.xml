@@ -79,7 +79,7 @@
           <joint name="l_leg" pos="0 0 0" axis="0 0 1" range="-0.402691455 0.749471192" actuatorfrcrange="-120 120" damping=".35" />
           <body name="l_wheel" pos="-0.00139071 0.251074 0.05705" quat="0 0.707107 -0.707107 0">
             <inertial pos="0.00125874 -0.00157967 0.000823586" quat="0.5 0.5 -0.5 0.5" mass="0.577" diaginertia="0.001941 0.0009705 0.0009705" />
-            <joint name="l_wheel" pos="0 0 0" axis="0 0 1" damping=".08" />
+            <joint name="l_wheel" pos="0 0 0" axis="0 0 -1" damping=".08" />
             <site name="l_wheel_center" type="sphere" pos="0 0 0" size=".009" rgba=".80 .80 .80 .88" />
             <site name="l_wheel_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".80 .80 .80 .88" />
             <geom name="fast_visual_l_wheel" type="mesh" mesh="fast_visual_mesh_l_wheel" density="0" contype="0" conaffinity="0" group="1" rgba=".752941 .752941 .752941 1" />
@@ -119,7 +119,7 @@
           <joint name="r_leg" pos="0 0 0" axis="0 0 -1" range="-0.748581838 0.401377801" actuatorfrcrange="-120 120" damping=".35" />
           <body name="r_wheel" pos="0.25 0 0.0115" quat="0 -1 0 0">
             <inertial pos="-0.00023484 -0.000120807 0.0152264" quat="0.5 0.5 -0.5 0.5" mass="0.577" diaginertia="0.001941 0.0009705 0.0009705" />
-            <joint name="r_wheel" pos="0 0 0" axis="0 0 -1" damping=".08" />
+            <joint name="r_wheel" pos="0 0 0" axis="0 0 1" damping=".08" />
             <site name="r_wheel_center" type="sphere" pos="0 0 0" size=".009" rgba=".32 1 .12 .88" />
             <site name="r_wheel_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".32 1 .12 .88" />
             <geom name="fast_visual_r_wheel" type="mesh" mesh="fast_visual_mesh_r_wheel" density="0" contype="0" conaffinity="0" group="1" rgba=".752941 .752941 .752941 1" />

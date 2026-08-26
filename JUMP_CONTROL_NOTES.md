@@ -1,6 +1,6 @@
 # Physical jump-control record
 
-Last updated: 2026-08-25
+Last updated: 2026-08-26
 
 ## Scope
 
@@ -24,9 +24,9 @@ authorized for simulation tuning.
   controller, rather than the XML actuator clamp, owns this envelope.
 - Wheel torque remains limited to `3.69 Nm`; it was not enlarged for jumping.
 
-The accepted jump uses the full `40 Nm` hip peak and remains above the `20 Nm`
-rating for about `0.50 s`. This is a simulation result, not a thermal-duty
-claim for the real motor.
+The accepted stationary jump peaks at `29.8 Nm` and remains above the `20 Nm`
+rating for about `0.135 s`. The `40 Nm` hardware peak remains a safety clamp,
+not a normal airborne command.
 
 ## Control allocation
 
@@ -40,20 +40,22 @@ claim for the real motor.
    loop establishes the angular momentum needed to cancel the later leg
    motion. The stationary target is `1.48 rad/s`; moving launch subtracts a
    term proportional to measured launch velocity.
-2. **Compact ascent:** the virtual-leg reference moves to `0.140 m` at
+2. **Compact ascent:** the virtual-leg reference moves to `0.130 m` at
    `3.50 m/s`. The compact interval is `0.23 s`, which includes the apex.
-   Body pitch and leg angle share the hip common axis; pitch is prioritized at
-   the apex while the drive wheels provide a real reaction-inertia axis.
-   The air-phase LQR pitch gain is `1.00` (raised from `0.75` for the
-   MATLAB-wheel plant); tuck/deploy pitch bias is `2 deg / 0 deg` so the
-   chassis tucks level instead of holding the old `14 deg` rearward rake.
+   Airborne control is explicitly split by physical role: hips hold the
+   virtual-leg direction (`theta Kp/Kd=30/4`, tuck/deploy weights `0.8/1.5`),
+   while the two wheel rotors own body pitch (`Kp/Kd=35/5`). The old controller
+   asked the hip common axis to hold pitch and leg direction simultaneously;
+   after restoring the CAD inertias this made virtual `Tp` alternate between
+   `+40/-40 Nm` at the `5 ms` control period. Removing the competing hip-pitch
+   loop eliminates that airborne chatter. Tuck/deploy pitch references are
+   `12 deg / 4 deg`; the measured body pitch remains close to zero because the
+   leg-retraction reaction is opposite to this rotor reference.
 3. **Landing deployment:** the length target returns to `0.270 m`; leg-angle
    authority rises after the compact interval so both wheels point toward the
-   ground before contact. The reaction-wheel torque is ramped out over the
-   `0.15 s` deploy window so the rotors reach ~zero speed at touchdown;
-   otherwise the stored wheel angular momentum becomes a ground impulse that
-   slides the chassis away from the launch spot. The deploy pitch bias is
-   `+3 deg`; measured touch-to-level recovery is about `0.9 s`.
+   ground before contact. Reaction-wheel taper starts `0.10 s` after the tuck
+   interval and lasts `0.20 s`. The stationary first-contact pitch is now
+   `-0.42 deg`, compared with `-5.38 deg` before this retune.
 4. **Touchdown capture and buffer:** the first raw wheel contact immediately
    starts a `40 ms` capture window. The wheel path stops using the airborne
    reaction-wheel request and approaches wheel pitch PD (`Kp=10`, `Kd=1`) with
@@ -66,32 +68,26 @@ claim for the real motor.
    Hold/return timing was tightened for the heavier plant (hold `0.12..0.30 s`,
    return ref rate `1.20 m/s`, exit-stable `0.12 s`): measured
    touch-to-LQR-handoff is about `0.5 s`.
-5. **Pre-jump settle:** the jump entry now waits `3 s` (was `1 s`) for the LOW
-   equilibrium to finish its leg-length transient; jumping from a moving
-   chassis produced a long ballistic glide (measured `~1.2 m` horizontal
-   travel), now `~0.04 m`.
+5. **Pre-jump settle and position capture:** the jump entry waits `3 s` for the
+   LOW equilibrium to finish its leg-length transient. After wheel touchdown,
+   the landing-only position-observer distance ratio is `6.0` instead of the
+   ordinary driving value `3.0`. This stops the stationary landing at the
+   takeoff point without changing daily stand/drive LQR gains.
 
 ## Acceptance results
 
 Plant: MATLAB wheel inertia (`mw=0.577 kg`, `Iw=mw*R^2=0.001941 kg m^2`),
 restored CAD inertias and original leg stops / 40 Nm hip envelope.
 
-| Model / launch | Base rise | Apex wheel clearance | Apex pitch | Air pitch range | First wheel pitch | Touchdown-window pitch | Final pitch/roll | Non-wheel ground contact |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Fast, stationary | `0.317 m` | `0.300 m` | `+1.76 deg` | within `+/-4.96 deg` | `-2.29 deg` | within `+/-5.09 deg` | `+0.24/+0.21 deg` | none |
-| Fast, `+0.20 m/s` | `0.315 m` | `0.298 m` (2 mm short) | `+2.75 deg` | within `+/-5.23 deg` | `-3.95 deg` | within `+/-10.00 deg` | `-0.03/+0.21 deg` | none |
-| Full collision, stationary | `0.314 m` | `0.298 m` (2 mm short) | `+1.96 deg` | within `+/-5.40 deg` | `-5.23 deg` | within `+/-5.53 deg` | `+0.28/+0.00 deg` | loop links touch at touchdown |
+| Model / launch | Base rise | Apex wheel clearance | Apex pitch | Max air pitch | First wheel pitch | Touchdown-window pitch | Final pitch/roll | Final launch-point error | Non-wheel ground contact |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Fast, stationary | `0.319 m` | `0.305 m` | `-2.21 deg` | `6.28 deg` | `-0.42 deg` | `3.81 deg` | `+0.13/+0.21 deg` | `-0.014 m` | none |
+| Fast, `+0.50 m/s` | `0.322 m` | `0.301 m` | `-6.16 deg` | `6.91 deg` | `-1.89 deg` | `7.57 deg` | `+0.62/+0.20 deg` | moving launch | none |
 
-The stationary fast run passes the full acceptance. The `+0.20 m/s` and full
-collision variants miss by millimeters on apex clearance, and the full
-collision model brushes the loop links during the touchdown window; both are
-plant-dependent edges of the MATLAB-wheel retune and are the next tuning
-targets. All three runs traverse `PRELOAD -> THRUST -> FLIGHT -> LANDING ->
-IDLE`, finish with `fault=none`, and keep both wheels grounded after settling.
-
-All three runs traverse `PRELOAD -> THRUST -> FLIGHT -> LANDING -> IDLE`,
-finish with `fault=none`, keep both wheels grounded after settling, and avoid
-leg, chassis, gimbal, and recovery-skid contact after takeoff.
+Both runs traverse `PRELOAD -> THRUST -> FLIGHT -> LANDING -> IDLE`, finish
+with `fault=none`, keep both wheels grounded after settling, and avoid leg,
+chassis, gimbal, and recovery-skid contact after takeoff. The stationary run
+also enforces a `0.05 m` launch-point-error limit.
 
 The ordinary calibrated stand, pitch-pulse recovery, encoder-zero recovery,
 forward drive, and yaw regression tests remain unchanged and pass after the

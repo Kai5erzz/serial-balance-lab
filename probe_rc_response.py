@@ -54,7 +54,7 @@ while data.time < end2:
     mujoco.mj_step(model, data)
 
 start = data.xpos[controller.base].copy()
-controller.set_drive_command(1.20, 0.0)
+controller.set_drive_command(1.40, 0.0)
 last = 0.0
 max_pitch = 0.0
 while data.time < end2 + 4.0:

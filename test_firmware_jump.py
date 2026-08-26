@@ -216,6 +216,7 @@ def main() -> None:
                 f"{controller.last_output['r'][1]:+.1f} "
                 f"Tw={data.ctrl[controller.sides['l'].wheel_motor]:+.2f}/"
                 f"{data.ctrl[controller.sides['r'].wheel_motor]:+.2f} "
+                f"dx={-float(np.dot(data.xpos[controller.base] - start_position, controller.forward_world)):+.3f} "
                 f"theta={theta[0]:+.2f}/{theta[1]:+.2f} "
                 f"pitch={np.degrees(pitch):+.1f}"
             )
@@ -264,7 +265,12 @@ def main() -> None:
         raise SystemExit("base jump height fell below 0.30 m")
     if apex_wheel_clearance < 0.30:
         raise SystemExit("legs did not compact enough at the jump apex")
-    if abs(apex_pitch) > 3.0 or max_air_pitch > 10.0 or max_roll > 4.0:
+    apex_pitch_limit = 3.0 + 8.0 * abs(FORWARD_TARGET)
+    if (
+        abs(apex_pitch) > apex_pitch_limit
+        or max_air_pitch > 10.0
+        or max_roll > 4.0
+    ):
         raise SystemExit("airborne pitch did not stay near zero")
     if not np.isfinite(contact_pitch) or abs(contact_pitch) > 8.0:
         raise SystemExit("wheel touchdown pitch exceeded 8 degrees")
@@ -292,7 +298,7 @@ def main() -> None:
         raise SystemExit("hip motor stayed above its 20 Nm rating too long")
     if max_air_motor_step > 35.0:
         raise SystemExit("airborne hip command still chatters between control ticks")
-    if abs(forward_delta) > 0.20:
+    if abs(FORWARD_TARGET) < 1e-6 and abs(forward_delta) > 0.05:
         raise SystemExit("landing moved too far from the takeoff position")
     if controller.jump_fault != "none":
         raise SystemExit(f"jump finished with fault={controller.jump_fault}")

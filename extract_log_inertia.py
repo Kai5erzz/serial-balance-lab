@@ -8,9 +8,9 @@ import xml.etree.ElementTree as ET
 
 
 LOG = Path(
-    r"D:\User\balance_infantry\rl_balance\chassis_export\whole_body\export.log"
+    r"D:\User\balance_infantry\rl_balance\chassis_export\whole_body_revised\export.log"
 )
-CAD_CSV = LOG.parent / "urdf" / "whole_body.csv"
+CAD_CSV = LOG.parent / "urdf" / "whole_body_revised.csv"
 INERTIA_FIELDS = ("ixx", "ixy", "ixz", "iyy", "iyz", "izz")
 CSV_INERTIA_FIELDS = {
     "ixx": "Moment Ixx",

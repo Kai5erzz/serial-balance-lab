@@ -581,12 +581,12 @@ class TraditionalLQR:
         self.gas_enabled = True
         self.gimbal_locked = True
         self.lqr_gain = 0.0
-        self.wheel_sign = {"l": -1.0, "r": 1.0}
+        self.wheel_sign = {"l": 1.0, "r": -1.0}
         # The two wheel joint axes are opposite in the CAD assembly.  Testing
         # the complete CAD-zero startup (not merely its final settled pose)
         # selects this map: the reverse map lets gravity drive the chassis
         # into the floor before it eventually recovers.
-        self.cad_stand_wheel_sign = {"l": -1.0, "r": 1.0}
+        self.cad_stand_wheel_sign = {"l": 1.0, "r": -1.0}
         # vmc_kinematics now returns the exact CAD-actuator Jacobian, including
         # the J1/J2 crossing and left raw-angle sign.  Firmware Tp therefore
         # enters virtual work without an additional empirical sign.
@@ -650,6 +650,8 @@ class TraditionalLQR:
         self.jump_air_elapsed = 0.0
         self.jump_air_reference = {"l": JUMP_AIR_LANDING_LENGTH, "r": JUMP_AIR_LANDING_LENGTH}
         self.jump_launch_vx = 0.0
+        self.jump_takeoff_position: np.ndarray | None = None
+        self.jump_stationary_position_hold = False
         self.jump_thrust_theta_ref = 0.0
         self.jump_thrust_pitch_rate_lpf = 0.0
         self.jump_thrust_pitch_tp = 0.0
@@ -659,6 +661,11 @@ class TraditionalLQR:
         self.jump_landing_tp_handoff_elapsed = 0.0
         self.jump_landing_tp_command = {"l": 0.0, "r": 0.0}
         self.jump_landing_wheel_command = {"l": 0.0, "r": 0.0}
+        # Landing starts with appreciable horizontal velocity even when the
+        # jump request is stationary.  A 2x observer distance gain stops that
+        # transient at the takeoff point instead of capturing a new point
+        # roughly 0.16 m behind it.
+        self.jump_landing_position_x_ratio = 6.0
         self.jump_hip_motor_torque_lpf = {
             "l": np.zeros(2), "r": np.zeros(2)
         }
@@ -675,7 +682,7 @@ class TraditionalLQR:
         self.jump_air_deploy_pitch_bias = np.radians(4.0)
         self.jump_air_pitch_reference_limit = np.radians(15.0)
         self.jump_air_moving_pitch_gain = np.radians(3.0)
-        self.jump_air_tuck_length = 0.135
+        self.jump_air_tuck_length = 0.130
         self.jump_air_tuck_time = JUMP_AIR_TUCK_TIME
         self.jump_air_tuck_hold_time = JUMP_AIR_TUCK_HOLD_TIME
         self.jump_air_tuck_ref_rate = JUMP_AIR_TUCK_REF_RATE
@@ -811,6 +818,8 @@ class TraditionalLQR:
             "r": self.jump_air_landing_length,
         }
         self.jump_launch_vx = 0.0
+        self.jump_takeoff_position = None
+        self.jump_stationary_position_hold = False
         self.jump_thrust_theta_ref = 0.0
         self.jump_thrust_pitch_rate_lpf = 0.0
         self.jump_thrust_pitch_tp = 0.0
@@ -895,6 +904,10 @@ class TraditionalLQR:
         self.jump_air_profile_active = False
         self.jump_air_elapsed = 0.0
         self.jump_launch_vx = self.chassis_vx
+        self.jump_takeoff_position = data.xpos[self.base].copy()
+        self.jump_stationary_position_hold = (
+            abs(self.drive_forward_target) < 1e-6
+        )
         self.jump_thrust_pitch_rate_lpf = -float(self.last_state["l"][5])
         self.jump_air_common_tp_lpf = 0.0
         self.jump_air_pitch_rate_lpf = -float(self.last_state["l"][5])
@@ -2255,6 +2268,7 @@ class TraditionalLQR:
 
     def _update_lqr_position_observer(self, chassis_vx: float, dt: float) -> None:
         """Port the firmware's zero-command DRIVE/BRAKE/HOLD observer."""
+        x_ratio = LQR_POSITION_X_RATIO
         if self.lqr_position_state == "drive":
             self.lqr_position_state = "brake"
             self.lqr_position_capture_timer = 0.0
@@ -2263,7 +2277,7 @@ class TraditionalLQR:
 
         if self.lqr_position_state == "brake":
             self.lqr_virtual_x = float(np.clip(
-                self.lqr_virtual_x + chassis_vx * dt * LQR_POSITION_X_RATIO,
+                self.lqr_virtual_x + chassis_vx * dt * x_ratio,
                 -LQR_POSITION_LIMIT,
                 LQR_POSITION_LIMIT,
             ))
@@ -2284,7 +2298,7 @@ class TraditionalLQR:
             LQR_POSITION_BRAKE_RELEASE_RATE * dt,
         )
         self.lqr_position_hold_x = float(np.clip(
-            self.lqr_position_hold_x + chassis_vx * dt * LQR_POSITION_X_RATIO,
+            self.lqr_position_hold_x + chassis_vx * dt * x_ratio,
             -LQR_POSITION_LIMIT,
             LQR_POSITION_LIMIT,
         ))
@@ -3016,9 +3030,30 @@ class TraditionalLQR:
                     abs(self.drive_forward_target) < 1e-6
                     and self.jump_state == "idle"
                 ):
-                    self._update_lqr_position_observer(
-                        self.chassis_vx, control_dt
-                    )
+                    if (
+                        self.jump_landing_seen
+                        and self.jump_stationary_position_hold
+                        and self.jump_takeoff_position is not None
+                    ):
+                        launch_error = -float(np.dot(
+                            data.xpos[self.base] - self.jump_takeoff_position,
+                            self.forward_world,
+                        ))
+                        self.lqr_virtual_x = float(np.clip(
+                            self.jump_landing_position_x_ratio * launch_error,
+                            -LQR_POSITION_LIMIT,
+                            LQR_POSITION_LIMIT,
+                        ))
+                        self.lqr_position_state = "hold"
+                        self.lqr_position_capture_timer = (
+                            LQR_POSITION_CAPTURE_TIME
+                        )
+                        self.lqr_position_hold_x = self.lqr_virtual_x
+                        self.lqr_position_brake_offset = 0.0
+                    else:
+                        self._update_lqr_position_observer(
+                            self.chassis_vx, control_dt
+                        )
                 else:
                     self.lqr_position_state = "drive"
                     self.lqr_position_capture_timer = 0.0
@@ -3110,7 +3145,7 @@ class TraditionalLQR:
                     )
                     wheel_command = (
                         self.wheel_sign[side] * self.last_output[side][0]
-                        + yaw_command
+                        - yaw_command
                     )
                 data.ctrl[ids.wheel_motor] = float(np.clip(
                     wheel_command, -WHEEL_TORQUE_LIMIT, WHEEL_TORQUE_LIMIT
