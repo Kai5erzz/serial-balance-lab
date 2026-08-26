@@ -303,6 +303,8 @@ def run_session(config: dict) -> dict | None:
         # GLFW invokes this on the viewer thread.  Do not touch MuJoCo data or
         # acquire viewer.lock here: doing either can deadlock against sync().
         # The simulation thread drains this queue at the start of each batch.
+        if key in (glfw.KEY_6, glfw.KEY_F6):
+            print(f"key event: {key} (6/F6) received", flush=True)
         with pending_keys_lock:
             pending_keys.append(key)
 
@@ -335,7 +337,7 @@ def run_session(config: dict) -> dict | None:
                 elif key == glfw.KEY_5:
                     set_mode("recovery")
                     print("mode: calibrated encoder zero; firmware HOLD/SWING/RETRACT/HANDOFF armed; press Space")
-                elif key == glfw.KEY_6:
+                elif key in (glfw.KEY_6, glfw.KEY_F6):
                     restart_request = {
                         "model": str(PLATFORM_MODEL),
                         "z_offset": 0.6,
