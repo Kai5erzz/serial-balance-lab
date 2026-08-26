@@ -112,6 +112,25 @@ JUMP_THRUST_THETA_LQR_GAIN = 0.75
 JUMP_LANDING_TP_HANDOFF_TIME = 0.060
 JUMP_AIR_LQR_TP_GAIN = 1.00
 JUMP_AIR_TP_LIMIT = 22.0
+# --- generic off-ground port (chassis_safety.c / rm_config.h) ---
+OFFGROUND_TAKEOFF_FN_LOW = 30.0
+OFFGROUND_JUMP_TAKEOFF_SIDE_MAX = 50.0
+OFFGROUND_TAKEOFF_CONFIRM_LOW = 5
+OFFGROUND_LANDING_FN_LOW = 45.0
+OFFGROUND_LANDING_CONFIRM_LOW = 8
+OFFGROUND_UNSPRUNG_MASS = 0.60
+OFFGROUND_SOFT_FORCE = 20.0
+OFFGROUND_THETA_HOLD_KP = 8.5
+OFFGROUND_THETA_HOLD_KD = 0.75
+OFFGROUND_THETA_HOLD_TP_LIMIT = 4.5
+GBUF_COMPRESS_TIME = 0.06
+GBUF_HOLD_MIN_TIME = 0.12
+GBUF_HOLD_MAX_TIME = 0.30
+GBUF_RETURN_REF_RATE = 0.60
+GBUF_EXIT_STABLE_TIME = 0.12
+GBUF_SETTLE_LENGTH_ERROR = 0.015
+GBUF_SETTLE_LENGTH_SPEED = 0.12
+LANDING_BUFFER_MID_LENGTH = 0.21
 JUMP_AIR_THETA_HOLD_KP = 18.0
 JUMP_AIR_THETA_HOLD_KD = 8.0
 JUMP_AIR_THETA_HOLD_LIMIT = 22.0
@@ -669,6 +688,27 @@ class TraditionalLQR:
         self.jump_hip_motor_torque_lpf = {
             "l": np.zeros(2), "r": np.zeros(2)
         }
+        # Real-vehicle off-ground port (chassis_safety.c): wheel vertical
+        # contact force reconstruction + 4-tap filter + debounced flag.
+        self.offground_fn_raw = {"l": 0.0, "r": 0.0}
+        self.offground_fn_filtered = {"l": 0.0, "r": 0.0}
+        self.offground_fn_history = {"l": [0.0] * 4, "r": [0.0] * 4}
+        self.offground_filter_index = 0
+        self.offground_deriv_init = False
+        self.offground_last_d_l0 = {"l": 0.0, "r": 0.0}
+        self.offground_last_d_theta = {"l": 0.0, "r": 0.0}
+        self.off_ground_cnt = 0
+        self.off_ground = False
+        self.off_ground_last = False
+        self.airborne_wheel_shut = False
+        self.airborne_theta_hold_tp = {"l": 0.0, "r": 0.0}
+        self.airborne_soft_force = {"l": 0.0, "r": 0.0}
+        # landing buffer for the generic airborne path (idle take-offs)
+        self.gbuf_phase = "inactive"   # inactive/compress/hold/return
+        self.gbuf_elapsed = 0.0
+        self.gbuf_exit_stable = 0.0
+        self.gbuf_length_ref = {"l": VMC_NORMAL_STAND_LENGTH, "r": VMC_NORMAL_STAND_LENGTH}
+        self.gbuf_contact_length = {"l": VMC_NORMAL_STAND_LENGTH, "r": VMC_NORMAL_STAND_LENGTH}
         # Tunable air-attitude allocation.  These are deliberately instance
         # fields so headless sweeps can test the physical controller without
         # rewriting source between every run.
@@ -1122,6 +1162,215 @@ class TraditionalLQR:
                     self.landing_length_reference[side], ref_max
                 )
                 self.length_reference[side] = self.landing_length_reference[side]
+
+    def _base_vertical_accel_raw(self, data: mujoco.MjData) -> float:
+        """World-vertical acceleration of the free base (incl. gravity)."""
+        if getattr(self, "base_lin_z_adr", None) is None:
+            try:
+                adr = self.model.jnt_qveladr[self._joint("base_free")]
+            except Exception:
+                adr = 0
+            self.base_lin_z_adr = int(adr) + 5
+        return float(data.qacc[self.base_lin_z_adr])
+
+    def _update_off_ground(self, data: mujoco.MjData, dt: float) -> None:
+        """Real-vehicle off-ground detection and airborne handling.
+
+        Port of chassis_safety.c: each wheel's vertical contact force is
+        reconstructed from the commanded VMC axial force, gas-spring support,
+        leg torque and the unsprung-mass vertical acceleration, filtered over
+        four samples, and debounced before setting the off-ground flag.
+        While airborne the wheels are shut, the hips hold theta, axial force
+        drops to the soft 20 N command and the integrators are frozen; a
+        landing edge starts the COMPRESS->HOLD->RETURN buffer.
+
+        Only active when the jump machine is idle (stair / ledge drops).
+        """
+        if self.jump_state != "idle" or self.landing_buffer_phase != "inactive":
+            return
+        if not self.enabled:
+            return
+        if dt <= 0.0:
+            return
+
+        pitch = self.body_pitch(data)
+        base_az = self._base_vertical_accel_raw(data)
+
+        for side in ("l", "r"):
+            kin = self.vmc_kinematics(data, side)
+            theta = np.pi / 2.0 - kin.phi0 + pitch
+            l0 = max(kin.l0, 0.08)
+            d_l0 = self.length_rate_lpf[side]
+            d_theta = self.theta_rate_lpf[side]
+            if self.offground_deriv_init:
+                dd_l0 = (d_l0 - self.offground_last_d_l0[side]) / dt
+                dd_theta = (d_theta - self.offground_last_d_theta[side]) / dt
+            else:
+                dd_l0 = 0.0
+                dd_theta = 0.0
+            self.offground_last_d_l0[side] = d_l0
+            self.offground_last_d_theta[side] = d_theta
+            leg_vertical_accel = (
+                base_az
+                - dd_l0 * np.cos(theta)
+                + 2.0 * d_l0 * d_theta * np.sin(theta)
+                + l0 * dd_theta * np.sin(theta)
+                + l0 * d_theta * d_theta * np.cos(theta)
+            )
+            support = self.last_support[side]
+            tp = self.last_output[side][1]
+            fn = (
+                support * np.cos(theta)
+                + self._gas_virtual_support(l0)
+                + tp * np.sin(theta) / l0
+                + OFFGROUND_UNSPRUNG_MASS * leg_vertical_accel
+            )
+            self.offground_fn_raw[side] = (
+                fn if np.isfinite(fn) else 0.5 * TOTAL_MASS * GRAVITY
+            )
+            self.offground_fn_history[side][self.offground_filter_index] = (
+                self.offground_fn_raw[side]
+            )
+        self.offground_filter_index = (self.offground_filter_index + 1) % 4
+        self.offground_deriv_init = True
+        for side in ("l", "r"):
+            self.offground_fn_filtered[side] = (
+                sum(self.offground_fn_history[side]) / 4.0
+            )
+        fn_avg = 0.5 * sum(self.offground_fn_filtered.values())
+
+        # debounced state machine (Ground_Detect)
+        if not self.off_ground:
+            if (
+                fn_avg < OFFGROUND_TAKEOFF_FN_LOW
+                and self.offground_fn_filtered["l"] < OFFGROUND_JUMP_TAKEOFF_SIDE_MAX
+                and self.offground_fn_filtered["r"] < OFFGROUND_JUMP_TAKEOFF_SIDE_MAX
+            ):
+                self.off_ground_cnt += 1
+                if self.off_ground_cnt >= OFFGROUND_TAKEOFF_CONFIRM_LOW:
+                    self.off_ground = True
+                    self.off_ground_cnt = 0
+            else:
+                self.off_ground_cnt = 0
+        else:
+            if (
+                self.offground_fn_filtered["l"] > OFFGROUND_LANDING_FN_LOW
+                and self.offground_fn_filtered["r"] > OFFGROUND_LANDING_FN_LOW
+            ):
+                self.off_ground_cnt += 1
+                if self.off_ground_cnt >= OFFGROUND_LANDING_CONFIRM_LOW:
+                    self.off_ground = False
+                    self.off_ground_cnt = 0
+            else:
+                self.off_ground_cnt = 0
+
+        landing_edge = (not self.off_ground) and self.off_ground_last
+        self.off_ground_last = self.off_ground
+
+        # landing buffer state machine (generic airborne path)
+        if self.gbuf_phase != "inactive":
+            self.gbuf_elapsed += dt
+            lengths = {
+                side: self.vmc_kinematics(data, side).l0 for side in ("l", "r")
+            }
+            average_speed = 0.5 * sum(
+                abs(self.length_rate_lpf[side]) for side in ("l", "r")
+            )
+            if self.gbuf_phase == "compress":
+                # follow the compression stroke down, never re-extend
+                for side in ("l", "r"):
+                    ratchet = min(
+                        VMC_NORMAL_STAND_LENGTH,
+                        max(
+                            lengths[side] + 0.005,
+                            VMC_NORMAL_STAND_LENGTH,
+                        ),
+                    )
+                    self.gbuf_length_ref[side] = min(
+                        self.gbuf_length_ref[side], ratchet
+                    )
+                if self.gbuf_elapsed >= GBUF_COMPRESS_TIME:
+                    self.gbuf_phase = "hold"
+                    self.gbuf_elapsed = 0.0
+            elif self.gbuf_phase == "hold":
+                settled = (
+                    abs(0.5 * sum(lengths.values())
+                        - 0.5 * sum(self.gbuf_length_ref.values()))
+                    <= GBUF_SETTLE_LENGTH_ERROR
+                    and average_speed <= GBUF_SETTLE_LENGTH_SPEED
+                )
+                if (
+                    self.gbuf_elapsed >= GBUF_HOLD_MAX_TIME
+                    or (
+                        self.gbuf_elapsed >= GBUF_HOLD_MIN_TIME and settled
+                    )
+                ):
+                    self.gbuf_phase = "return"
+                    self.gbuf_elapsed = 0.0
+            elif self.gbuf_phase == "return":
+                for side in ("l", "r"):
+                    self.gbuf_length_ref[side] = self._move_towards(
+                        self.gbuf_length_ref[side],
+                        VMC_NORMAL_STAND_LENGTH,
+                        GBUF_RETURN_REF_RATE * dt,
+                    )
+                target_reached = all(
+                    abs(v - VMC_NORMAL_STAND_LENGTH) <= 0.0005
+                    for v in self.gbuf_length_ref.values()
+                )
+                if (
+                    target_reached
+                    and average_speed <= GBUF_SETTLE_LENGTH_SPEED
+                ):
+                    self.gbuf_exit_stable += dt
+                else:
+                    self.gbuf_exit_stable = 0.0
+                if (
+                    target_reached
+                    and self.gbuf_exit_stable >= GBUF_EXIT_STABLE_TIME
+                ):
+                    self.gbuf_phase = "inactive"
+                    self.gbuf_elapsed = 0.0
+                    self.gbuf_exit_stable = 0.0
+
+        if landing_edge:
+            self.gbuf_phase = "compress"
+            self.gbuf_elapsed = 0.0
+            self.gbuf_exit_stable = 0.0
+            for side in ("l", "r"):
+                self.gbuf_contact_length[side] = self.vmc_kinematics(
+                    data, side
+                ).l0
+                self.gbuf_length_ref[side] = min(
+                    self.gbuf_contact_length[side], LANDING_BUFFER_MID_LENGTH
+                )
+
+        # --- airborne / buffer output override ---
+        airborne = self.off_ground or self.gbuf_phase != "inactive"
+        self.airborne_wheel_shut = airborne
+        if airborne:
+            for side in ("l", "r"):
+                # shut the drive wheels
+                self.last_output[side][0] = 0.0
+                # gentle hip theta hold while off the ground
+                kin = self.vmc_kinematics(data, side)
+                theta = np.pi / 2.0 - kin.phi0 + pitch
+                tp = float(np.clip(
+                    OFFGROUND_THETA_HOLD_KP * theta
+                    + OFFGROUND_THETA_HOLD_KD * self.theta_rate_lpf[side],
+                    -OFFGROUND_THETA_HOLD_TP_LIMIT,
+                    OFFGROUND_THETA_HOLD_TP_LIMIT,
+                ))
+                self.last_output[side][1] = tp
+                # soft axial force, gas-spring compensated
+                self.last_support[side] = (
+                    OFFGROUND_SOFT_FORCE - self._gas_virtual_support(kin.l0)
+                )
+                self.length_reference[side] = self.gbuf_length_ref[side]
+            # freeze leg-length / theta integrators (firmware behavior)
+            for side in ("l", "r"):
+                if hasattr(self, "length_integral"):
+                    self.length_integral[side] = 0.0
 
     def _update_jump_contacts(self, data: mujoco.MjData) -> None:
         contacts = self._wheel_contacts(data)
@@ -3128,6 +3377,7 @@ class TraditionalLQR:
                 self._apply_jump_hip_control(data, control_dt)
                 self._update_landing_wheel_control(data, control_dt)
                 self._update_yaw_control(control_dt)
+                self._update_off_ground(data, control_dt)
 
             for side, ids in self.sides.items():
                 if self.landing_buffer_phase != "inactive":
@@ -3136,6 +3386,9 @@ class TraditionalLQR:
                     wheel_command = (
                         self.wheel_sign[side] * self.jump_air_wheel_torque
                     )
+                elif self.off_ground or self.gbuf_phase != "inactive":
+                    # generic airborne / landing-buffer path shuts the wheels
+                    wheel_command = 0.0
                 else:
                     yaw_command = (
                         0.0
