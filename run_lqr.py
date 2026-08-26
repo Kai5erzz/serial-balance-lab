@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import faulthandler
+import os
 from pathlib import Path
 import threading
 import time
