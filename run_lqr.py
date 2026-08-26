@@ -35,6 +35,7 @@ from traditional_lqr import (
 
 
 MODEL = Path(__file__).resolve().parent / "model" / "whole_body_lqr_fast.xml"
+PLATFORM_MODEL = Path(__file__).resolve().parent / "model" / "whole_body_lqr_fast_platform.xml"
 HOVER_CLEARANCE_M = 0.18
 CALIBRATION_STEP_RAD = np.radians(1.0)
 CALIBRATION_HIP_KP = 55.0
@@ -70,12 +71,12 @@ else:
         return False
 
 
-def main() -> None:
+def run_session(config: dict) -> dict | None:
     # Native GLFW/OpenGL faults otherwise terminate the process without a
     # Python traceback on Windows.  Keep this enabled so an unexpected viewer
     # exit can be distinguished from a controller exception.
     faulthandler.enable(all_threads=True)
-    model = mujoco.MjModel.from_xml_path(str(MODEL))
+    model = mujoco.MjModel.from_xml_path(str(config["model"]))
     data = mujoco.MjData(model)
     mujoco.mj_resetData(model, data)
     controller = TraditionalLQR(model)
@@ -83,6 +84,7 @@ def main() -> None:
     paused = {"value": True}
     mode = {"name": "hover"}
     timing = {"rtf": 0.0}
+    restart_request: dict | None = None
     pending_keys: list[int] = []
     pending_keys_lock = threading.Lock()
     pitch_test_until = {"time": -1.0}
@@ -92,6 +94,15 @@ def main() -> None:
     base_dadr = model.jnt_dofadr[base_free]
     base_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "base_link")
     ground_geom = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "ground")
+    # the platform scene replaces the flat ground with pyramid layers
+    ground_geoms = {
+        mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
+        for name in (
+            "ground", "ground_outer",
+            "platform_top", "platform_step1", "platform_step2", "platform_step3",
+        )
+        if mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name) >= 0
+    }
     wheel_body = {side: ids.wheel_body for side, ids in controller.sides.items()}
     joint_qadr = {
         name: model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)]
@@ -217,9 +228,9 @@ def main() -> None:
         other_ground: set[str] = set()
         for contact_index in range(data.ncon):
             contact = data.contact[contact_index]
-            if ground_geom not in (contact.geom1, contact.geom2):
+            if contact.geom1 not in ground_geoms and contact.geom2 not in ground_geoms:
                 continue
-            other_geom = contact.geom2 if contact.geom1 == ground_geom else contact.geom1
+            other_geom = contact.geom2 if contact.geom1 in ground_geoms else contact.geom1
             body = int(model.geom_bodyid[other_geom])
             matching_side = next((side for side, value in wheel_body.items() if value == body), None)
             if matching_side is not None:
@@ -324,6 +335,17 @@ def main() -> None:
                 elif key == glfw.KEY_5:
                     set_mode("recovery")
                     print("mode: calibrated encoder zero; firmware HOLD/SWING/RETRACT/HANDOFF armed; press Space")
+                elif key == glfw.KEY_6:
+                    restart_request = {
+                        "model": str(PLATFORM_MODEL),
+                        "z_offset": 0.6,
+                        "start_mode": "lqr",
+                    }
+                    print(
+                        "6: switching to 600 mm PLATFORM scene (LQR armed on the "
+                        "platform top; viewer restarts). Drive off the edge to "
+                        "test the off-ground / landing logic."
+                    )
                 elif mode["name"] == "leg_calibration" and key in {glfw.KEY_W, glfw.KEY_S, glfw.KEY_A, glfw.KEY_D}:
                     if key == glfw.KEY_W:
                         calibration["swing"] += CALIBRATION_STEP_RAD
@@ -411,8 +433,21 @@ def main() -> None:
     # Current experiment starts from the user's calibrated real encoder zero.
     # Recovery is torque/contact driven and hands off to the accepted
     # l0=0.150 m LOW-LQR equilibrium without rewriting qpos after reset.
-    set_mode("recovery")
-    print("CALIBRATED ENCODER-ZERO RECOVERY armed and paused. Press Space to run; 3 selects direct LQR.")
+    start_mode = config.get("start_mode", "recovery")
+    set_mode(start_mode)
+    if config.get("z_offset", 0.0):
+        # lift the whole chassis onto the platform after the mode pose was
+        # applied (set_mode resets qpos)
+        data.qpos[base_qadr + 2] += config["z_offset"]
+        mujoco.mj_forward(model, data)
+        controller.reset(data, calibrate_frame=True)
+    if start_mode == "recovery":
+        print("CALIBRATED ENCODER-ZERO RECOVERY armed and paused. Press Space to run; 3 selects direct LQR.")
+    else:
+        print(
+            f"armed and paused ({start_mode}). Press Space to run; "
+            "6 switches to the 600 mm platform scene."
+        )
     with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as viewer:
         viewer.cam.azimuth, viewer.cam.elevation, viewer.cam.distance = 135, -18, 1.15
         viewer.cam.lookat[:] = (0.0, 0.0, 0.15)
@@ -513,11 +548,29 @@ def main() -> None:
                     f"LQR gain={controller.lqr_gain:.2f}"
                 )
             viewer.sync()
+            if restart_request is not None:
+                print("restart requested; closing viewer...", flush=True)
+                break
             frame_elapsed = time.perf_counter() - frame_start
             target_period = physics_time_per_batch if running else paused_render_period
             time.sleep(max(0.0, target_period - frame_elapsed))
         print("viewer.is_running() became false; viewer window requested shutdown", flush=True)
     print("viewer context closed normally", flush=True)
+    return restart_request
+
+
+def main() -> None:
+    """Launch viewer sessions; key 6 restarts on the platform terrain."""
+    config: dict = {
+        "model": str(MODEL),
+        "z_offset": 0.0,
+        "start_mode": "recovery",
+    }
+    while True:
+        restart = run_session(config)
+        if restart is None:
+            break
+        config = restart
 
 
 if __name__ == "__main__":
