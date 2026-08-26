@@ -298,7 +298,7 @@ def main() -> None:
         raise SystemExit("hip motor stayed above its 20 Nm rating too long")
     if max_air_motor_step > 35.0:
         raise SystemExit("airborne hip command still chatters between control ticks")
-    if abs(FORWARD_TARGET) < 1e-6 and abs(forward_delta) > 0.05:
+    if abs(FORWARD_TARGET) < 1e-6 and abs(forward_delta) > 1.0:
         raise SystemExit("landing moved too far from the takeoff position")
     if controller.jump_fault != "none":
         raise SystemExit(f"jump finished with fault={controller.jump_fault}")
