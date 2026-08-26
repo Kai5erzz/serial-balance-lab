@@ -1,4 +1,4 @@
-"""Headless regression for the persistent viewer drive commands."""
+﻿"""Headless regression for the persistent viewer drive commands."""
 
 from __future__ import annotations
 
@@ -96,3 +96,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+

@@ -48,6 +48,7 @@ def main() -> None:
         mujoco.mj_step(model, data)
 
     start_z = float(data.xpos[controller.base, 2])
+    start_position = data.xpos[controller.base].copy()
     accepted, reason = controller.begin_jump(data)
     if not accepted:
         raise SystemExit(f"jump precheck rejected: {reason}")
@@ -73,6 +74,11 @@ def main() -> None:
     airborne_time = 0.0
     max_motor_torque = 0.0
     peak_motor_time = 0.0
+    max_air_motor_step = 0.0
+    previous_motor_torque = {
+        side: controller.last_motor_torque[side].copy()
+        for side in ("l", "r")
+    }
     was_airborne = False
     floor = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "ground")
     wheel_bodies = {ids.wheel_body for ids in controller.sides.values()}
@@ -120,6 +126,18 @@ def main() -> None:
         )
         max_motor_torque = max(max_motor_torque, motor_torque)
         peak_motor_time += model.opt.timestep * int(motor_torque > 20.0)
+        if controller.jump_off_ground and controller.landing_buffer_phase == "inactive":
+            max_air_motor_step = max(
+                max_air_motor_step,
+                *(float(np.max(np.abs(
+                    controller.last_motor_torque[side]
+                    - previous_motor_torque[side]
+                ))) for side in ("l", "r")),
+            )
+        previous_motor_torque = {
+            side: controller.last_motor_torque[side].copy()
+            for side in ("l", "r")
+        }
 
         wheels_touching: set[int] = set()
         for contact_index in range(data.ncon):
@@ -205,6 +223,10 @@ def main() -> None:
         if not finite:
             break
 
+    forward_delta = -float(np.dot(
+        data.xpos[controller.base] - start_position,
+        controller.forward_world,
+    ))
     print(
         "transitions: "
         + " -> ".join(f"{state}@{timestamp:.3f}" for timestamp, state in transitions)
@@ -221,6 +243,8 @@ def main() -> None:
         f"touchdown_wheel_step={max_touchdown_wheel_step:.2f}Nm "
         f"max_air_pitch={max_air_pitch:.2f}deg max_roll={max_roll:.2f}deg "
         f"hip_peak={max_motor_torque:.1f}Nm@{peak_motor_time:.3f}s "
+        f"air_hip_step={max_air_motor_step:.1f}Nm "
+        f"forward_delta={forward_delta:+.3f}m "
         f"tail_pitch/roll={np.mean(tail_pitch):+.2f}/"
         f"{np.mean(tail_roll):+.2f}deg "
         f"tail_wheels={np.mean(tail_both_wheels):.3f} "
@@ -266,6 +290,10 @@ def main() -> None:
         raise SystemExit("hip motor torque exceeded the 40 Nm peak envelope")
     if peak_motor_time > 0.65:
         raise SystemExit("hip motor stayed above its 20 Nm rating too long")
+    if max_air_motor_step > 35.0:
+        raise SystemExit("airborne hip command still chatters between control ticks")
+    if abs(forward_delta) > 0.20:
+        raise SystemExit("landing moved too far from the takeoff position")
     if controller.jump_fault != "none":
         raise SystemExit(f"jump finished with fault={controller.jump_fault}")
 

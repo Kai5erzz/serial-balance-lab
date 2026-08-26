@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <mujoco model="whole_body">
   <compiler angle="radian" fusestatic="false" />
   <option gravity="0 0 -9.81" timestep=".001" solver="Newton" iterations="100" integrator="implicitfast" />
@@ -83,7 +83,7 @@
             <site name="l_wheel_center" type="sphere" pos="0 0 0" size=".009" rgba=".80 .80 .80 .88" />
             <site name="l_wheel_axis" type="cylinder" pos="0 0 0" zaxis="0 0 1" size=".0035 .070" rgba=".80 .80 .80 .88" />
             <geom name="fast_visual_l_wheel" type="mesh" mesh="fast_visual_mesh_l_wheel" density="0" contype="0" conaffinity="0" group="1" rgba=".752941 .752941 .752941 1" />
-            <geom name="fast_collision_l_wheel" type="cylinder" size="0.058 0.02993" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom name="fast_collision_l_wheel" type="cylinder" size="0.058 0.02993" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 1.0 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
           </body>
           <body name="l_loop2_leg" pos="0.0168232 -0.0627852 0.0355" quat="0.866751 0 0 0.498741">
             <inertial pos="0.152939 0.00287967 -0.0052889" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />
@@ -123,7 +123,7 @@
             <site name="r_wheel_center" type="sphere" pos="0 0 0" size=".009" rgba=".32 1 .12 .88" />
             <site name="r_wheel_axis" type="cylinder" pos="0 0 0" zaxis="0 0 -1" size=".0035 .070" rgba=".32 1 .12 .88" />
             <geom name="fast_visual_r_wheel" type="mesh" mesh="fast_visual_mesh_r_wheel" density="0" contype="0" conaffinity="0" group="1" rgba=".752941 .752941 .752941 1" />
-            <geom name="fast_collision_r_wheel" type="cylinder" size="0.058 0.02993" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
+            <geom name="fast_collision_r_wheel" type="cylinder" size="0.058 0.02993" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 1.0 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
           </body>
           <body name="r_loop2_leg" pos="-0.0627852 -0.0168232 0.017" quat="0 0.961942 -0.273254 0">
             <inertial pos="0 0 -0.0027889" quat="0.5 0.5 -0.5 0.5" mass="0.00154449" diaginertia="8.96584e-08 4.97198e-08 4.97198e-08" />

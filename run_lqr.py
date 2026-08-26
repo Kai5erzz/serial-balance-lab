@@ -47,8 +47,8 @@ DRIVE_KEYBOARD_YAW_MAX_RAD_S = 0.90
 # releasing it returns the reference to zero (chassis brakes).  The viewer
 # key callback only reports press events (no repeat/release), so the held
 # state is polled directly from the Windows keyboard state.
-RC_TARGET_SPEED_MPS = 0.60
-RC_TARGET_YAW_RAD_S = 0.60
+RC_TARGET_SPEED_MPS = 1.20
+RC_TARGET_YAW_RAD_S = 0.30
 RC_HOLD_TIMEOUT_S = 0.35
 if os.name == "nt":
     import ctypes as _ctypes

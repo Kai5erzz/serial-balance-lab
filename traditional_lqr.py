@@ -562,6 +562,10 @@ class TraditionalLQR:
         self.length_integral = {"l": 0.0, "r": 0.0}
         self.theta_rate_lpf = {"l": 0.0, "r": 0.0}
         self.length_rate_lpf = {"l": 0.0, "r": 0.0}
+        self.jump_hip_motor_filter_tau = 0.0
+        self.jump_hip_motor_torque_lpf = {
+            "l": np.zeros(2), "r": np.zeros(2)
+        }
         self.previous: dict[str, float] = {}
         self.base_position0 = np.zeros(3)
         self.chassis_vx = 0.0
@@ -655,17 +659,23 @@ class TraditionalLQR:
         self.jump_landing_tp_handoff_elapsed = 0.0
         self.jump_landing_tp_command = {"l": 0.0, "r": 0.0}
         self.jump_landing_wheel_command = {"l": 0.0, "r": 0.0}
+        self.jump_hip_motor_torque_lpf = {
+            "l": np.zeros(2), "r": np.zeros(2)
+        }
         # Tunable air-attitude allocation.  These are deliberately instance
         # fields so headless sweeps can test the physical controller without
         # rewriting source between every run.
-        self.jump_air_pitch_kp = 195.0
-        self.jump_air_pitch_kd = 13.0
-        self.jump_air_pitch_limit = 40.0
-        self.jump_air_tuck_pitch_bias = np.radians(2.0)
-        self.jump_air_deploy_pitch_bias = np.radians(3.0)
+        # In free flight the hips point the legs and the wheel rotors own
+        # chassis pitch.  Asking the hip common axis to do both made the two
+        # loops fight and drove the motors between +/-40 Nm every control tick.
+        self.jump_air_pitch_kp = 0.0
+        self.jump_air_pitch_kd = 0.0
+        self.jump_air_pitch_limit = 30.0
+        self.jump_air_tuck_pitch_bias = np.radians(12.0)
+        self.jump_air_deploy_pitch_bias = np.radians(4.0)
         self.jump_air_pitch_reference_limit = np.radians(15.0)
         self.jump_air_moving_pitch_gain = np.radians(3.0)
-        self.jump_air_tuck_length = JUMP_AIR_TUCK_LENGTH
+        self.jump_air_tuck_length = 0.135
         self.jump_air_tuck_time = JUMP_AIR_TUCK_TIME
         self.jump_air_tuck_hold_time = JUMP_AIR_TUCK_HOLD_TIME
         self.jump_air_tuck_ref_rate = JUMP_AIR_TUCK_REF_RATE
@@ -676,21 +686,36 @@ class TraditionalLQR:
         self.jump_air_deploy_kd = JUMP_AIR_DEPLOY_KD
         self.jump_air_retract_force_limit = JUMP_AIR_RETRACT_FORCE_LIMIT
         self.jump_air_retract_force_peak = JUMP_AIR_RETRACT_FORCE_PEAK
-        self.jump_air_theta_kp = 80.0
-        self.jump_air_theta_kd = 10.0
-        self.jump_air_theta_limit = 40.0
-        self.jump_air_theta_weight_tuck = 2.0
-        self.jump_air_theta_weight_deploy = 5.0
-        self.jump_air_common_tp_limit = 40.0
-        self.jump_air_wheel_pitch_kp = 20.0
-        self.jump_air_wheel_pitch_kd = 2.0
-        self.jump_air_wheel_theta_ff = 0.50
+        self.jump_air_theta_kp = 30.0
+        self.jump_air_theta_kd = 4.0
+        self.jump_air_theta_limit = 22.0
+        self.jump_air_theta_weight_tuck = 0.8
+        self.jump_air_theta_weight_deploy = 1.5
+        self.jump_air_common_tp_limit = 24.0
+        self.jump_air_common_tp_filter_tau = 0.0
+        self.jump_air_common_tp_lpf = 0.0
+        self.jump_air_rate_filter_tau = 0.0
+        self.jump_air_pitch_rate_lpf = 0.0
+        self.jump_air_theta_rate_lpf = 0.0
+        self.jump_air_wheel_pitch_kp = 35.0
+        self.jump_air_wheel_pitch_kd = 5.0
+        self.jump_air_wheel_speed_kd = 0.0
+        self.jump_air_wheel_speed_damping_start = 0.0
+        self.jump_air_wheel_theta_ff = 0.10
         self.jump_air_wheel_sign = 1.0
         self.jump_air_wheel_torque_limit = WHEEL_TORQUE_LIMIT
         self.jump_air_wheel_torque = 0.0
+        self.jump_air_wheel_taper_delay = 0.10
+        self.jump_air_wheel_taper_time = 0.20
+        self.jump_landing_capture_wheel_pitch_kp = 10.0
+        self.jump_landing_capture_wheel_pitch_kd = 1.0
+        self.jump_landing_capture_wheel_torque_limit = WHEEL_TORQUE_LIMIT
         self.jump_landing_wheel_pitch_kp = 10.0
         self.jump_landing_wheel_pitch_kd = 1.0
         self.jump_landing_wheel_torque_limit = WHEEL_TORQUE_LIMIT
+        self.jump_landing_strong_hold_time = 0.0
+        self.jump_landing_capture_wheel_slew_rate = 1100.0
+        self.jump_landing_wheel_slew_rate = 1000.0
         self.jump_landing_theta_kp = 30.0
         self.jump_landing_theta_kd = 6.0
         self.jump_landing_theta_limit = 30.0
@@ -789,6 +814,9 @@ class TraditionalLQR:
         self.jump_thrust_theta_ref = 0.0
         self.jump_thrust_pitch_rate_lpf = 0.0
         self.jump_thrust_pitch_tp = 0.0
+        self.jump_air_common_tp_lpf = 0.0
+        self.jump_air_pitch_rate_lpf = 0.0
+        self.jump_air_theta_rate_lpf = 0.0
         self.jump_air_wheel_torque = 0.0
         self.jump_raw_wheel_contact = {"l": False, "r": False}
         self.jump_landing_ground_elapsed = 0.0
@@ -868,6 +896,12 @@ class TraditionalLQR:
         self.jump_air_elapsed = 0.0
         self.jump_launch_vx = self.chassis_vx
         self.jump_thrust_pitch_rate_lpf = -float(self.last_state["l"][5])
+        self.jump_air_common_tp_lpf = 0.0
+        self.jump_air_pitch_rate_lpf = -float(self.last_state["l"][5])
+        self.jump_air_theta_rate_lpf = 0.5 * sum(
+            self.theta_rate_lpf.values()
+        )
+        self.jump_air_wheel_torque = 0.0
         self.jump_landing_ground_elapsed = 0.0
         self.landing_buffer_phase = "inactive"
         self.lqr_virtual_x = 0.0
@@ -2104,6 +2138,17 @@ class TraditionalLQR:
         ids = self.sides[side]
         torque = self.vmc_kinematics(data, side).jacobian @ np.array((support_force, tp))
         torque = np.clip(torque, -torque_limit, torque_limit)
+        if self.jump_off_ground and self.jump_hip_motor_filter_tau > 0.0:
+            dt = float(self.model.opt.timestep)
+            alpha = float(np.clip(
+                dt / (self.jump_hip_motor_filter_tau + dt), 0.0, 1.0
+            ))
+            self.jump_hip_motor_torque_lpf[side] += alpha * (
+                torque - self.jump_hip_motor_torque_lpf[side]
+            )
+            torque = self.jump_hip_motor_torque_lpf[side].copy()
+        else:
+            self.jump_hip_motor_torque_lpf[side] = torque.copy()
         data.ctrl[ids.hip_motors[0]] = torque[0]
         data.ctrl[ids.hip_motors[1]] = torque[1]
         self.last_motor_torque[side] = torque
@@ -2161,8 +2206,19 @@ class TraditionalLQR:
         theta_dot = self.theta_rate_lpf[side]
         x = self.lqr_virtual_x
         # UI-positive forward is opposite the firmware-positive observer sign
-        # in this CAD export.  LQR consumes the state error (obs - ref).
-        firmware_vx_reference = -self.drive_forward_target
+        # in this CAD export, and the firmware reference is translated to the
+        # sim frame (ref = -target).  The sim chassis_vx is positive toward
+        # the tail, so the speed error is (ref - vx): a positive error drives
+        # the chassis forward.  The previous (vx - ref) form pushed backward
+        # once the reference exceeded the drift level.
+        # The sim chassis_vx is positive toward the tail (recovery drifts show
+        # vx=+0.3 while moving backward).  A positive drive_forward_target
+        # means forward == negative sim vx, so the reference carries the same
+        # sign as a forward velocity demand and the speed error is (vx - ref):
+        # vx=0 with ref=+0.4 gives error -0.4, which drives the chassis
+        # forward.  (The previous -target translation made the error positive
+        # for forward commands, pushing backward once ref > drift.)
+        firmware_vx_reference = self.drive_forward_target
         x_dot = self.chassis_vx - firmware_vx_reference
         pitch_dot = (pitch - self.previous["pitch"]) / dt
         # Firmware LQR uses obs[4:6] = [-ins.pitch, -ins.pitch_gyro].
@@ -2540,7 +2596,25 @@ class TraditionalLQR:
             self.jump_air_wheel_torque = 0.0
         elif self.jump_off_ground:
             pitch = self.body_pitch(data)
-            pitch_rate = -float(self.last_state["l"][5])
+            pitch_rate_raw = -float(self.last_state["l"][5])
+            theta_rate_raw = 0.5 * sum(self.theta_rate_lpf.values())
+            if self.jump_air_rate_filter_tau > 0.0:
+                rate_alpha = float(np.clip(
+                    dt / (self.jump_air_rate_filter_tau + dt), 0.0, 1.0
+                ))
+                self.jump_air_pitch_rate_lpf += rate_alpha * (
+                    pitch_rate_raw - self.jump_air_pitch_rate_lpf
+                )
+                self.jump_air_theta_rate_lpf += rate_alpha * (
+                    theta_rate_raw - self.jump_air_theta_rate_lpf
+                )
+                pitch_rate = self.jump_air_pitch_rate_lpf
+                theta_rate_common = self.jump_air_theta_rate_lpf
+            else:
+                self.jump_air_pitch_rate_lpf = pitch_rate_raw
+                self.jump_air_theta_rate_lpf = theta_rate_raw
+                pitch_rate = pitch_rate_raw
+                theta_rate_common = theta_rate_raw
             compact = self.jump_air_elapsed < (
                 self.jump_air_tuck_time + self.jump_air_tuck_hold_time
             )
@@ -2568,6 +2642,17 @@ class TraditionalLQR:
                 self.jump_air_wheel_pitch_kp * (pitch - pitch_reference)
                 + self.jump_air_wheel_pitch_kd * pitch_rate
             )
+            logical_wheel_rate = 0.5 * sum(
+                self.wheel_sign[side]
+                * float(data.qvel[
+                    self.model.jnt_dofadr[self.sides[side].wheel_joint]
+                ])
+                for side in ("l", "r")
+            )
+            if self.jump_air_elapsed >= self.jump_air_wheel_speed_damping_start:
+                wheel_pitch_feedback -= (
+                    self.jump_air_wheel_speed_kd * logical_wheel_rate
+                )
             theta = {}
             for side in ("l", "r"):
                 theta[side] = (
@@ -2576,7 +2661,6 @@ class TraditionalLQR:
                     + pitch
                 )
             theta_common = 0.5 * sum(theta.values())
-            theta_rate_common = 0.5 * sum(self.theta_rate_lpf.values())
             theta_hold_common = float(np.clip(
                 self.jump_air_theta_kp * theta_common
                 + self.jump_air_theta_kd * theta_rate_common,
@@ -2607,10 +2691,13 @@ class TraditionalLQR:
             # impulse that slides the chassis away from the launch spot.
             air_elapsed = self.jump_air_elapsed
             tuck_total = self.jump_air_tuck_time + self.jump_air_tuck_hold_time
-            deploy_window = 0.15
-            if air_elapsed > tuck_total:
+            taper_start = tuck_total + self.jump_air_wheel_taper_delay
+            if air_elapsed > taper_start:
                 deploy_progress = float(np.clip(
-                    (air_elapsed - tuck_total) / deploy_window, 0.0, 1.0
+                    (air_elapsed - taper_start)
+                    / self.jump_air_wheel_taper_time,
+                    0.0,
+                    1.0,
                 ))
                 self.jump_air_wheel_torque *= (1.0 - deploy_progress)
             lqr_differential = JUMP_AIR_LQR_TP_GAIN * 0.5 * (
@@ -2626,6 +2713,18 @@ class TraditionalLQR:
                 -self.jump_air_common_tp_limit,
                 self.jump_air_common_tp_limit,
             ))
+            if self.jump_air_common_tp_filter_tau > 0.0:
+                common_alpha = float(np.clip(
+                    dt / (self.jump_air_common_tp_filter_tau + dt),
+                    0.0,
+                    1.0,
+                ))
+                self.jump_air_common_tp_lpf += common_alpha * (
+                    common - self.jump_air_common_tp_lpf
+                )
+                common = self.jump_air_common_tp_lpf
+            else:
+                self.jump_air_common_tp_lpf = common
             differential = lqr_differential + theta_weight * theta_differential
             differential_limit = max(
                 self.jump_air_common_tp_limit - abs(common), 0.0
@@ -2670,17 +2769,31 @@ class TraditionalLQR:
             np.radians(8.0),
         ))
         pitch_rate = -float(self.last_state["l"][5])
+        strong_capture = (
+            self.landing_buffer_phase == "capture"
+            or (
+                self.landing_buffer_phase == "hold"
+                and self.landing_buffer_phase_elapsed
+                < self.jump_landing_strong_hold_time
+            )
+        )
+        if strong_capture:
+            kp = self.jump_landing_capture_wheel_pitch_kp
+            kd = self.jump_landing_capture_wheel_pitch_kd
+            torque_limit = self.jump_landing_capture_wheel_torque_limit
+        else:
+            kp = self.jump_landing_wheel_pitch_kp
+            kd = self.jump_landing_wheel_pitch_kd
+            torque_limit = self.jump_landing_wheel_torque_limit
         landing_torque = float(np.clip(
-            self.jump_landing_wheel_pitch_kp
-            * (self.body_pitch(data) - pitch_reference)
-            + self.jump_landing_wheel_pitch_kd * pitch_rate,
-            -self.jump_landing_wheel_torque_limit,
-            self.jump_landing_wheel_torque_limit,
+            kp * (self.body_pitch(data) - pitch_reference) + kd * pitch_rate,
+            -torque_limit,
+            torque_limit,
         ))
         slew_rate = (
-            LANDING_CAPTURE_WHEEL_SLEW_RATE
+            self.jump_landing_capture_wheel_slew_rate
             if self.landing_buffer_phase == "capture"
-            else LANDING_WHEEL_SLEW_RATE
+            else self.jump_landing_wheel_slew_rate
         )
         for side in ("l", "r"):
             target = self.wheel_sign[side] * landing_torque
@@ -2997,7 +3110,7 @@ class TraditionalLQR:
                     )
                     wheel_command = (
                         self.wheel_sign[side] * self.last_output[side][0]
-                        - yaw_command
+                        + yaw_command
                     )
                 data.ctrl[ids.wheel_motor] = float(np.clip(
                     wheel_command, -WHEEL_TORQUE_LIMIT, WHEEL_TORQUE_LIMIT
