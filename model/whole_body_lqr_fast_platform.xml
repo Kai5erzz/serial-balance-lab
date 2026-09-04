@@ -5,22 +5,22 @@
   <asset>
     <texture name="lqr_ground_checker" type="2d" builtin="checker" width="512" height="512" rgb1=".055 .075 .11" rgb2=".36 .43 .52" mark="edge" markrgb=".98 .56 .10" />
     <material name="lqr_ground_material" texture="lqr_ground_checker" texrepeat="12 12" texuniform="true" reflectance=".06" specular=".12" shininess=".35" />
-    <mesh name="fast_visual_mesh_base_link" file="../../rl_balance/chassis_export/whole_body/mujoco_whole_body/meshes_simplified/base_link.STL" />
-    <mesh name="fast_visual_mesh_l_j2" file="../../rl_balance/chassis_export/whole_body/meshes/l_j2.STL" />
-    <mesh name="fast_visual_mesh_l_link1" file="../../rl_balance/chassis_export/whole_body/meshes/l_link1.STL" />
-    <mesh name="fast_visual_mesh_l_link2" file="../../rl_balance/chassis_export/whole_body/meshes/l_link2.STL" />
-    <mesh name="fast_visual_mesh_l_link3" file="../../rl_balance/chassis_export/whole_body/meshes/l_link3.STL" />
-    <mesh name="fast_visual_mesh_l_j1" file="../../rl_balance/chassis_export/whole_body/meshes/l_j1.STL" />
-    <mesh name="fast_visual_mesh_l_leg" file="../../rl_balance/chassis_export/whole_body/meshes/l_leg.STL" />
-    <mesh name="fast_visual_mesh_l_wheel" file="../../rl_balance/chassis_export/whole_body/meshes/l_wheel.STL" />
-    <mesh name="fast_visual_mesh_r_j1" file="../../rl_balance/chassis_export/whole_body/meshes/r_j1.STL" />
-    <mesh name="fast_visual_mesh_r_leg" file="../../rl_balance/chassis_export/whole_body/meshes/r_leg.STL" />
-    <mesh name="fast_visual_mesh_r_wheel" file="../../rl_balance/chassis_export/whole_body/meshes/r_wheel.STL" />
-    <mesh name="fast_visual_mesh_r_j2" file="../../rl_balance/chassis_export/whole_body/meshes/r_j2.STL" />
-    <mesh name="fast_visual_mesh_r_link1" file="../../rl_balance/chassis_export/whole_body/meshes/r_link1.STL" />
-    <mesh name="fast_visual_mesh_r_link2" file="../../rl_balance/chassis_export/whole_body/meshes/r_link2.STL" />
-    <mesh name="fast_visual_mesh_r_link3" file="../../rl_balance/chassis_export/whole_body/meshes/r_link3.STL" />
-    <mesh name="fast_visual_mesh_gimbal_yaw" file="../../rl_balance/chassis_export/whole_body/mujoco_whole_body/meshes_simplified/gimbal_yaw.STL" />
+    <mesh name="fast_visual_mesh_base_link" file="visual_meshes/base_link.STL" />
+    <mesh name="fast_visual_mesh_l_j2" file="visual_meshes/l_j2.STL" />
+    <mesh name="fast_visual_mesh_l_link1" file="visual_meshes/l_link1.STL" />
+    <mesh name="fast_visual_mesh_l_link2" file="visual_meshes/l_link2.STL" />
+    <mesh name="fast_visual_mesh_l_link3" file="visual_meshes/l_link3.STL" />
+    <mesh name="fast_visual_mesh_l_j1" file="visual_meshes/l_j1.STL" />
+    <mesh name="fast_visual_mesh_l_leg" file="visual_meshes/l_leg.STL" />
+    <mesh name="fast_visual_mesh_l_wheel" file="visual_meshes/l_wheel.STL" />
+    <mesh name="fast_visual_mesh_r_j1" file="visual_meshes/r_j1.STL" />
+    <mesh name="fast_visual_mesh_r_leg" file="visual_meshes/r_leg.STL" />
+    <mesh name="fast_visual_mesh_r_wheel" file="visual_meshes/r_wheel.STL" />
+    <mesh name="fast_visual_mesh_r_j2" file="visual_meshes/r_j2.STL" />
+    <mesh name="fast_visual_mesh_r_link1" file="visual_meshes/r_link1.STL" />
+    <mesh name="fast_visual_mesh_r_link2" file="visual_meshes/r_link2.STL" />
+    <mesh name="fast_visual_mesh_r_link3" file="visual_meshes/r_link3.STL" />
+    <mesh name="fast_visual_mesh_gimbal_yaw" file="visual_meshes/gimbal_yaw.STL" />
   </asset>
   <worldbody>
     <body name="base_link" pos="0 0 0.255" quat=".70710678 .70710678 0 0">
@@ -208,8 +208,9 @@
       <inertial pos="-0.0528146148783 -0.0138844980592 -0.0528008040866" mass="7.75024528" diaginertia="0.0113941470944 0.013233325008 0.011392429647" />
       <geom name="fast_visual_base_link" type="mesh" mesh="fast_visual_mesh_base_link" density="0" contype="0" conaffinity="0" group="1" rgba=".752941 .752941 .752941 1" />
       <geom name="fast_collision_base_link" type="box" pos="-0.0432410901 -0.0360892624 -0.0430051812" size="0.210936333 0.0910174183 0.210936349" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
-    <geom name="recovery_skid" type="box" pos="0.0166 -0.1530 0.0165" xyaxes="-0.707365 0 -0.706848 -0.706848 0 0.707365" size="0.22 0.12 0.005" density="0" contype="1" conaffinity="4" condim="3" friction="0.8 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" /></body>
-    <geom name="ground_outer" type="plane" pos="0 0 0" size="50 50 .1" friction="1.2 .02 .001" material="lqr_ground_material" contype="4" conaffinity="3" /><geom name="platform_top" type="box" pos="0 0 0.3" quat="0.382683 0 0 0.923880" size="1.0 1.0 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /><geom name="platform_step1" type="box" pos="0 0 0.5" quat="0.382683 0 0 0.923880" size="1.3 1.3 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /><geom name="platform_step2" type="box" pos="0 0 0.3" quat="0.382683 0 0 0.923880" size="1.6 1.6 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /><geom name="platform_step3" type="box" pos="0 0 0.1" quat="0.382683 0 0 0.923880" size="1.9 1.9 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /></worldbody>
+      
+      <geom name="guide_wheel_contact" type="box" pos="0.0166 -0.1530 0.0165" xyaxes="-0.707365 0 -0.706848 -0.706848 0 0.707365" size="0.22 0.12 0.005" density="0" contype="1" conaffinity="4" condim="3" friction="0.9 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" /></body>
+    <geom name="ground_outer" type="plane" pos="0 0 0" size="50 50 .1" friction="1.2 .02 .001" material="lqr_ground_material" contype="4" conaffinity="3" /><geom name="platform_top" type="box" pos="0 0 0.5" quat="0.382683 0 0 0.923880" size="1.0 1.0 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /><geom name="platform_step1" type="box" pos="0 0 0.3" quat="0.382683 0 0 0.923880" size="1.3 1.3 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /><geom name="platform_step2" type="box" pos="0 0 0.1" quat="0.382683 0 0 0.923880" size="1.6 1.6 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /><geom name="platform_step3" type="box" pos="0 0 -0.1" quat="0.382683 0 0 0.923880" size="1.9 1.9 0.1" density="0" contype="4" conaffinity="3" condim="3" friction="1.2 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0.55 0.62 0.45 1" /></worldbody>
   <equality>
     <connect name="r_loop1_a" site1="r_loop1_r_link2_a" site2="r_loop1_r_j1_a" solref=".004 1" solimp=".95 .99 .001" />
     <connect name="r_loop1_b" site1="r_loop1_r_link2_b" site2="r_loop1_r_j1_b" solref=".004 1" solimp=".95 .99 .001" />

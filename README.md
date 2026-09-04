@@ -11,8 +11,24 @@ system-identification checklist are in
 [RECOVERY_PORT_NOTES.md](RECOVERY_PORT_NOTES.md).
 The jump phase allocation, torque envelope, and measured acceptance results
 are in [JUMP_CONTROL_NOTES.md](JUMP_CONTROL_NOTES.md).
+Stair-descent development status, the approach-brake design, the mode-7
+climb feasibility memo, and remaining tuning are in
+[DESCENT_NOTES.md](DESCENT_NOTES.md).
 
-## Start
+## Linux start
+
+```bash
+cd /home/kaiser/robomaster/rl-lab
+source /home/kaiser/miniconda3/etc/profile.d/conda.sh
+conda activate rl-lab
+python -m pip install -r requirements.txt
+python run_lqr.py
+```
+
+The viewer requires a graphical Linux session. For a headless machine, use
+`python smoke_test.py` and the regression commands below.
+
+## Windows start
 
 ```powershell
 cd D:\User\balance_infantry\mujoco_lqr_whole_body
@@ -36,11 +52,16 @@ The viewer starts paused at the calibrated encoder-zero recovery pose. Press
   minimum, `N` normal 0.150 m stance.
 - `P`: 2 N m pitch pulse in direct-LQR mode.
 - `Up/Down`: set persistent forward/reverse speed in LQR modes
-  (`+/-0.20 m/s` per press).
+  (`+/-0.60 m/s` per press).
 - `Left/Right`: set persistent left/right yaw rate in LQR modes
-  (`+/-0.15 rad/s` per press, limited to `+/-0.90 rad/s`).
+  (`+/-2.00 rad/s` per press).
+- `7/8/9`: select the normal leg length (`0.130/0.240/0.300 m`); the
+  interactive default is `0.130 m` and changes are slewed to avoid an axial
+  force step.
 - `X`: clear the forward and yaw commands.
-- `J`: trigger the physical preload/thrust/flight/landing jump sequence.
+- `J`: trigger the physical preload/thrust/flight/landing jump sequence. The
+  jump is interlocked to a near-stationary launch, and drive/yaw commands are
+  cleared through touchdown; press an arrow again after the landing settles.
 - `F`: toggle camera tracking/free-view mode.
 
 Jump touchdown uses a first-contact capture stage before the debounced landing
@@ -66,7 +87,7 @@ and no chassis/leg support contact after handoff.
 
 ## Regression
 
-```powershell
+```bash
 python test_vmc_calibration.py
 python test_firmware_recovery.py
 python test_calibrated_lqr.py
@@ -78,19 +99,18 @@ The jump regression requires a real loss of wheel contact, more than 0.30 m
 wheel clearance at the apex, bounded airborne attitude, wheel-only touchdown,
 settled two-wheel support, and the 40 Nm hip peak limit. Moving-jump coverage:
 
-```powershell
-$env:JUMP_FORWARD_TARGET = '0.20'
+```bash
+JUMP_FORWARD_TARGET='0.20' \
 python test_firmware_jump.py
-Remove-Item Env:JUMP_FORWARD_TARGET
 ```
 
 `test_firmware_recovery.py` checks the complete encoder-zero to stand route,
 including the firmware 25 degree pitch gate and final l0/phi0. To use the full
 collision model:
 
-```powershell
-$env:MUJOCO_MODEL = (Resolve-Path 'model\whole_body_lqr.xml')
+```bash
+export MUJOCO_MODEL="$PWD/model/whole_body_lqr.xml"
 python test_firmware_recovery.py
 python test_firmware_jump.py
-Remove-Item Env:MUJOCO_MODEL
+unset MUJOCO_MODEL
 ```

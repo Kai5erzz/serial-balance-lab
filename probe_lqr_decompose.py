@@ -8,10 +8,11 @@ from pathlib import Path
 import mujoco
 import numpy as np
 
-sys.path.insert(0, r"D:\User\balance_infantry\mujoco_lqr_whole_body")
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 from traditional_lqr import TraditionalLQR, apply_encoder_zero_pose
 
-MODEL = Path(r"D:\User\balance_infantry\mujoco_lqr_whole_body\model\whole_body_lqr_fast.xml")
+MODEL = ROOT / "model" / "whole_body_lqr_fast.xml"
 
 model = mujoco.MjModel.from_xml_path(str(MODEL))
 data = mujoco.MjData(model)

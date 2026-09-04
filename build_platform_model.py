@@ -9,20 +9,26 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-MODEL_DIR = Path(r"D:\User\balance_infantry\mujoco_lqr_whole_body\model")
+MODEL_DIR = Path(__file__).resolve().parent / "model"
 FAST = MODEL_DIR / "whole_body_lqr_fast.xml"
 OUT = MODEL_DIR / "whole_body_lqr_fast_platform.xml"
 
-# pyramid layers, top face first mirrored by the 200 mm steps
-#   top      : 2000x2000 face at z=0.6   -> box (1.0, 1.0) center 0.30
-#   step 1   : 2600x2600 at z=0.6..0.4   -> box (1.3, 1.3) center 0.50
-#   step 2   : 3200x3200 at z=0.4..0.2   -> box (1.6, 1.6) center 0.30
-#   step 3   : 3800x3800 at z=0.2..0.0   -> box (1.9, 1.9) center 0.10
+# Pyramid layers bottom-up, each slab 200 mm thick (MuJoCo box size is the
+# half-extent, so the listed z is the slab CENTER).  Faces stack contiguously
+# so no solid overlaps another solid:
+#   top    : top face 0.6 -> center 0.50   (spans 0.4..0.6)
+#   step 1 : top face 0.4 -> center 0.30   (spans 0.2..0.4)
+#   step 2 : top face 0.2 -> center 0.10   (spans 0.0..0.2)
+#   step 3 : top face 0.0 -> center -0.10  (spans -0.2..0.0)
+# The previous table put platform_top at 0.3 and step1 at 0.5: that placed
+# the nominal deck at z=0.4 inside step1's own volume, spawned every descent
+# run standing on a mislabeled interpenetrating terrain, and made the
+# geometric edge probe see phantom ledges everywhere.
 LAYERS = [
-    ("platform_top", 1.0, 0.30),
-    ("platform_step1", 1.3, 0.50),
-    ("platform_step2", 1.6, 0.30),
-    ("platform_step3", 1.9, 0.10),
+    ("platform_top", 1.0, 0.50),
+    ("platform_step1", 1.3, 0.30),
+    ("platform_step2", 1.6, 0.10),
+    ("platform_step3", 1.9, -0.10),
 ]
 
 

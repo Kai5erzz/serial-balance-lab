@@ -12,16 +12,19 @@ from pathlib import Path
 import mujoco
 import numpy as np
 
-sys.path.insert(0, r"D:\User\balance_infantry\mujoco_lqr_whole_body")
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 from traditional_lqr import (
     CALIBRATED_STAND_POSE_PATH,
     TraditionalLQR,
     apply_saved_pose,
 )
 
-MODEL = Path(r"D:\User\balance_infantry\mujoco_lqr_whole_body\model\whole_body_lqr_fast_platform.xml")
-TARGET_SPEED = float(sys.argv[1]) if len(sys.argv) > 1 else 0.60
-DURATION = float(sys.argv[2]) if len(sys.argv) > 2 else 20.0
+MODEL = ROOT / "model" / "whole_body_lqr_fast_platform.xml"
+TARGET_SPEED = float(sys.argv[1]) if len(sys.argv) > 1 else 0.15
+DURATION = float(sys.argv[2]) if len(sys.argv) > 2 else 22.0
+SAFE_PITCH_DEG = 20.0
+SAFE_ROLL_DEG = 12.0
 
 model = mujoco.MjModel.from_xml_path(str(MODEL))
 data = mujoco.MjData(model)
@@ -43,7 +46,7 @@ end = data.time + 2.0
 while data.time < end:
     controller.step(data, model.opt.timestep)
     mujoco.mj_step(model, data)
-print(f"settled: z={data.xpos[controller.base,2]:.3f} vx={controller.chassis_vx:+.3f}")
+print(f"settled: z={data.xpos[controller.base,2]:.3f} ui_vx={-controller.chassis_vx:+.3f}")
 
 controller.set_drive_command(TARGET_SPEED, 0.0)
 last = 0.0
@@ -91,7 +94,7 @@ while data.time < end + DURATION:
             if fn else ""
         )
         print(
-            f"t={data.time:.2f} z={z:.3f} vx={controller.chassis_vx:+.3f} "
+            f"t={data.time:.2f} z={z:.3f} ui_vx={-controller.chassis_vx:+.3f} "
             f"pitch={np.degrees(controller.body_pitch(data)):+.2f} "
             f"off={int(getattr(controller, 'off_ground', False))} "
             f"gbuf={getattr(controller, 'gbuf_phase', '?')}"
@@ -103,10 +106,22 @@ while data.time < end + DURATION:
 
 controller.stop_drive()
 disp = data.xpos[controller.base] - start_pos
-fwd = -float(np.dot(disp, controller.forward_world))
+fwd = float(np.dot(disp, controller.forward_world))
 print("\n=== summary ===")
 print(f"final z={data.xpos[controller.base,2]:.3f}  fwd_travel={fwd:+.2f} m")
 print(f"max_pitch={max_pitch:.2f} deg  max_roll={max_roll:.2f} deg")
 print(f"hover episodes: {[(f'{a:.2f}-{b:.2f}', c) for a, b, c in events]}")
 print(f"on platform_top until: {ground_time}")
+safe = (
+    crash is None
+    and max_pitch <= SAFE_PITCH_DEG
+    and max_roll <= SAFE_ROLL_DEG
+    and fwd >= 2.0
+    and data.xpos[controller.base, 2] <= 0.25
+)
 print(f"CRASH: {crash}" if crash else "OK: no crash")
+print(
+    "RESULT:",
+    "SAFE DESCENT" if safe else "UNSAFE / CRASHED",
+)
+raise SystemExit(0 if safe else 1)

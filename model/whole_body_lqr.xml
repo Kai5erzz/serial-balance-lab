@@ -9,20 +9,20 @@
     <mesh name="base_link_part_003" content_type="model/stl" file="full_resolution_meshes/base_link_part_003.STL" />
     <mesh name="base_link_part_004" content_type="model/stl" file="full_resolution_meshes/base_link_part_004.STL" />
     <mesh name="base_link_part_005" content_type="model/stl" file="full_resolution_meshes/base_link_part_005.STL" />
-    <mesh name="l_j2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_j2.STL" />
-    <mesh name="l_link1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_link1.STL" />
-    <mesh name="l_link2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_link2.STL" />
-    <mesh name="l_link3" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_link3.STL" />
-    <mesh name="l_j1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_j1.STL" />
-    <mesh name="l_leg" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_leg.STL" />
-    <mesh name="l_wheel" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/l_wheel.STL" />
-    <mesh name="r_j1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_j1.STL" />
-    <mesh name="r_leg" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_leg.STL" />
-    <mesh name="r_wheel" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_wheel.STL" />
-    <mesh name="r_j2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_j2.STL" />
-    <mesh name="r_link1" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_link1.STL" />
-    <mesh name="r_link2" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_link2.STL" />
-    <mesh name="r_link3" content_type="model/stl" file="../../rl_balance/chassis_export/whole_body/meshes/r_link3.STL" />
+    <mesh name="l_j2" content_type="model/stl" file="visual_meshes/l_j2.STL" />
+    <mesh name="l_link1" content_type="model/stl" file="visual_meshes/l_link1.STL" />
+    <mesh name="l_link2" content_type="model/stl" file="visual_meshes/l_link2.STL" />
+    <mesh name="l_link3" content_type="model/stl" file="visual_meshes/l_link3.STL" />
+    <mesh name="l_j1" content_type="model/stl" file="visual_meshes/l_j1.STL" />
+    <mesh name="l_leg" content_type="model/stl" file="visual_meshes/l_leg.STL" />
+    <mesh name="l_wheel" content_type="model/stl" file="visual_meshes/l_wheel.STL" />
+    <mesh name="r_j1" content_type="model/stl" file="visual_meshes/r_j1.STL" />
+    <mesh name="r_leg" content_type="model/stl" file="visual_meshes/r_leg.STL" />
+    <mesh name="r_wheel" content_type="model/stl" file="visual_meshes/r_wheel.STL" />
+    <mesh name="r_j2" content_type="model/stl" file="visual_meshes/r_j2.STL" />
+    <mesh name="r_link1" content_type="model/stl" file="visual_meshes/r_link1.STL" />
+    <mesh name="r_link2" content_type="model/stl" file="visual_meshes/r_link2.STL" />
+    <mesh name="r_link3" content_type="model/stl" file="visual_meshes/r_link3.STL" />
     <mesh name="gimbal_yaw_part_000" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_000.STL" />
     <mesh name="gimbal_yaw_part_001" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_001.STL" />
     <mesh name="gimbal_yaw_part_002" content_type="model/stl" file="full_resolution_meshes/gimbal_yaw_part_002.STL" />
@@ -493,8 +493,8 @@
     <mesh name="collision_gimbal_yaw_exterior_002" file="full_resolution_meshes/gimbal_yaw_part_002.STL" />
     <mesh name="collision_gimbal_yaw_exterior_003" file="full_resolution_meshes/gimbal_yaw_part_003.STL" />
     <mesh name="collision_gimbal_yaw_exterior_004" file="full_resolution_meshes/gimbal_yaw_part_004.STL" />
-    <mesh name="collision_l_wheel_exterior_000" file="../../rl_balance/chassis_export/whole_body/meshes/l_wheel.STL" />
-    <mesh name="collision_r_wheel_exterior_000" file="../../rl_balance/chassis_export/whole_body/meshes/r_wheel.STL" />
+    <mesh name="collision_l_wheel_exterior_000" file="visual_meshes/l_wheel.STL" />
+    <mesh name="collision_r_wheel_exterior_000" file="visual_meshes/r_wheel.STL" />
   </asset>
   <worldbody>
     <body name="base_link" pos="0 0 0.255" quat=".70710678 .70710678 0 0">

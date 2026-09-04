@@ -21,7 +21,7 @@ MODEL = Path(os.environ.get(
     "MUJOCO_MODEL",
     Path(__file__).resolve().parent / "model" / "whole_body_lqr_fast.xml",
 ))
-END_TIME = float(os.environ.get("TUNE_JUMP_END_TIME", "4.0"))
+SIM_DURATION = float(os.environ.get("TUNE_JUMP_DURATION", "4.0"))
 
 
 @dataclass(frozen=True)
@@ -34,82 +34,416 @@ class Config:
     wheel_kp: float
     wheel_kd: float
     wheel_sign: float
+    wheel_limit: float = 3.69
     thrust_kp: float = 8.0
-    thrust_kd: float = 12.0
-    thrust_limit: float = 30.0
-    thrust_rate: float = 2.00
-    thrust_rate_max: float = 0.90
-    thrust_rate_start_l0: float = 0.22
-    thrust_rate_full_l0: float = 0.30
-    thrust_pitch_slew: float = 50.0
+    thrust_kd: float = 20.0
+    thrust_limit: float = 40.0
+    thrust_rate: float = 1.48
+    thrust_rate_max: float = 1.48
+    thrust_rate_start_l0: float = 0.16
+    thrust_rate_full_l0: float = 0.26
+    thrust_pitch_slew: float = 100.0
     thrust_theta_kd: float = 0.0
-    thrust_theta_kp: float = 18.0
+    thrust_theta_kp: float = 0.0
     thrust_theta_limit: float = 22.0
-    theta_kp: float = 18.0
-    theta_kd: float = 8.0
-    theta_limit: float = 22.0
-    common_limit: float = 34.0
-    hip_limit: float = 30.0
-    tuck_length: float = 0.20
+    theta_kp: float = 80.0
+    theta_kd: float = 10.0
+    theta_limit: float = 40.0
+    common_limit: float = 40.0
+    hip_limit: float = 40.0
+    tuck_length: float = 0.14
     tuck_time: float = 0.11
     tuck_hold: float = 0.12
-    tuck_rate: float = 1.50
+    tuck_rate: float = 3.50
     landing_length: float = 0.27
     deploy_rate: float = 1.20
-    deploy_kp: float = 700.0
-    deploy_kd: float = 20.0
-    retract_limit: float = 135.0
-    retract_peak: float = 180.0
-    tuck_pitch_bias_deg: float = 0.0
-    deploy_pitch_bias_deg: float = 0.0
+    deploy_kp: float = 1000.0
+    deploy_kd: float = 26.0
+    retract_limit: float = 200.0
+    retract_peak: float = 260.0
+    tuck_pitch_bias_deg: float = 2.0
+    deploy_pitch_bias_deg: float = 3.0
     pitch_reference_limit_deg: float = 15.0
-    wheel_theta_ff: float = 0.0
+    wheel_theta_ff: float = 0.50
+    wheel_taper_delay: float = 0.0
+    wheel_taper_time: float = 0.15
+    wheel_speed_kd: float = 0.0
+    wheel_speed_damping_start: float = 0.0
+    common_filter_tau: float = 0.0
+    hip_motor_filter_tau: float = 0.0
+    rate_filter_tau: float = 0.0
+    landing_wheel_kp: float = 10.0
+    landing_wheel_kd: float = 1.0
+    landing_wheel_limit: float = 3.69
+    landing_capture_slew: float = 1100.0
+    landing_slew: float = 1000.0
+    landing_strong_hold: float = 0.0
+    landing_position_ratio: float = 3.0
 
 
 CONFIGS = [
+    Config("baseline", 195, 13, 2.0, 5.0, 20, 2, 1),
     Config(
-        f"deploy_bias{deploy_bias:.0f}",
-        195,
-        13,
-        2.0,
-        8.0,
-        20,
-        2,
-        1,
-        thrust_kd=20,
-        thrust_limit=40,
-        thrust_rate=1.48,
-        thrust_rate_max=1.48,
-        thrust_rate_start_l0=.16,
-        thrust_rate_full_l0=.26,
-        thrust_pitch_slew=100,
-        thrust_theta_kp=0,
-        tuck_length=.14,
-        tuck_rate=3.5,
-        deploy_kp=1000,
-        deploy_kd=26,
-        retract_limit=200,
-        retract_peak=260,
-        tuck_pitch_bias_deg=12,
-        deploy_pitch_bias_deg=deploy_bias,
-        pitch_reference_limit_deg=30,
-        hip_limit=40,
-        wheel_theta_ff=.50,
-        theta_kp=80,
-        theta_kd=16,
-        theta_limit=40,
-        common_limit=40,
-    )
-    for deploy_bias in (
-        6,
-        8,
-        10,
-        12,
-        14,
-        15,
-        16,
-        18,
-    )
+        "wheel_soft", 195, 13, 2.0, 5.0, 6, .6, 1,
+        wheel_limit=1.2,
+    ),
+    Config(
+        "decoupled_0", 0, 0, .7, 1.0, 8, .8, 1,
+        wheel_limit=1.2, theta_kp=25, theta_kd=2,
+        theta_limit=18, common_limit=18, hip_limit=24,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.10,
+    ),
+    Config(
+        "decoupled_20", 20, 2, .7, 1.0, 8, .8, 1,
+        wheel_limit=1.2, theta_kp=25, theta_kd=2,
+        theta_limit=18, common_limit=18, hip_limit=24,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.10,
+    ),
+    Config(
+        "decoupled_40", 40, 3, .7, 1.0, 8, .8, 1,
+        wheel_limit=1.2, theta_kp=25, theta_kd=2,
+        theta_limit=18, common_limit=18, hip_limit=24,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.10,
+    ),
+    Config(
+        "damped_40", 40, 5, .5, .8, 6, 1.0, 1,
+        wheel_limit=1.0, theta_kp=22, theta_kd=3,
+        theta_limit=16, common_limit=16, hip_limit=22,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.05,
+    ),
+    Config(
+        "damped_25", 25, 4, .5, .8, 6, 1.0, 1,
+        wheel_limit=1.0, theta_kp=22, theta_kd=3,
+        theta_limit=16, common_limit=16, hip_limit=22,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.05,
+    ),
+    Config(
+        "smooth_len_w20d3", 80, 6, 1.0, 2.0, 20, 3, 1,
+        wheel_limit=3.0, theta_kp=35, theta_kd=4,
+        theta_limit=22, common_limit=24, hip_limit=28,
+        tuck_length=.16, tuck_rate=2.0, deploy_kp=700, deploy_kd=32,
+        retract_limit=140, retract_peak=180,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.15,
+    ),
+    Config(
+        "smooth_len_w15d3", 80, 6, 1.0, 2.0, 15, 3, 1,
+        wheel_limit=3.0, theta_kp=35, theta_kd=4,
+        theta_limit=22, common_limit=24, hip_limit=28,
+        tuck_length=.16, tuck_rate=2.0, deploy_kp=700, deploy_kd=32,
+        retract_limit=140, retract_peak=180,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.15,
+    ),
+    Config(
+        "smooth_len_w20d5", 80, 6, 1.0, 2.0, 20, 5, 1,
+        wheel_limit=3.0, theta_kp=35, theta_kd=4,
+        theta_limit=22, common_limit=24, hip_limit=28,
+        tuck_length=.16, tuck_rate=2.0, deploy_kp=700, deploy_kd=32,
+        retract_limit=140, retract_peak=180,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.15,
+    ),
+    Config(
+        "smooth_len_hip40", 40, 5, .8, 1.5, 20, 4, 1,
+        wheel_limit=3.0, theta_kp=30, theta_kd=4,
+        theta_limit=20, common_limit=20, hip_limit=26,
+        tuck_length=.16, tuck_rate=2.0, deploy_kp=700, deploy_kd=32,
+        retract_limit=140, retract_peak=180,
+        tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        wheel_theta_ff=.10,
+    ),
+    *[
+        Config(
+            f"launch_rate_{rate:.1f}", 195, 13, 2.0, 5.0, 20, 2, 1,
+            thrust_rate=rate, thrust_rate_max=rate,
+            tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        )
+        for rate in (0.0, 0.3, 0.6, 0.9)
+    ],
+    *[
+        Config(
+            f"launch_bias_rate_{rate:.1f}", 195, 13, 2.0, 5.0, 20, 2, 1,
+            thrust_rate=rate, thrust_rate_max=rate,
+        )
+        for rate in (1.0, 1.15, 1.3, 1.4)
+    ],
+    Config(
+        "landing_off", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=0, landing_wheel_kd=0,
+        landing_wheel_limit=0,
+    ),
+    Config(
+        "landing_gentle", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=4, landing_wheel_kd=.5,
+        landing_wheel_limit=1.2,
+        landing_capture_slew=80, landing_slew=80,
+    ),
+    Config(
+        "landing_mid", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=6, landing_wheel_kd=.7,
+        landing_wheel_limit=1.5,
+        landing_capture_slew=100, landing_slew=100,
+    ),
+    Config(
+        "landing_moderate", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=8, landing_wheel_kd=1.0,
+        landing_wheel_limit=2.0,
+        landing_capture_slew=140, landing_slew=120,
+    ),
+    Config(
+        "landing_reverse_full", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=-10, landing_wheel_kd=-1,
+    ),
+    Config(
+        "landing_reverse_mid", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=-6, landing_wheel_kd=-.7,
+        landing_wheel_limit=1.5,
+        landing_capture_slew=100, landing_slew=100,
+    ),
+    Config(
+        "landing_reverse_soft", 195, 13, 2.0, 5.0, 20, 2, 1,
+        landing_wheel_kp=-4, landing_wheel_kd=-.5,
+        landing_wheel_limit=1.2,
+        landing_capture_slew=80, landing_slew=80,
+    ),
+    *[
+        Config(
+            f"landing_stage_{hold:.2f}", 195, 13, 2.0, 5.0, 20, 2, 1,
+            landing_wheel_kp=-4, landing_wheel_kd=-.5,
+            landing_wheel_limit=1.2,
+            landing_capture_slew=1100, landing_slew=160,
+            landing_strong_hold=hold,
+        )
+        for hold in (.04, .08, .12, .16)
+    ],
+    *[
+        Config(
+            f"air_deploy_bias_{bias:.0f}",
+            195, 13, 2.0, 5.0, 20, 2, 1,
+            deploy_pitch_bias_deg=bias,
+        )
+        for bias in (4, 6, 8, 10, 12, 15)
+    ],
+    *[
+        Config(
+            f"air_taper_d{delay:.2f}_t{duration:.2f}",
+            195, 13, 2.0, 5.0, 20, 2, 1,
+            wheel_taper_delay=delay,
+            wheel_taper_time=duration,
+        )
+        for delay, duration in (
+            (.03, .15), (.06, .15), (.09, .15),
+            (.03, .20), (.06, .20), (.09, .20),
+        )
+    ],
+    *[
+        Config(
+            f"air_alloc_h{hip_kp:.0f}_d{hip_kd:.0f}_w{wheel_kd:.0f}",
+            hip_kp, hip_kd, .8, 1.5, 20, wheel_kd, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        )
+        for hip_kp, hip_kd, wheel_kd in (
+            (0, 0, 2), (30, 3, 2), (60, 5, 2),
+            (90, 7, 2), (60, 5, 4), (90, 7, 4),
+        )
+    ],
+    *[
+        Config(
+            f"air_speed_kd_{speed_kd:.2f}",
+            90, 7, .8, 1.5, 20, 4, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10, wheel_speed_kd=speed_kd,
+            tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        )
+        for speed_kd in (.03, .06, .10, .16, .24)
+    ],
+    *[
+        Config(
+            f"air_common_lpf_{tau:.4f}",
+            195, 13, 2.0, 5.0, 20, 2, 1,
+            common_filter_tau=tau,
+        )
+        for tau in (.0025, .005, .010, .015, .020)
+    ],
+    *[
+        Config(
+            f"air_motor_lpf_{tau:.4f}",
+            195, 13, 2.0, 5.0, 20, 2, 1,
+            hip_motor_filter_tau=tau,
+        )
+        for tau in (.0005, .0010, .0015, .0025, .004, .006, .010)
+    ],
+    *[
+        Config(
+            f"air_rate_lpf_{tau:.3f}",
+            195, 13, 2.0, 5.0, 20, 2, 1,
+            rate_filter_tau=tau,
+        )
+        for tau in (.003, .005, .008, .012, .020, .030)
+    ],
+    *[
+        Config(
+            f"air_wheel_only_k{kp:.0f}_d{kd:.0f}_td{delay:.2f}",
+            0, 0, .8, 1.5, kp, kd, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=delay, wheel_taper_time=.20,
+            tuck_pitch_bias_deg=0, deploy_pitch_bias_deg=0,
+        )
+        for kp, kd, delay in (
+            (20, 2, .03), (20, 2, .06), (20, 2, .10),
+            (25, 3, .06), (25, 3, .10),
+            (30, 4, .06), (30, 4, .10),
+        )
+    ],
+    *[
+        Config(
+            f"air_wheel_refine_k{kp:.0f}_d{kd:.0f}_b{bias:.0f}",
+            0, 0, .8, 1.5, kp, kd, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=.135,
+            tuck_pitch_bias_deg=bias, deploy_pitch_bias_deg=bias,
+        )
+        for kp, kd, bias in (
+            (35, 5, 0), (40, 6, 0), (50, 8, 0),
+            (30, 4, 2), (35, 5, 2), (40, 6, 2),
+            (35, 5, 4), (40, 6, 4),
+        )
+    ],
+    *[
+        Config(
+            f"air_wheel_tuck_{tuck_bias:.0f}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=.135,
+            tuck_pitch_bias_deg=tuck_bias, deploy_pitch_bias_deg=4,
+        )
+        for tuck_bias in (5, 6, 8, 10, 12)
+    ],
+    *[
+        Config(
+            f"air_wheel_launch_{rate:.2f}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            thrust_rate=rate, thrust_rate_max=rate,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=.135,
+            tuck_pitch_bias_deg=12, deploy_pitch_bias_deg=4,
+        )
+        for rate in (.9, 1.05, 1.2, 1.3, 1.4, 1.48)
+    ],
+    *[
+        Config(
+            f"air_wheel_brake_kd{speed_kd:.2f}_s{start:.2f}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_speed_kd=speed_kd,
+            wheel_speed_damping_start=start,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=.135,
+            tuck_pitch_bias_deg=12, deploy_pitch_bias_deg=4,
+        )
+        for speed_kd, start in (
+            (.03, .28), (.05, .28), (.08, .28),
+            (.03, .32), (.05, .32), (.08, .32), (.12, .32),
+            (.20, .32), (.30, .32), (.50, .32),
+        )
+    ],
+    *[
+        Config(
+            f"combo_landing_{name}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=.135,
+            tuck_pitch_bias_deg=12, deploy_pitch_bias_deg=4,
+            landing_wheel_kp=kp, landing_wheel_kd=kd,
+            landing_wheel_limit=limit,
+            landing_capture_slew=1100, landing_slew=slew,
+        )
+        for name, kp, kd, limit, slew in (
+            ("off", 0, 0, 0, 160),
+            ("rev2", -2, -.25, .8, 120),
+            ("rev4", -4, -.5, 1.2, 160),
+            ("pos2", 2, .25, .8, 120),
+            ("pos4", 4, .5, 1.2, 160),
+        )
+    ],
+    *[
+        Config(
+            f"combo_length_k{length_kp:.0f}_d{length_kd:.0f}_l{tuck_length:.3f}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=tuck_length,
+            deploy_kp=length_kp, deploy_kd=length_kd,
+            retract_limit=160, retract_peak=200,
+            tuck_pitch_bias_deg=12, deploy_pitch_bias_deg=4,
+        )
+        for length_kp, length_kd, tuck_length in (
+            (600, 30, .120), (600, 35, .120),
+            (700, 30, .120), (700, 35, .120),
+            (700, 30, .125), (800, 35, .125),
+            (800, 40, .130),
+        )
+    ],
+    *[
+        Config(
+            f"combo_position_ratio_{ratio:.0f}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=.135,
+            tuck_pitch_bias_deg=12, deploy_pitch_bias_deg=4,
+            landing_position_ratio=ratio,
+        )
+        for ratio in (4, 5, 6, 7, 8, 10)
+    ],
+    *[
+        Config(
+            f"combo_force_f{force:.0f}_l{tuck_length:.3f}",
+            0, 0, .8, 1.5, 35, 5, 1,
+            theta_kp=30, theta_kd=4,
+            theta_limit=22, common_limit=24, hip_limit=30,
+            wheel_theta_ff=.10,
+            wheel_taper_delay=.10, wheel_taper_time=.20,
+            tuck_length=tuck_length,
+            deploy_kp=1000, deploy_kd=26,
+            retract_limit=force, retract_peak=force + 30,
+            tuck_pitch_bias_deg=12, deploy_pitch_bias_deg=4,
+        )
+        for force, tuck_length in (
+            (140, .115), (160, .115), (180, .115),
+            (140, .125), (160, .125), (180, .125),
+        )
+    ],
 ]
 
 
@@ -137,6 +471,25 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
     controller.jump_air_wheel_pitch_kd = config.wheel_kd
     controller.jump_air_wheel_sign = config.wheel_sign
     controller.jump_air_wheel_theta_ff = config.wheel_theta_ff
+    controller.jump_air_wheel_torque_limit = config.wheel_limit
+    controller.jump_air_wheel_taper_delay = config.wheel_taper_delay
+    controller.jump_air_wheel_taper_time = config.wheel_taper_time
+    controller.jump_air_wheel_speed_kd = config.wheel_speed_kd
+    controller.jump_air_wheel_speed_damping_start = (
+        config.wheel_speed_damping_start
+    )
+    controller.jump_air_common_tp_filter_tau = config.common_filter_tau
+    controller.jump_hip_motor_filter_tau = config.hip_motor_filter_tau
+    controller.jump_air_rate_filter_tau = config.rate_filter_tau
+    controller.jump_landing_wheel_pitch_kp = config.landing_wheel_kp
+    controller.jump_landing_wheel_pitch_kd = config.landing_wheel_kd
+    controller.jump_landing_wheel_torque_limit = config.landing_wheel_limit
+    controller.jump_landing_capture_wheel_slew_rate = (
+        config.landing_capture_slew
+    )
+    controller.jump_landing_wheel_slew_rate = config.landing_slew
+    controller.jump_landing_strong_hold_time = config.landing_strong_hold
+    controller.jump_landing_position_x_ratio = config.landing_position_ratio
     controller.jump_thrust_pitch_kp = config.thrust_kp
     controller.jump_thrust_pitch_kd = config.thrust_kd
     controller.jump_thrust_pitch_limit = config.thrust_limit
@@ -165,7 +518,8 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
     controller.jump_abort_pitch_limit = np.pi
     controller.jump_abort_roll_limit = np.pi
 
-    while data.time < 1.0:
+    settle_end = data.time + 3.0
+    while data.time < settle_end:
         controller.step(data, model.opt.timestep)
         mujoco.mj_step(model, data)
     accepted, reason = controller.begin_jump(data)
@@ -183,6 +537,8 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
     max_signed_air_pitch = -np.inf
     first_contact_pitch = np.nan
     first_contact_theta = np.nan
+    first_contact_wheel_rate = np.nan
+    first_contact_forward = np.nan
     first_contact_time = np.nan
     first_ground = "none"
     first_ground_time = np.nan
@@ -191,6 +547,11 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
     takeoff_pitch_rate = np.nan
     max_motor = 0.0
     peak_motor_time = 0.0
+    max_hip_step = 0.0
+    max_wheel_step = 0.0
+    previous_hip = {side: np.zeros(2) for side in ("l", "r")}
+    previous_air_wheel = 0.0
+    start_position = data.xpos[controller.base].copy()
     tail_pitch: list[float] = []
     tail_roll: list[float] = []
     tail_z: list[float] = []
@@ -212,7 +573,7 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
                 return True
         return False
     was_airborne = False
-    end_time = END_TIME
+    end_time = data.time + SIM_DURATION
     while data.time < end_time:
         controller.step(data, model.opt.timestep)
         mujoco.mj_step(model, data)
@@ -284,6 +645,15 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
                 + pitch_rad
                 for side in ("l", "r")
             )))
+            first_contact_wheel_rate = 0.5 * sum(
+                controller.wheel_sign[side]
+                * float(data.qvel[model.jnt_dofadr[controller.sides[side].wheel_joint]])
+                for side in ("l", "r")
+            )
+            first_contact_forward = -float(np.dot(
+                data.xpos[controller.base] - start_position,
+                controller.forward_world,
+            ))
         motor = max(
             abs(float(value))
             for values in controller.last_motor_torque.values()
@@ -291,6 +661,22 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
         )
         max_motor = max(max_motor, motor)
         peak_motor_time += model.opt.timestep * int(motor > 20.0)
+        if controller.jump_off_ground:
+            max_hip_step = max(
+                max_hip_step,
+                *(float(np.max(np.abs(
+                    controller.last_motor_torque[side] - previous_hip[side]
+                ))) for side in ("l", "r")),
+            )
+            max_wheel_step = max(
+                max_wheel_step,
+                abs(controller.jump_air_wheel_torque - previous_air_wheel),
+            )
+        previous_hip = {
+            side: controller.last_motor_torque[side].copy()
+            for side in ("l", "r")
+        }
+        previous_air_wheel = controller.jump_air_wheel_torque
         if data.time >= end_time - 0.5:
             tail_pitch.append(pitch)
             tail_roll.append(roll)
@@ -312,6 +698,8 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
         "takeoff_rate": takeoff_pitch_rate,
         "contact_pitch": first_contact_pitch,
         "contact_theta": first_contact_theta,
+        "contact_wheel_rate": first_contact_wheel_rate,
+        "contact_forward": first_contact_forward,
         "first_ground": first_ground,
         "first_ground_t": first_ground_time,
         "other_after": any_other_after_takeoff,
@@ -325,12 +713,21 @@ def simulate(model: mujoco.MjModel, config: Config) -> dict[str, float | str | b
         "fault": controller.jump_fault,
         "max_motor": max_motor,
         "peak_time": peak_motor_time,
+        "max_hip_step": max_hip_step,
+        "max_wheel_step": max_wheel_step,
+        "forward_delta": -float(np.dot(
+            data.xpos[controller.base] - start_position,
+            controller.forward_world,
+        )),
     }
 
 
 def main() -> None:
     model = mujoco.MjModel.from_xml_path(str(MODEL))
+    name_filter = os.environ.get("TUNE_JUMP_FILTER", "")
     for config in CONFIGS:
+        if name_filter and name_filter not in config.name:
+            continue
         result = simulate(model, config)
         print(
             "{name:27s} apex dz={apex_dz:.3f} wheel={apex_wheel:.3f} "
@@ -341,9 +738,13 @@ def main() -> None:
             "first={first_ground}@{first_ground_t:.3f} "
             "other={other_after}:{other_labels} "
             "contact P/theta={contact_pitch:+5.1f}/{contact_theta:+5.1f} "
+            "wr={contact_wheel_rate:+6.1f}rad/s "
+            "xcontact={contact_forward:+.3f}m "
             "tail P/R={tail_pitch:+5.1f}/{tail_roll:+4.1f} "
             "zspan={tail_z_span:.3f} wheels={tail_contact:.2f} other={tail_other:.2f} "
-            "off={off_end} fault={fault} motor={max_motor:.1f}@{peak_time:.2f}s".format(
+            "off={off_end} fault={fault} motor={max_motor:.1f}@{peak_time:.2f}s "
+            " dHip/dTw={max_hip_step:.1f}/{max_wheel_step:.2f} "
+            "dx={forward_delta:+.3f}m".format(
                 **result
             )
         )

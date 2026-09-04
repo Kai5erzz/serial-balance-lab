@@ -17,7 +17,7 @@ import trimesh
 
 
 ROOT = Path(__file__).resolve().parent
-SOURCE_DIR = Path(r"D:\User\balance_infantry\rl_balance\chassis_export\whole_body\meshes")
+SOURCE_DIR = ROOT / "model" / "visual_meshes"
 OUTPUT_DIR = ROOT / "model" / "collision_meshes_vhacd"
 
 

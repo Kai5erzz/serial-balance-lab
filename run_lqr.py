@@ -17,6 +17,8 @@ from traditional_lqr import (
     CALIBRATED_STAND_POSE_PATH,
     DRIVE_SPEED_MAX,
     DRIVE_YAW_RATE_MAX,
+    LEG_LENGTH_DEFAULT,
+    LEG_LENGTH_PRESETS,
     TraditionalLQR,
     VMC_COMPRESSION_MAX,
     VMC_COMPRESSION_MIN,
@@ -36,20 +38,22 @@ from traditional_lqr import (
 
 MODEL = Path(__file__).resolve().parent / "model" / "whole_body_lqr_fast.xml"
 PLATFORM_MODEL = Path(__file__).resolve().parent / "model" / "whole_body_lqr_fast_platform.xml"
+# The saved standing pose has a 2.4 mm left/right wheel-height mismatch.
+# Place both wheel contact patches on the 600 mm upper deck rather than
+# leaving the higher wheel just outside MuJoCo's contact tolerance.
+PLATFORM_SPAWN_Z_OFFSET = 0.597
 HOVER_CLEARANCE_M = 0.18
 CALIBRATION_STEP_RAD = np.radians(1.0)
 CALIBRATION_HIP_KP = 55.0
 CALIBRATION_HIP_KD = 3.0
 CALIBRATION_HIP_TORQUE_LIMIT = 24.0
-DRIVE_SPEED_STEP_MPS = 0.20
-DRIVE_YAW_STEP_RAD_S = 0.15
-DRIVE_KEYBOARD_YAW_MAX_RAD_S = 0.90
 # Real-RC semantics: holding an arrow key sets the LQR speed reference,
-# releasing it returns the reference to zero (chassis brakes).  The viewer
-# key callback only reports press events (no repeat/release), so the held
-# state is polled directly from the Windows keyboard state.
-RC_TARGET_SPEED_MPS = 1.50
-RC_TARGET_YAW_RAD_S = 0.45
+# releasing it returns the reference to zero (chassis brakes).  The MuJoCo
+# passive-viewer callback exposes only the key code, not the GLFW action, so
+# the native key state is sampled every render cycle on both operating
+# systems.  This makes release handling symmetric with key-press handling.
+RC_TARGET_SPEED_MPS = 1.00
+RC_TARGET_YAW_RAD_S = 2.00
 RC_HOLD_TIMEOUT_S = 0.35
 if os.name == "nt":
     import ctypes as _ctypes
@@ -66,9 +70,7 @@ if os.name == "nt":
         return bool(_user32.GetAsyncKeyState(_VK[name]) & 0x8000)
 
 else:
-
-    def _rc_key_held(name: str) -> bool:
-        return False
+    _rc_key_held = None
 
 
 def run_session(config: dict) -> dict | None:
@@ -80,6 +82,7 @@ def run_session(config: dict) -> dict | None:
     data = mujoco.MjData(model)
     mujoco.mj_resetData(model, data)
     controller = TraditionalLQR(model)
+    controller.set_leg_length(LEG_LENGTH_DEFAULT)
     controller.reset(data)
     paused = {"value": True}
     mode = {"name": "hover"}
@@ -87,6 +90,7 @@ def run_session(config: dict) -> dict | None:
     restart_request: dict | None = None
     pending_keys: list[int] = []
     pending_keys_lock = threading.Lock()
+    native_window: dict[str, object | None] = {"handle": None}
     pitch_test_until = {"time": -1.0}
     camera_follow = {"enabled": True}
     base_free = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "base_free")
@@ -155,7 +159,7 @@ def run_session(config: dict) -> dict | None:
         mode["name"] = name
         paused["value"] = name != "leg_calibration"
         mujoco.mj_resetData(model, data)
-        if name == "lqr":
+        if name in {"lqr", "platform_lqr"}:
             apply_saved_pose(model, data, CALIBRATED_STAND_POSE_PATH)
         elif name == "recovery":
             apply_encoder_zero_pose(model, data)
@@ -166,6 +170,15 @@ def run_session(config: dict) -> dict | None:
         controller.stance_enabled = False
         controller.gas_enabled = False
         if name == "lqr":
+            controller.enable_calibrated_lqr(data)
+        elif name == "platform_lqr":
+            # Mode 6 is a persistent platform mode.  Apply the deck lift as
+            # part of every reset, including the R-key reset, so it cannot
+            # fall back to the mode-5 ground birth pose.
+            data.qpos[base_qadr + 2] += float(
+                config.get("z_offset", PLATFORM_SPAWN_Z_OFFSET)
+            )
+            mujoco.mj_forward(model, data)
             controller.enable_calibrated_lqr(data)
         elif name == "recovery":
             controller.begin_encoder_zero_recovery(data)
@@ -245,7 +258,7 @@ def run_session(config: dict) -> dict | None:
                 f"\ncal target: swing={np.degrees(calibration['swing']):+.1f} deg  "
                 f"compression={np.degrees(calibration['compression']):+.3f} deg"
                 f"\ncalibrated range={VMC_LENGTH_MIN:.6f}..{VMC_LENGTH_MAX:.6f} m  "
-                f"stand={VMC_NORMAL_STAND_LENGTH:.3f} m"
+                f"stand target={controller.normal_leg_length:.3f} m"
             )
         state_text = (
             f"MODE: {mode['name'].upper()}  |  {'PAUSED' if paused['value'] else 'RUNNING'}\n"
@@ -256,7 +269,7 @@ def run_session(config: dict) -> dict | None:
             f"leg phi0 L/R={leg_geometry['l'][0]:+.3f}/{leg_geometry['r'][0]:+.3f} deg  "
             f"avg={average_phi0:+.3f}\n"
             f"leg l0 L/R={leg_geometry['l'][1]:.6f}/{leg_geometry['r'][1]:.6f} m  "
-            f"avg={average_l0:.6f}"
+            f"avg={average_l0:.6f}  target={controller.normal_leg_length:.3f} m"
             f"{calibration_text}\n"
             f"ground wheel L/R={'Y' if wheel_ground['l'] else 'N'}/"
             f"{'Y' if wheel_ground['r'] else 'N'}  other={other_ground_text}\n"
@@ -288,8 +301,9 @@ def run_session(config: dict) -> dict | None:
             "3: CALIBRATED N POSE -> firmware LOW LQR (starts paused)\n"
             "4: HOVER LEG CALIBRATION (CAD stops off; calibrated length limit on)\n"
             "5: CALIBRATED ENCODER ZERO -> firmware RECOVERY -> LOW LQR\n"
-            "Arrow Up/Down: forward speed +/-0.20 m/s\n"
-            "Arrow Left/Right: yaw +/-0.15 rad/s (max 0.90)\n"
+            "Arrow Up/Down: forward speed +/-0.60 m/s\n"
+            "Arrow Left/Right: yaw +/-2.00 rad/s\n"
+            "7/8/9: leg length 0.130/0.240/0.300 m (default 0.130)\n"
             "X: stop movement/turn   J: trigger firmware jump\n"
             "F: toggle base-follow/free camera\n"
             "In LEG CALIBRATION W/S=swing, D/A=compress/extend\n"
@@ -303,6 +317,12 @@ def run_session(config: dict) -> dict | None:
         # GLFW invokes this on the viewer thread.  Do not touch MuJoCo data or
         # acquire viewer.lock here: doing either can deadlock against sync().
         # The simulation thread drains this queue at the start of each batch.
+        if os.name != "nt" and native_window["handle"] is None:
+            # launch_passive intentionally hides the GLFW window handle, but
+            # the callback runs on the render thread with its context current.
+            # Keep that opaque handle so the simulation thread can query the
+            # physical key state and observe key release as well as key press.
+            native_window["handle"] = glfw.get_current_context()
         if key in (glfw.KEY_6, glfw.KEY_F6):
             print(f"key event: {key} (6/F6) received", flush=True)
         with pending_keys_lock:
@@ -341,14 +361,25 @@ def run_session(config: dict) -> dict | None:
                 elif key in (glfw.KEY_6, glfw.KEY_F6):
                     restart_request = {
                         "model": str(PLATFORM_MODEL),
-                        "z_offset": 0.6,
-                        "start_mode": "lqr",
+                        "z_offset": PLATFORM_SPAWN_Z_OFFSET,
+                        "platform_spawn": True,
+                        "start_mode": "platform_lqr",
                     }
                     print(
                         "6: switching to 600 mm PLATFORM scene (LQR armed on the "
                         "platform top; viewer restarts). Drive off the edge to "
                         "test the off-ground / landing logic."
                     )
+                elif key in (glfw.KEY_7, glfw.KEY_8, glfw.KEY_9):
+                    leg_length_by_key = {
+                        glfw.KEY_7: LEG_LENGTH_PRESETS[0],
+                        glfw.KEY_8: LEG_LENGTH_PRESETS[1],
+                        glfw.KEY_9: LEG_LENGTH_PRESETS[2],
+                    }
+                    selected = controller.set_leg_length(
+                        leg_length_by_key[key]
+                    )
+                    print(f"leg length target: {selected:.3f} m")
                 elif mode["name"] == "leg_calibration" and key in {glfw.KEY_W, glfw.KEY_S, glfw.KEY_A, glfw.KEY_D}:
                     if key == glfw.KEY_W:
                         calibration["swing"] += CALIBRATION_STEP_RAD
@@ -393,22 +424,10 @@ def run_session(config: dict) -> dict | None:
                         f"swing={np.degrees(calibration['swing']):+.3f} deg, "
                         f"compression={np.degrees(calibration['compression']):+.3f} deg"
                     )
-                elif (
-                    mode["name"] in {"lqr", "recovery"}
-                    and key in {
-                        glfw.KEY_UP,
-                        glfw.KEY_DOWN,
-                        glfw.KEY_LEFT,
-                        glfw.KEY_RIGHT,
-                    }
-                ):
-                    # Direction keys are polled every frame (see the main
-                    # loop); pressing them here only wakes the UI.
-                    pass
-                elif key == glfw.KEY_X and mode["name"] in {"lqr", "recovery"}:
+                elif key == glfw.KEY_X and mode["name"] in {"lqr", "platform_lqr", "recovery"}:
                     controller.stop_drive()
                     print("drive command: STOP")
-                elif key == glfw.KEY_J and mode["name"] in {"lqr", "recovery"}:
+                elif key == glfw.KEY_J and mode["name"] in {"lqr", "platform_lqr", "recovery"}:
                     accepted, reason = controller.begin_jump(data)
                     print(
                         "jump accepted: firmware PRELOAD"
@@ -427,7 +446,7 @@ def run_session(config: dict) -> dict | None:
                         "camera: BASE FOLLOW"
                         if camera_follow["enabled"] else "camera: FREE"
                     )
-                elif key == glfw.KEY_P and mode["name"] == "lqr":
+                elif key == glfw.KEY_P and mode["name"] in {"lqr", "platform_lqr"}:
                     pitch_test_until["time"] = data.time + 0.10
                     print("pitch-test pulse: 2.0 N m for 0.10 s")
                 elif key == glfw.KEY_R:
@@ -438,12 +457,18 @@ def run_session(config: dict) -> dict | None:
     # l0=0.150 m LOW-LQR equilibrium without rewriting qpos after reset.
     start_mode = config.get("start_mode", "recovery")
     set_mode(start_mode)
-    if config.get("z_offset", 0.0):
+    if config.get("z_offset", 0.0) and start_mode != "platform_lqr":
         # lift the whole chassis onto the platform after the mode pose was
         # applied (set_mode resets qpos)
         data.qpos[base_qadr + 2] += config["z_offset"]
         mujoco.mj_forward(model, data)
-        controller.reset(data, calibrate_frame=True)
+        if config.get("platform_spawn", False):
+            # Re-arm only after the lift.  This makes mode 6 a true calibrated
+            # LQR start on the 600 mm upper deck instead of inheriting the
+            # mode-5 ground/recovery birth state.
+            controller.enable_calibrated_lqr(data)
+        else:
+            controller.reset(data, calibrate_frame=True)
     if start_mode == "recovery":
         print("CALIBRATED ENCODER-ZERO RECOVERY armed and paused. Press Space to run; 3 selects direct LQR.")
     else:
@@ -469,28 +494,48 @@ def run_session(config: dict) -> dict | None:
         while viewer.is_running():
             frame_start = time.perf_counter()
             process_pending_keys(viewer)
-            # Real-RC drive: poll the keyboard state every frame.  Arrow keys
-            # held -> LQR speed reference applied; released -> reference 0.
-            if mode["name"] in {"lqr", "recovery"}:
-                forward = 0.0
-                yaw = 0.0
-                if _rc_key_held("up"):
-                    forward += RC_TARGET_SPEED_MPS
-                if _rc_key_held("down"):
-                    forward -= RC_TARGET_SPEED_MPS
-                if _rc_key_held("left"):
-                    yaw += RC_TARGET_YAW_RAD_S
-                if _rc_key_held("right"):
-                    yaw -= RC_TARGET_YAW_RAD_S
-                if (forward, yaw) != (
-                    controller.drive_forward_target,
-                    controller.drive_yaw_rate_target,
-                ):
-                    controller.set_drive_command(forward, yaw)
-                    print(
-                        f"RC drive: forward={forward:+.2f} m/s "
-                        f"yaw={yaw:+.2f} rad/s"
-                    )
+            # Poll the physical key state every frame: arrow keys held -> LQR
+            # speed reference applied; released -> reference 0.  A physics
+            # batch is only five 2 ms steps, so release latency is bounded to
+            # roughly one render loop plus 10 ms rather than one stale command
+            # timeout.  On Linux the window handle is captured by the GLFW
+            # callback above; before the first key event there is no state to
+            # sample and the controller remains at its zero command.
+            if mode["name"] in {"lqr", "platform_lqr", "recovery"}:
+                window = native_window["handle"]
+                if os.name == "nt":
+                    key_held = _rc_key_held
+                elif window is not None:
+                    key_held = lambda key: glfw.get_key(window, key) == glfw.PRESS
+                else:
+                    key_held = None
+                if key_held is None:
+                    keyboard_command = None
+                else:
+                    keyboard_command = (0.0, 0.0)
+                    forward = 0.0
+                    yaw = 0.0
+                    if key_held(glfw.KEY_UP):
+                        forward -= RC_TARGET_SPEED_MPS
+                    if key_held(glfw.KEY_DOWN):
+                        forward += RC_TARGET_SPEED_MPS
+                    if key_held(glfw.KEY_LEFT):
+                        yaw += RC_TARGET_YAW_RAD_S
+                    if key_held(glfw.KEY_RIGHT):
+                        yaw -= RC_TARGET_YAW_RAD_S
+                    keyboard_command = (forward, yaw)
+                if keyboard_command is not None:
+                    forward, yaw = keyboard_command
+                    if (forward, yaw) != (
+                        controller.drive_forward_target,
+                        controller.drive_yaw_rate_target,
+                    ):
+                        controller.set_drive_command(forward, yaw)
+                        print(
+                            f"RC drive: forward={forward:+.2f} m/s "
+                            f"yaw={yaw:+.2f} rad/s",
+                            flush=True,
+                        )
             running = not paused["value"]
             if not running:
                 timing["rtf"] = 0.0
@@ -501,7 +546,7 @@ def run_session(config: dict) -> dict | None:
                 # receives the finished state at sync(), so rendering remains
                 # responsive while a physics batch is being computed.
                 for _ in range(physics_steps_per_batch):
-                    if mode["name"] in {"lqr", "recovery"}:
+                    if mode["name"] in {"lqr", "platform_lqr", "recovery"}:
                         controller.step(data, model.opt.timestep)
                         if data.time < pitch_test_until["time"]:
                             _, _, lateral = controller._frame(data)
@@ -567,6 +612,7 @@ def main() -> None:
     config: dict = {
         "model": str(MODEL),
         "z_offset": 0.0,
+        "platform_spawn": False,
         "start_mode": "recovery",
     }
     while True:

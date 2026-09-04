@@ -5,3 +5,9 @@ __pycache__/
 
 # MuJoCo auto-generated logs
 MUJOCO_LOG.TXT
+
+# Generated session artifacts
+out/
+
+# External reference repositories (nested git checkouts)
+refer/

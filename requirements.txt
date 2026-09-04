@@ -1,0 +1,7 @@
+# Runtime and model-building dependencies for the Linux/Conda rl-lab setup.
+numpy==2.4.6
+Pillow==12.3.0
+mujoco==3.12.0
+glfw==2.10.2
+trimesh==5.0.0
+coacd==1.0.13

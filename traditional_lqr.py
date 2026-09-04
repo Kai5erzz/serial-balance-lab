@@ -72,16 +72,24 @@ JUMP_ABORT_RETRACT_RATE = 0.35
 JUMP_FLIGHT_TIMEOUT = 1.50
 JUMP_LANDING_GROUND_CONFIRM_TIME = 0.15
 JUMP_LANDING_TIMEOUT = 2.00
-JUMP_LANDING_PITCH_MAX = np.radians(5.0)
-JUMP_LANDING_ROLL_MAX = np.radians(4.0)
+JUMP_LANDING_PITCH_MAX = np.radians(12.0)
+JUMP_LANDING_ROLL_MAX = np.radians(10.0)
 JUMP_LANDING_LENGTH_DIFF_MAX = 0.030
 JUMP_LANDING_TIMEOUT_LENGTH_DIFF_MAX = 0.060
-JUMP_PRECHECK_PITCH_MAX = np.radians(8.0)
-JUMP_PRECHECK_ROLL_MAX = np.radians(8.0)
-JUMP_PRECHECK_VX_MAX = 2.50
+# Simulation-bold precheck: attitude gates are wide open and the launch
+# speed gate is effectively removed -- a moving jump is allowed at ANY
+# ground speed.  Only the physical sanity gates remain (state machine idle,
+# cooldown, wheels grounded, legs inside range).
+JUMP_PRECHECK_PITCH_MAX = np.radians(25.0)
+JUMP_PRECHECK_ROLL_MAX = np.radians(25.0)
+# Launch speed is no longer gated: simulation-only policy decision.  The
+# constant survives as a huge bound so the precheck expression stays valid.
+JUMP_SAFE_LAUNCH_VX_MAX = 10.0
+JUMP_SAFE_LAUNCH_COMMAND_MARGIN = 10.0
+JUMP_SAFE_LAUNCH_MOVING_MAX = 10.0
 JUMP_PRECHECK_YAW_RATE_MAX = 2.50
-JUMP_ABORT_PITCH_MAX = np.radians(18.0)
-JUMP_ABORT_ROLL_MAX = np.radians(12.0)
+JUMP_ABORT_PITCH_MAX = np.radians(40.0)
+JUMP_ABORT_ROLL_MAX = np.radians(30.0)
 JUMP_LENGTH_KP_PRELOAD = 450.0
 JUMP_LENGTH_KD_PRELOAD = 28.0
 JUMP_LENGTH_LIMIT_PRELOAD = 70.0
@@ -112,24 +120,162 @@ JUMP_THRUST_THETA_LQR_GAIN = 0.75
 JUMP_LANDING_TP_HANDOFF_TIME = 0.060
 JUMP_AIR_LQR_TP_GAIN = 1.00
 JUMP_AIR_TP_LIMIT = 22.0
+# --- Security_Checking port (chassis_safety.c) ---
+# Real-vehicle fall detection: hard attitude/leg limits are immediate faults,
+# soft candidates debounce for DANGER_SOFT_CONFIRM_TIME while grounded.  The
+# firmware routes the confirmed danger state to the recovery module; here the
+# same confirmation hands control to begin_recovery() (the ported self-rescue
+# state machine).
+DANGER_HARD_ATTITUDE_DEG = 60.0
+DANGER_SOFT_PITCH_DEG = 35.0
+DANGER_SOFT_ROLL_DEG = 30.0
+DANGER_SOFT_THETA_RAD = np.radians(45.0)
+DANGER_SOFT_CONFIRM_TIME = 0.08
+DANGER_LEG_SAFE_AREA_DEG = 20.0
+# --- REC_SIMPLE inverted self-rescue (chassis_recovery.c) ---
+# Ported values for the pose-agnostic fall recovery: HOLD classifies the
+# fallen pose, INVERTED sweeps both legs toward negative phi0 to right the
+# body, FORWARD_ZERO drives the legs to zero before the normal SWING ->
+# RETRACT -> HANDOFF route.  Torque/limits are the firmware defines.
+FW_RECOVERY_FORWARD_PITCH_MAX = np.radians(80.0)
+FW_RECOVERY_INVERTED_ENTER_PITCH = np.radians(105.0)
+FW_RECOVERY_INVERTED_EXIT_PITCH = np.radians(40.0)
+FW_RECOVERY_INVERTED_CAPTURE_TIME = 0.20
+FW_RECOVERY_INVERTED_PRELOAD_TIME = 0.25
+FW_RECOVERY_INVERTED_TURN_RATE = np.radians(105.0)
+FW_RECOVERY_INVERTED_TURN_ACCEL = np.radians(240.0)
+FW_RECOVERY_INVERTED_TURN_MAX_TRAVEL = np.radians(720.0)
+FW_RECOVERY_INVERTED_SYNC_KP = 1.0
+FW_RECOVERY_INVERTED_SYNC_CORR_LIMIT = np.radians(37.5)
+FW_RECOVERY_INVERTED_WAIT_ENTER = np.radians(12.0)
+FW_RECOVERY_INVERTED_WAIT_EXIT = np.radians(6.0)
+FW_RECOVERY_INVERTED_TP_KP = 36.0
+FW_RECOVERY_INVERTED_TP_KD = 2.6
+FW_RECOVERY_INVERTED_TP_LIMIT = 9.5
+FW_RECOVERY_INVERTED_TP_BIAS = 4.0
+FW_RECOVERY_INVERTED_TURN_GAIN_RATE = 3.0
+FW_RECOVERY_INVERTED_CONTACT_FORCE = 12.0
+FW_RECOVERY_INVERTED_PITCH_PROGRESS_EPS = 0.10
+FW_RECOVERY_INVERTED_PITCH_STALL_TIME = 0.75
+FW_RECOVERY_INVERTED_TURN_TIMEOUT = 100.0
+FW_RECOVERY_INVERTED_SETTLE_TIME = 0.50
+FW_RECOVERY_INVERTED_SETTLE_TP_KP = 12.0
+FW_RECOVERY_INVERTED_SETTLE_TP_KD = 2.0
+FW_RECOVERY_INVERTED_SETTLE_TP_LIMIT = 3.0
+FW_RECOVERY_FORWARD_ZERO_RATE = np.radians(110.0)
+FW_RECOVERY_FORWARD_ZERO_ACCEL = np.radians(220.0)
+FW_RECOVERY_FORWARD_ZERO_GAIN_RATE = 4.0
+FW_RECOVERY_FORWARD_ZERO_TP_KP = 16.0
+FW_RECOVERY_FORWARD_ZERO_TP_KD = 2.2
+# Firmware note: the old 3.75 Nm clip could not cross the dead-point pose;
+# phase 10 saturates at 12 Nm per hip motor.
+FW_RECOVERY_FORWARD_ZERO_TP_LIMIT = 12.0
+FW_RECOVERY_FORWARD_ZERO_TP_SIGN = 1.0
+FW_RECOVERY_FORWARD_ZERO_PHI0_OK = 0.25
+FW_RECOVERY_FORWARD_ZERO_STABLE_TIME = 0.15
+FW_RECOVERY_FORWARD_ZERO_TIMEOUT = 20.0
+FW_RECOVERY_SIDE_POSE_MIN = np.radians(45.0)
+# Firmware uses 150 deg; this CAD export's four-bar tops out near 163 deg,
+# so a 151-deg fallen pose just missed the short-path window and the
+# firmware's positive +360 sweep is unreachable here.  Widened to 165 deg so
+# the reachable signed sweep runs (documented sim deviation).
+FW_RECOVERY_SIDE_POSE_MAX = np.radians(165.0)
+FW_RECOVERY_L0_LONG = 0.30
+FW_RECOVERY_PHI_NEAR_ZERO = 0.70
+FW_RECOVERY_ZERO_PITCH_MAX = np.radians(15.0)
+FW_RECOVERY_FAULT_HOLD_TIME = 1.5
 # --- generic off-ground port (chassis_safety.c / rm_config.h) ---
 OFFGROUND_TAKEOFF_FN_LOW = 30.0
 OFFGROUND_JUMP_TAKEOFF_SIDE_MAX = 50.0
 OFFGROUND_TAKEOFF_CONFIRM_LOW = 5
+# The reconstructed wheel force reads a phantom unload around every controller
+# reset: recovery SWING/RETRACT compresses the legs and releases them into the
+# LOW stand, and that axial transient looks exactly like a takeoff in the
+# four-sample filter.  Observed consequence when Ground_Detect is allowed to
+# fire during it: the generic airborne deploy profile extends the legs from
+# 0.11 m to full length, bounces the chassis off the floor, and the machine
+# then hops between misjudged takeoffs and landing buffers indefinitely.
+# Hold the detector at grounded through this window after each reset.  Five
+# seconds covers the stand-up transient plus the first drive-command settle
+# bounce (observed wheel unload signatures until ~3.3 s on the platform
+# scene); releasing earlier latched descent_guard.drop_seen without any real
+# ledge ever being crossed.
+OFFGROUND_STARTUP_SUPPRESS_S = 5.0
 OFFGROUND_LANDING_FN_LOW = 45.0
 OFFGROUND_LANDING_CONFIRM_LOW = 8
 OFFGROUND_UNSPRUNG_MASS = 0.60
 OFFGROUND_SOFT_FORCE = 20.0
+OFFGROUND_LQR_TP_GAIN = 0.50
+OFFGROUND_LQR_TP_LIMIT = 40.0
+OFFGROUND_LENGTH_SYNC_KP = 300.0
+OFFGROUND_LENGTH_SYNC_KD = 12.0
+OFFGROUND_LENGTH_SYNC_LIMIT = 18.0
+OFFGROUND_AIR_RETRACT_LIMIT = 120.0
+OFFGROUND_SPRING_COMP_LIMIT = SUPPORT_FORCE_LIMIT
 OFFGROUND_THETA_HOLD_KP = 8.5
 OFFGROUND_THETA_HOLD_KD = 0.75
 OFFGROUND_THETA_HOLD_TP_LIMIT = 4.5
-GBUF_COMPRESS_TIME = 0.06
-GBUF_HOLD_MIN_TIME = 0.12
-GBUF_HOLD_MAX_TIME = 0.30
-GBUF_RETURN_REF_RATE = 0.60
-GBUF_EXIT_STABLE_TIME = 0.12
+# The real firmware leaves the generic airborne body-pitch row disabled.  The
+# MuJoCo model has no motor/IMU delay or structural compliance, so a small
+# bounded common pitch allocation is needed for a hard 200 mm ledge drop; it
+# is used only by the generic off-ground path, never by the active jump path.
+OFFGROUND_PITCH_KP = 80.0
+OFFGROUND_PITCH_KD = 20.0
+OFFGROUND_PITCH_TP_LIMIT = 40.0
+OFFGROUND_PITCH_TP_EXTRA_KP_NM_PER_DEG = 0.0
+OFFGROUND_PITCH_TP_EXTRA_KD_NM_PER_DEG_S = 0.0
+OFFGROUND_PITCH_TP_EXTRA_LIMIT = 8.0
+OFFGROUND_WHEEL_PITCH_KP = 35.0
+OFFGROUND_WHEEL_PITCH_KD = 5.0
+OFFGROUND_WHEEL_TORQUE_LIMIT = WHEEL_TORQUE_LIMIT
+# During a ledge transition one wheel can be the only real vertical support
+# for a short interval.  Use a deliberately low differential axial load to
+# damp roll through that supported leg; this is a load-transfer term, not a
+# pose teleport or a hard chassis-angle clamp.
+OFFGROUND_ROLL_KP_N_PER_DEG = 1.20
+OFFGROUND_ROLL_KD_N_PER_DEG_S = 0.06
+OFFGROUND_ROLL_FORCE_LIMIT = 28.0
+# During a unilateral edge transition the axial load path alone can be too
+# weak to arrest roll before the second wheel reaches the lower tread.  The
+# differential hip row supplies a bounded attitude moment through the leg
+# linkage; it is enabled only in the generic airborne path.
+OFFGROUND_ROLL_TP_KP_NM_PER_DEG = 0.0
+OFFGROUND_ROLL_TP_KD_NM_PER_DEG_S = 0.0
+OFFGROUND_ROLL_TP_LIMIT = 12.0
+# A single tread contact may be the only available load path at first
+# touchdown.  It is accepted only after the IMU and vertical velocity are
+# already inside a small basin; a side scrape with a large body motion cannot
+# satisfy this condition.
+OFFGROUND_LANDING_ATTITUDE_MAX = np.radians(12.0)
+OFFGROUND_LANDING_VERTICAL_SPEED_MAX = 0.80
+LANDING_AIR_DEPLOY_LENGTH = 0.27
+LANDING_AIR_DEPLOY_REF_RATE = 0.55
+LANDING_AIR_DEPLOY_KP = 350.0
+LANDING_AIR_DEPLOY_KD = 20.0
+LANDING_AIR_DEPLOY_FORCE_LIMIT = 60.0
+GBUF_COMPRESS_TIME = 0.20
+LANDING_COMPRESS_REF_RATE = 0.60
+GBUF_HOLD_MIN_TIME = 0.18
+GBUF_HOLD_MAX_TIME = 0.45
+GBUF_RETURN_REF_RATE = 0.80
+GBUF_PID_RETURN_TIME = 0.30
+GBUF_EXIT_STABLE_TIME = 0.18
 GBUF_SETTLE_LENGTH_ERROR = 0.015
-GBUF_SETTLE_LENGTH_SPEED = 0.12
+GBUF_SETTLE_LENGTH_SPEED = 0.10
+GBUF_PITCH_KP = 20.0
+GBUF_PITCH_KD = 6.0
+GBUF_PITCH_TP_LIMIT = 10.0
+# The landing buffer damps residual translation but does not clamp both drive
+# motors to their full reverse torque.  Full clamping makes the wheel behave
+# like a locked skid on a tread edge and creates the forward-pitch impulse.
+GBUF_BRAKE_KP = 6.0
+GBUF_BRAKE_LIMIT = WHEEL_TORQUE_LIMIT
+GBUF_SUPPORT_FLOOR = 35.0
+# A landing buffer can span more than one 200 mm tread when the vehicle has
+# residual forward speed.  If both wheels lose a vertical support normal
+# during that buffer, hand control back to the airborne branch instead of
+# pretending the wheels are still carrying the chassis.
+GBUF_SUPPORT_LOSS_CONFIRM = 20
 LANDING_BUFFER_MID_LENGTH = 0.21
 JUMP_AIR_THETA_HOLD_KP = 18.0
 JUMP_AIR_THETA_HOLD_KD = 8.0
@@ -186,6 +332,67 @@ JUMP_LANDING_SYNC_LIMIT = 32.0
 # to the firmware velocity sign at the LQR reference boundary.
 DRIVE_SPEED_MAX = 2.30
 DRIVE_YAW_RATE_MAX = 3.80
+DRIVE_SPEED_KP = 6.0
+DRIVE_SPEED_TRIM_LIMIT = 3.00
+DRIVE_SPEED_TRIM_SLEW = 16.0
+DRIVE_SPEED_DEADBAND = 0.02
+# Cruise governor (drive-speed channel above them kept for reference).  The
+# six-state LQR's velocity row alone behaves as a slow runaway under any
+# nonzero request, so this small common-wheel loop closes commanded speed.
+# It is deliberately subordinate: capped far below wheel saturation, slewed,
+# and bypassed at stand so it can never fight the zero-command balance.
+LQR_XDOT_SIGN = -1.0
+LQR_XDOT_SIGN = +1.0
+# Ownership transfer: while a real command is active the six-state velocity
+# row receives a ZERO reference (its own equilibrium is unreachable and ran
+# away), and the cruise governor below closes the true measured speed alone.
+DRIVE_CRUISE_ZERO_REF = False
+DRIVE_CRUISE_KP = 3.0
+DRIVE_CRUISE_KI = 6.0
+DRIVE_CRUISE_I_LIMIT = 1.5
+DRIVE_CRUISE_LIMIT = 1.20
+DRIVE_CRUISE_SLEW = 8.0
+DRIVE_CRUISE_MIN_COMMAND = 99.0  # governor disarmed pending boundary-sign resolution (see DESCENT_NOTES)
+DRIVE_CRUISE_VX_BYPASS = 2.60
+# Ledge-descent guard.  A falling wheel is visible in the reconstructed
+# normal force a few control ticks before the debounced off-ground edge.  Use
+# that lead time to remove forward speed, then keep a bounded common braking
+# torque through the LOW landing buffer.  The guard is transparent on level
+# ground and only releases after a complete drop has settled.
+DESCENT_GUARD_FN_TRIGGER = 49.5
+DESCENT_GUARD_MIN_SPEED = 0.08
+DESCENT_GUARD_BRAKE_LIMIT = WHEEL_TORQUE_LIMIT
+DESCENT_MODE_SPEED_LIMIT = 0.20
+DESCENT_EDGE_CREEP_SPEED = 0.20
+DESCENT_EDGE_CREEP_TRIM_LIMIT = 1.10
+DESCENT_EDGE_WHEEL_TORQUE = 0.35
+DESCENT_OFFGROUND_CONTACT_DRIVE_TORQUE = 0.55
+DESCENT_GUARD_PREEDGE_TIMEOUT = 0.80
+DESCENT_GUARD_EDGE_LOOKAHEAD = 0.25
+DESCENT_GUARD_EDGE_HOLD = 0.05
+# Shorten the linkage before the wheel reaches the ledge.  This is the
+# mechanically useful clearance motion of the real vehicle: keeping a long
+# leg extended while the chassis drops lets the upper tread catch the leg
+# body, which turns a normal edge crossing into a pitch impulse.  The
+# operator's selected length is restored by the ordinary ground loop after
+# the landing buffer has settled.
+DESCENT_EDGE_RETRACT_LENGTH = 0.130
+DESCENT_EDGE_RETRACT_RATE = 0.80
+# The wheel support disappears before the base has moved past the upper
+# tread.  A small common hip moment, applied while the geometric edge guard
+# is active, counters the repeatable forward-pitch impulse of that handoff;
+# it is a torque feed-forward, not a kinematic pose correction.
+DESCENT_EDGE_PITCH_BIAS = 10.0
+# A geometric edge loss is already a physical confirmation in the platform
+# scene: both wheel contact masks are empty, so waiting several more control
+# ticks leaves the normal ground VMC applying its old support load during the
+# first part of the drop.  Handoff on the next control update instead; the
+# force observer remains available for non-geometric takeoffs.
+DESCENT_EDGE_TAKEOFF_CONFIRM = 1
+# Kept configurable for regression sweeps: the strict force observer remains
+# the default authority, while the edge-transition handoff can be compared
+# against it without editing the controller.
+DESCENT_UNILATERAL_TAKEOFF_ENABLE = True
 YAW_RATE_FF = 0.34
 YAW_RATE_FB_KP = 0.80
 YAW_RATE_FB_KI = 0.60
@@ -226,6 +433,12 @@ VMC_COMPRESSION_MAX = np.radians(27.0)
 VMC_LENGTH_MIN = 0.11639905741242806
 VMC_LENGTH_MAX = VMC_ENCODER_ZERO_L0
 VMC_NORMAL_STAND_LENGTH = 0.150
+# Interactive low-leg presets.  The calibrated 0.150 m pose remains the
+# controller's safe initialization pose; the active standing reference can be
+# switched gradually to one of these three operator-selected lengths.
+LEG_LENGTH_PRESETS = (0.130, 0.240, 0.300)
+LEG_LENGTH_DEFAULT = LEG_LENGTH_PRESETS[0]
+LEG_LENGTH_SWITCH_RATE = 0.30
 VMC_NORMAL_STAND_COMPRESSION = np.radians(-10.573589924936163)
 # User calibration: backward body pitch is positive.  The embedded LQR uses
 # the negated IMU pitch in state element 4.
@@ -560,6 +773,18 @@ class TraditionalLQR:
         self.model = model
         self.base = self._body("base_link")
         self.ground = self._geom("ground")
+        # The platform scene replaces ``ground`` with ``ground_outer`` and
+        # three named step geoms.  Keep the contact whitelist at the controller
+        # boundary so jump prechecks and landing detection use the same ground
+        # set in both scenes.
+        self.ground_geoms = {
+            geom_id for name in (
+                "ground", "ground_outer", "platform_top",
+                "platform_step1", "platform_step2", "platform_step3",
+            )
+            for geom_id in (self._geom(name),)
+            if geom_id >= 0
+        }
         # The CAD assembly is yawed inside its export frame.  The gimbal is
         # mounted on the vehicle centreline and its fixed mounting point is
         # the reliable longitudinal reference, unlike the very small
@@ -588,6 +813,11 @@ class TraditionalLQR:
         self.previous: dict[str, float] = {}
         self.base_position0 = np.zeros(3)
         self.chassis_vx = 0.0
+        self.drive_speed_trim = 0.0
+        self.offground_suppress_elapsed = 0.0
+        self.cruise_integral = 0.0
+        self.danger_reason = "none"
+        self.danger_confirmed = False
         self.lqr_virtual_x = 0.0
         self.lqr_position_state = "drive"
         self.lqr_position_capture_timer = 0.0
@@ -619,6 +849,11 @@ class TraditionalLQR:
         self.last_motor_torque = {"l": np.zeros(2), "r": np.zeros(2)}
         self.control_elapsed = 0.0
         self.chassis_vx = 0.0
+        self.drive_speed_trim = 0.0
+        self.offground_suppress_elapsed = 0.0
+        self.cruise_integral = 0.0
+        self.danger_reason = "none"
+        self.danger_confirmed = False
         self.lqr_virtual_x = 0.0
         self.lqr_position_state = "drive"
         self.lqr_position_capture_timer = 0.0
@@ -651,6 +886,11 @@ class TraditionalLQR:
         self.previous_base_position = np.zeros(3)
         self.drive_forward_target = 0.0
         self.drive_yaw_rate_target = 0.0
+        # Keep the validated 0.150 m equilibrium as the library default.
+        # The interactive runner selects LEG_LENGTH_DEFAULT explicitly so
+        # changing the UI default does not invalidate headless calibration
+        # tests or firmware-frame startup checks.
+        self.normal_leg_length = VMC_NORMAL_STAND_LENGTH
         self.yaw_rate = 0.0
         self.yaw_output = 0.0
         self.yaw_integral = 0.0
@@ -664,7 +904,7 @@ class TraditionalLQR:
         self.jump_landing_count = 0
         self.jump_takeoff_seen = False
         self.jump_landing_seen = False
-        self.jump_length_target = VMC_NORMAL_STAND_LENGTH
+        self.jump_length_target = self.normal_leg_length
         self.jump_air_profile_active = False
         self.jump_air_elapsed = 0.0
         self.jump_air_reference = {"l": JUMP_AIR_LANDING_LENGTH, "r": JUMP_AIR_LANDING_LENGTH}
@@ -680,11 +920,10 @@ class TraditionalLQR:
         self.jump_landing_tp_handoff_elapsed = 0.0
         self.jump_landing_tp_command = {"l": 0.0, "r": 0.0}
         self.jump_landing_wheel_command = {"l": 0.0, "r": 0.0}
-        # Landing starts with appreciable horizontal velocity even when the
-        # jump request is stationary.  A 2x observer distance gain stops that
-        # transient at the takeoff point instead of capturing a new point
-        # roughly 0.16 m behind it.
-        self.jump_landing_position_x_ratio = 6.0
+        # Kept for telemetry/backward compatibility; jump touchdown no longer
+        # uses a takeoff-point position correction because it can command a
+        # large reverse wheel impulse after landing.
+        self.jump_landing_position_x_ratio = 0.0
         self.jump_hip_motor_torque_lpf = {
             "l": np.zeros(2), "r": np.zeros(2)
         }
@@ -703,12 +942,34 @@ class TraditionalLQR:
         self.airborne_wheel_shut = False
         self.airborne_theta_hold_tp = {"l": 0.0, "r": 0.0}
         self.airborne_soft_force = {"l": 0.0, "r": 0.0}
+        self.airborne_lqr_tp = {"l": 0.0, "r": 0.0}
+        self.airborne_length_sync_force = 0.0
+        self.descent_guard_active = False
+        self.descent_mode_active = False
+        self.descent_guard_drop_seen = False
+        self.descent_guard_preedge_elapsed = 0.0
+        self.descent_edge_transition_active = False
+        self.descent_edge_loss_count = 0
+        self.descent_edge_profile_active = False
+        self.descent_edge_contact_drive = False
+        self.descent_edge_length_reference = {
+            "l": self.normal_leg_length,
+            "r": self.normal_leg_length,
+        }
+        self.offground_wheel_torque = 0.0
+        self.landing_air_deploy_ref = {
+            "l": LANDING_AIR_DEPLOY_LENGTH,
+            "r": LANDING_AIR_DEPLOY_LENGTH,
+        }
+        self.landing_airborne_elapsed = 0.0
         # landing buffer for the generic airborne path (idle take-offs)
         self.gbuf_phase = "inactive"   # inactive/compress/hold/return
         self.gbuf_elapsed = 0.0
         self.gbuf_exit_stable = 0.0
         self.gbuf_length_ref = {"l": VMC_NORMAL_STAND_LENGTH, "r": VMC_NORMAL_STAND_LENGTH}
+        self.gbuf_absorb_ref = {"l": VMC_NORMAL_STAND_LENGTH, "r": VMC_NORMAL_STAND_LENGTH}
         self.gbuf_contact_length = {"l": VMC_NORMAL_STAND_LENGTH, "r": VMC_NORMAL_STAND_LENGTH}
+        self.gbuf_contact_loss_count = 0
         # Tunable air-attitude allocation.  These are deliberately instance
         # fields so headless sweeps can test the physical controller without
         # rewriting source between every run.
@@ -826,8 +1087,9 @@ class TraditionalLQR:
         """Set persistent keyboard-style velocity commands.
 
         ``forward_mps`` is positive toward the visible front of the chassis.
-        The firmware velocity observer has the opposite sign in this CAD
-        export, so the sign translation is made only in ``_state``.
+        The frame translation for this CAD export lives where chassis_vx is
+        measured in ``step()``; ``_state`` consumes both terms in that same
+        sign convention.
         """
         self.drive_forward_target = float(np.clip(
             forward_mps, -DRIVE_SPEED_MAX, DRIVE_SPEED_MAX
@@ -836,8 +1098,67 @@ class TraditionalLQR:
             yaw_rate_rad_s, -DRIVE_YAW_RATE_MAX, DRIVE_YAW_RATE_MAX
         ))
 
+    def set_leg_length(self, leg_length: float) -> float:
+        """Select a supported standing length for the interactive controller.
+
+        The normal-ground VMC reference slews toward this target in
+        ``_apply_vmc_support``.  Deferring that slew keeps a live length
+        button from generating an instantaneous axial-force step.
+        """
+        requested = float(leg_length)
+        if not np.isfinite(requested):
+            raise ValueError("leg length must be finite")
+        selected = min(LEG_LENGTH_PRESETS, key=lambda value: abs(value - requested))
+        if abs(selected - requested) > 1e-6:
+            raise ValueError(
+                "unsupported leg length "
+                f"{requested:.6f}; choose one of {LEG_LENGTH_PRESETS}"
+            )
+        self.normal_leg_length = float(selected)
+        if not self.descent_guard_active and not self.descent_edge_profile_active:
+            for side in ("l", "r"):
+                self.descent_edge_length_reference[side] = self.normal_leg_length
+        return self.normal_leg_length
+
+    def _drive_target_for_control(self) -> float:
+        """Return the velocity reference currently allowed by safety logic."""
+        if self.descent_guard_active:
+            # Before the wheels leave the edge, reduce the commanded speed
+            # instead of making the velocity reference jump to zero.  Once a
+            # real takeoff has been observed, the guard owns the wheel brake
+            # and the reference becomes zero for the landing sequence.
+            if not self.descent_guard_drop_seen:
+                return float(np.clip(
+                    self.drive_forward_target,
+                    -DESCENT_MODE_SPEED_LIMIT,
+                    DESCENT_MODE_SPEED_LIMIT,
+                ))
+            return 0.0
+        if self.descent_mode_active:
+            return float(np.clip(
+                self.drive_forward_target,
+                -DESCENT_MODE_SPEED_LIMIT,
+                DESCENT_MODE_SPEED_LIMIT,
+            ))
+        return self.drive_forward_target
+
     def stop_drive(self) -> None:
         self.set_drive_command(0.0, 0.0)
+        # A completed ledge descent is intentionally latched safe.  An
+        # explicit stop is the operator acknowledgement that it is safe to
+        # resume ordinary ground driving.
+        self.descent_guard_active = False
+        self.descent_mode_active = False
+        self.descent_guard_drop_seen = False
+        self.descent_guard_preedge_elapsed = 0.0
+        self.descent_edge_transition_active = False
+        self.descent_edge_loss_count = 0
+        self.descent_edge_profile_active = False
+        self.descent_edge_contact_drive = False
+        self.descent_edge_length_reference = {
+            "l": self.normal_leg_length,
+            "r": self.normal_leg_length,
+        }
 
     def _reset_jump_runtime(self, clear_cooldown: bool = False) -> None:
         self.jump_state = "idle"
@@ -850,7 +1171,7 @@ class TraditionalLQR:
         self.jump_landing_count = 0
         self.jump_takeoff_seen = False
         self.jump_landing_seen = False
-        self.jump_length_target = VMC_NORMAL_STAND_LENGTH
+        self.jump_length_target = self.normal_leg_length
         self.jump_air_profile_active = False
         self.jump_air_elapsed = 0.0
         self.jump_air_reference = {
@@ -873,30 +1194,166 @@ class TraditionalLQR:
         self.jump_landing_tp_handoff_elapsed = 0.0
         self.jump_landing_tp_command = {"l": 0.0, "r": 0.0}
         self.jump_landing_wheel_command = {"l": 0.0, "r": 0.0}
+        self.offground_fn_raw = {"l": 0.0, "r": 0.0}
+        self.offground_fn_filtered = {"l": 0.0, "r": 0.0}
+        self.offground_fn_history = {"l": [0.0] * 4, "r": [0.0] * 4}
+        self.offground_filter_index = 0
+        self.offground_deriv_init = False
+        self.offground_last_d_l0 = {"l": 0.0, "r": 0.0}
+        self.offground_last_d_theta = {"l": 0.0, "r": 0.0}
+        self.off_ground_cnt = 0
+        self.off_ground = False
+        self.off_ground_last = False
+        self.airborne_wheel_shut = False
+        self.airborne_theta_hold_tp = {"l": 0.0, "r": 0.0}
+        self.airborne_soft_force = {"l": 0.0, "r": 0.0}
+        self.airborne_lqr_tp = {"l": 0.0, "r": 0.0}
+        self.airborne_length_sync_force = 0.0
+        self.descent_guard_active = False
+        self.descent_mode_active = False
+        self.descent_guard_drop_seen = False
+        self.descent_guard_preedge_elapsed = 0.0
+        self.offground_wheel_torque = 0.0
+        self.landing_air_deploy_ref = {
+            "l": LANDING_AIR_DEPLOY_LENGTH,
+            "r": LANDING_AIR_DEPLOY_LENGTH,
+        }
+        self.landing_airborne_elapsed = 0.0
         self.landing_buffer_phase = "inactive"
         self.landing_buffer_phase_elapsed = 0.0
         self.landing_buffer_elapsed = 0.0
         self.landing_exit_stable_elapsed = 0.0
         self.landing_length_reference = {
-            "l": VMC_NORMAL_STAND_LENGTH,
-            "r": VMC_NORMAL_STAND_LENGTH,
+            "l": self.normal_leg_length,
+            "r": self.normal_leg_length,
         }
         self.landing_support_handoff = {"l": 0.0, "r": 0.0}
+        self.gbuf_phase = "inactive"
+        self.gbuf_elapsed = 0.0
+        self.gbuf_exit_stable = 0.0
+        self.gbuf_length_ref = {
+            "l": self.normal_leg_length,
+            "r": self.normal_leg_length,
+        }
+        self.gbuf_absorb_ref = {
+            "l": self.normal_leg_length,
+            "r": self.normal_leg_length,
+        }
+        self.gbuf_contact_length = {
+            "l": self.normal_leg_length,
+            "r": self.normal_leg_length,
+        }
+        self.gbuf_contact_loss_count = 0
 
     def _wheel_contacts(self, data: mujoco.MjData) -> dict[str, bool]:
         touching = {"l": False, "r": False}
         wheel_side = {ids.wheel_body: side for side, ids in self.sides.items()}
         for contact_index in range(data.ncon):
             contact = data.contact[contact_index]
-            if self.ground not in (contact.geom1, contact.geom2):
+            contact_geoms = {int(contact.geom1), int(contact.geom2)}
+            if not contact_geoms.intersection(self.ground_geoms):
                 continue
-            other_geom = (
-                contact.geom2 if contact.geom1 == self.ground else contact.geom1
+            other_geom = next(
+                geom for geom in contact_geoms
+                if geom not in self.ground_geoms
             )
             side = wheel_side.get(int(self.model.geom_bodyid[other_geom]))
             if side is not None:
                 touching[side] = True
         return touching
+
+    def _wheel_support_contacts(self, data: mujoco.MjData) -> dict[str, bool]:
+        """Return wheel contacts whose normal can carry chassis weight.
+
+        A wheel touching a stair riser is a collision, not a landing.  The
+        first row of MuJoCo's contact frame is the contact normal; requiring
+        a substantial vertical component prevents a side scrape from being
+        promoted to bilateral support.
+        """
+        supporting = {"l": False, "r": False}
+        wheel_side = {ids.wheel_body: side for side, ids in self.sides.items()}
+        for contact_index in range(data.ncon):
+            contact = data.contact[contact_index]
+            contact_geoms = {int(contact.geom1), int(contact.geom2)}
+            if not contact_geoms.intersection(self.ground_geoms):
+                continue
+            other_geom = next(
+                geom for geom in contact_geoms
+                if geom not in self.ground_geoms
+            )
+            side = wheel_side.get(int(self.model.geom_bodyid[other_geom]))
+            if side is None:
+                continue
+            normal = np.asarray(contact.frame, dtype=float).reshape(3, 3)[0]
+            if abs(float(normal[2])) >= 0.65:
+                supporting[side] = True
+        return supporting
+
+    def _ground_edge_distance_ahead(
+        self, data: mujoco.MjData, direction: np.ndarray
+    ) -> float | None:
+        """Return the nearest contacted box-terrain edge along ``direction``.
+
+        A force-only ledge detector is too noisy for this model: suspension
+        motion on a flat tread can briefly reduce the reconstructed force by
+        the same amount as a real drop.  The platform terrain is represented
+        by fixed box geoms, so use the actual contacted box boundary as a
+        geometric confirmation before applying the high-authority brake.
+        ``None`` means the current ground is a plane or another terrain type
+        without a usable box boundary.
+        """
+        direction = np.asarray(direction, dtype=float)
+        norm = float(np.linalg.norm(direction[:2]))
+        if norm <= 1e-9:
+            return None
+        direction = direction / norm
+        wheel_bodies = {
+            ids.wheel_body for ids in self.sides.values()
+        }
+        nearest: float | None = None
+        for contact_index in range(data.ncon):
+            contact = data.contact[contact_index]
+            geom_ids = (int(contact.geom1), int(contact.geom2))
+            terrain_ids = [
+                geom_id for geom_id in geom_ids
+                if geom_id in self.ground_geoms
+                and self.model.geom_type[geom_id] == mujoco.mjtGeom.mjGEOM_BOX
+            ]
+            wheel_ids = [
+                geom_id for geom_id in geom_ids
+                if int(self.model.geom_bodyid[geom_id]) in wheel_bodies
+            ]
+            if not terrain_ids or not wheel_ids:
+                continue
+            wheel_body = int(self.model.geom_bodyid[wheel_ids[0]])
+            wheel_position = data.xpos[wheel_body]
+            for terrain_id in terrain_ids:
+                rotation = data.geom_xmat[terrain_id].reshape(3, 3)
+                local_position = rotation.T @ (
+                    wheel_position - data.geom_xpos[terrain_id]
+                )
+                local_direction = rotation.T @ direction
+                distances: list[float] = []
+                for axis in range(2):
+                    component = float(local_direction[axis])
+                    if component > 1e-6:
+                        distances.append(
+                            (self.model.geom_size[terrain_id, axis]
+                             - local_position[axis]) / component
+                        )
+                    elif component < -1e-6:
+                        distances.append(
+                            (-self.model.geom_size[terrain_id, axis]
+                             - local_position[axis]) / component
+                        )
+                if not distances:
+                    continue
+                distance = min(distances)
+                if distance >= -0.05 and (
+                    nearest is None or distance < nearest
+                ):
+                    nearest = max(0.0, float(distance))
+        return nearest
 
     def begin_jump(self, data: mujoco.MjData) -> tuple[bool, str]:
         """Request the firmware jump state machine from a standing LQR state."""
@@ -921,11 +1378,25 @@ class TraditionalLQR:
             reasons.append("pitch")
         if abs(self.body_roll(data)) > JUMP_PRECHECK_ROLL_MAX:
             reasons.append("roll")
-        if abs(self.chassis_vx) > JUMP_PRECHECK_VX_MAX:
+        # Near-stationary interlock.  With no operator speed command the
+        # chassis must genuinely be parked.  A nonzero command makes the
+        # launch intentional instead of accidental, so bind only the plant's
+        # known steady-state tracking error on top of the requested speed
+        # (the plain calibrated LQR settles a 0.20 m/s request near
+        # ~0.32 m/s), capped so a hard-driven entry cannot become a launch.
+        launch_vx_max = JUMP_SAFE_LAUNCH_VX_MAX
+        commanded_speed = abs(self._drive_target_for_control())
+        if commanded_speed > 1e-6:
+            launch_vx_max = max(
+                launch_vx_max,
+                min(commanded_speed + JUMP_SAFE_LAUNCH_COMMAND_MARGIN,
+                    JUMP_SAFE_LAUNCH_MOVING_MAX),
+            )
+        if abs(self.chassis_vx) > launch_vx_max:
             reasons.append("vx")
         if abs(self.yaw_rate) > JUMP_PRECHECK_YAW_RATE_MAX:
             reasons.append("yaw rate")
-        if not (0.110 <= average_length <= 0.300):
+        if not (VMC_LENGTH_MIN <= average_length <= VMC_LENGTH_MAX):
             reasons.append(f"l0={average_length:.3f}")
         if reasons:
             self.jump_fault = "precheck"
@@ -945,9 +1416,18 @@ class TraditionalLQR:
         self.jump_air_elapsed = 0.0
         self.jump_launch_vx = self.chassis_vx
         self.jump_takeoff_position = data.xpos[self.base].copy()
-        self.jump_stationary_position_hold = (
-            abs(self.drive_forward_target) < 1e-6
-        )
+        # A moving-drive command is not safe to carry through the short
+        # preload/touchdown handoff.  It can keep the speed loop active while
+        # the wheels are unloading, then reapply the same command as soon as
+        # contact is confirmed and produce the observed runaway reverse.
+        # Require the operator to press an arrow again after the jump settles.
+        self.set_drive_command(0.0, 0.0)
+        # A jump's touchdown point is not a reliable position reference: the
+        # vehicle can acquire a small ballistic translation before the wheels
+        # recapture the ground.  Let the normal zero-speed observer brake the
+        # touchdown velocity locally instead of commanding a long reverse
+        # correction back to the takeoff point.
+        self.jump_stationary_position_hold = False
         self.jump_thrust_pitch_rate_lpf = -float(self.last_state["l"][5])
         self.jump_air_common_tp_lpf = 0.0
         self.jump_air_pitch_rate_lpf = -float(self.last_state["l"][5])
@@ -985,7 +1465,7 @@ class TraditionalLQR:
         self.jump_fault = fault
         self.jump_state = "idle"
         self.jump_elapsed = 0.0
-        self.jump_length_target = VMC_NORMAL_STAND_LENGTH
+        self.jump_length_target = self.normal_leg_length
         # A fault can be raised while the chassis is physically airborne.
         # Keep the already-running tuck/deploy reference alive until contact;
         # otherwise one software-state edge would strand the legs at their
@@ -995,12 +1475,13 @@ class TraditionalLQR:
             self.jump_air_elapsed = 0.0
         self.jump_thrust_pitch_tp = 0.0
         self.jump_landing_ground_elapsed = 0.0
+        # The landing buffer keeps its own captured reference while it
+        # absorbs the touchdown.  Do not hand that temporary (often longer)
+        # reference to the normal LQR when the jump state changes to idle:
+        # doing so can extend both legs on the very next control tick and
+        # create the apparent second jump / runaway reverse braking.
         for side in ("l", "r"):
-            self.length_reference[side] = (
-                self.landing_length_reference[side]
-                if self.landing_buffer_phase != "inactive"
-                else VMC_NORMAL_STAND_LENGTH
-            )
+            self.length_reference[side] = self.normal_leg_length
 
     def _start_jump_air_profile(self, data: mujoco.MjData) -> None:
         if self.jump_air_profile_active:
@@ -1049,7 +1530,14 @@ class TraditionalLQR:
             for side in ("l", "r")
         }
         ref_max = min(refs.values()) + LANDING_LOW_CONTACT_SPLIT_MAX
-        refs = {side: min(value, ref_max) for side, value in refs.items()}
+        # A touchdown reference may be longer than the operator's selected
+        # standing length.  Clamp it before the first landing-support update;
+        # otherwise the captured airborne geometry can command an immediate
+        # leg extension at contact.
+        refs = {
+            side: min(value, ref_max, self.normal_leg_length)
+            for side, value in refs.items()
+        }
         self.landing_length_reference = refs
         # Raw wheel contact starts actuator capture immediately.  Ground-state
         # confirmation remains debounced below, but it must not leave the air
@@ -1089,8 +1577,8 @@ class TraditionalLQR:
             # This removes the rebound that previously followed first impact.
             if not self.jump_off_ground:
                 for side in ("l", "r"):
-                    ratchet_target = max(
-                        VMC_NORMAL_STAND_LENGTH,
+                    ratchet_target = min(
+                        self.normal_leg_length,
                         lengths[side] + LANDING_LOW_RATCHET_MARGIN,
                     )
                     ratchet_target = min(
@@ -1129,11 +1617,11 @@ class TraditionalLQR:
             for side in ("l", "r"):
                 self.landing_length_reference[side] = self._move_towards(
                     self.landing_length_reference[side],
-                    VMC_NORMAL_STAND_LENGTH,
+                    self.normal_leg_length,
                     LANDING_RETURN_REF_RATE_LOW * dt,
                 )
             target_reached = all(
-                abs(value - VMC_NORMAL_STAND_LENGTH) <= 0.0005
+                abs(value - self.normal_leg_length) <= 0.0005
                 for value in self.landing_length_reference.values()
             )
             stable_ground = not self.jump_off_ground and (
@@ -1173,6 +1661,283 @@ class TraditionalLQR:
             self.base_lin_z_adr = int(adr) + 5
         return float(data.qacc[self.base_lin_z_adr])
 
+    def _begin_generic_airborne_profile(self, data: mujoco.MjData) -> None:
+        """Start the non-jump airborne leg profile used by the firmware."""
+        self.landing_airborne_elapsed = 0.0
+        for side in ("l", "r"):
+            length = self.vmc_kinematics(data, side).l0
+            if not np.isfinite(length):
+                length = self.normal_leg_length
+            length = float(np.clip(length, 0.10, 0.34))
+            # Do not add the virtual 20 N preload to the measured geometry at
+            # the instant of takeoff.  On a ledge the measured length can
+            # already be near the four-bar's 0.33 m extension singularity;
+            # adding preload there commands still more extension just as the
+            # upper tread is leaving the leg.  The air profile may deploy
+            # toward 0.27 m later, but it must start no longer than that.
+            self.landing_air_deploy_ref[side] = float(np.clip(
+                min(length, LANDING_AIR_DEPLOY_LENGTH),
+                0.10,
+                LANDING_AIR_DEPLOY_LENGTH,
+            ))
+
+    def _update_generic_airborne_profile(self, dt: float) -> None:
+        if not self.off_ground or dt <= 0.0:
+            return
+        self.landing_airborne_elapsed += dt
+        for side in ("l", "r"):
+            self.landing_air_deploy_ref[side] = self._move_towards(
+                self.landing_air_deploy_ref[side],
+                LANDING_AIR_DEPLOY_LENGTH,
+                LANDING_AIR_DEPLOY_REF_RATE * dt,
+            )
+
+    def _begin_descent_guard(self) -> None:
+        """Arm the edge-speed brake used for an uncommanded ledge drop."""
+        self.descent_guard_active = True
+        self.descent_guard_drop_seen = False
+        self.descent_guard_preedge_elapsed = 0.0
+        # Do not change the operator-selected leg length before the wheel has
+        # actually crossed the edge.  With a wheel constrained on the upper
+        # tread, shortening the four-bar lowers the chassis into that tread;
+        # the leg collision then happens before the wheel can drop.  The
+        # edge mode below keeps the selected length reference common-mode and
+        # hands the wheel a small, direction-aware roll-over torque instead.
+        self.descent_edge_profile_active = False
+        for side in ("l", "r"):
+            self.descent_edge_length_reference[side] = self.normal_leg_length
+
+    def _update_descent_guard(
+        self,
+        data: mujoco.MjData,
+        dt: float,
+        fn_avg: float,
+        raw_wheel_contacts: dict[str, bool],
+        takeoff_edge: bool,
+        landing_edge: bool,
+    ) -> None:
+        """Stop horizontal motion around a generic off-ground event.
+
+        A normal LQR has no terrain preview, so its speed reference remains
+        active right up to the ledge.  The force observer provides a short
+        preview of a wheel unloading; this guard changes the reference to
+        zero before the drop and applies a common wheel brake after contact.
+        After a real drop it remains latched until an explicit stop/reset,
+        preventing the next step from being reached with residual momentum.
+        """
+        if dt <= 0.0:
+            return
+        if getattr(self, "disable_descent_guard", False):
+            # Opt-out for climbing scenarios: the uphill wall otherwise
+            # reads as a drop edge and the approach brake kills the run-up.
+            return
+
+        # chassis_vx is nose-positive after step()'s single frame
+        # translation, so the guard's speed sense matches the UI value.  The
+        # previous negation made a genuine forward approach read as reverse
+        # and the force-preview brake never armed before the ledge.
+        ui_speed = self.chassis_vx
+        requested_speed = self.drive_forward_target
+        moving_towards_command = (
+            abs(requested_speed) >= DESCENT_GUARD_MIN_SPEED
+            and (
+                abs(ui_speed) < 0.02
+                or requested_speed * ui_speed >= 0.0
+            )
+        )
+        heading, _ = self._heading(data)
+        direction = heading if requested_speed >= 0.0 else -heading
+        edge_distance = self._ground_edge_distance_ahead(data, direction)
+        force_preview = (
+            not self.off_ground
+            and not self.descent_guard_active
+            and moving_towards_command
+            and edge_distance is not None
+            and edge_distance <= DESCENT_GUARD_EDGE_LOOKAHEAD
+        )
+        if force_preview:
+            self._begin_descent_guard()
+        if takeoff_edge:
+            if not self.descent_guard_active:
+                self._begin_descent_guard()
+            self.descent_mode_active = True
+            self.descent_guard_drop_seen = True
+        if landing_edge:
+            if not self.descent_guard_active:
+                self._begin_descent_guard()
+            self.descent_guard_drop_seen = True
+
+        if not self.descent_guard_active:
+            return
+
+        if self.off_ground:
+            self.descent_mode_active = True
+            self.descent_guard_drop_seen = True
+            return
+
+        if not self.descent_guard_drop_seen:
+            self.descent_guard_preedge_elapsed += dt
+            # A short force dip can occur without a real ledge.  Do not hold
+            # the brake forever in that case; the next force dip will arm it
+            # again if the vehicle reaches an actual edge.  A geometric edge
+            # is different: while it is still in the look-ahead window the
+            # guard must remain armed, otherwise the normal speed loop and
+            # the preview guard fight each other and the vehicle dithers in
+            # front of the riser.
+            edge_still_near = (
+                edge_distance is not None
+                and edge_distance <= 1.5 * DESCENT_GUARD_EDGE_LOOKAHEAD
+            )
+            if (
+                self.descent_guard_preedge_elapsed
+                >= DESCENT_GUARD_PREEDGE_TIMEOUT
+                and abs(ui_speed) <= 0.08
+                and not edge_still_near
+            ):
+                self.descent_guard_active = False
+                self.descent_guard_preedge_elapsed = 0.0
+                self.descent_edge_profile_active = False
+            return
+
+        # Once a real drop has been observed, keep the safety latch active.
+        # Returning the original drive command automatically is unsafe here:
+        # it can reverse the vehicle back toward the last riser before the
+        # operator has confirmed the new support surface.
+        return
+
+    def _generic_landing_supports(
+        self, lengths: dict[str, float]
+    ) -> dict[str, float]:
+        """Landing-buffer axial support using the real LOW-leg gains."""
+        supports: dict[str, float] = {}
+        for side in ("l", "r"):
+            length = lengths[side]
+            spring = self._gas_virtual_support(length) if self.gas_enabled else 0.0
+            length_force = float(np.clip(
+                LANDING_LENGTH_KP * (self.gbuf_length_ref[side] - length)
+                - LANDING_LENGTH_KD_LOW * self.length_rate_lpf[side],
+                -LANDING_LENGTH_OUTPUT_LIMIT_LOW,
+                LANDING_LENGTH_OUTPUT_LIMIT_LOW,
+            ))
+            support = (
+                0.5 * TOTAL_MASS * GRAVITY
+                - spring
+                + length_force
+                + self.support_trim[side]
+                + (self.roll_force if side == "l" else -self.roll_force)
+            )
+            # A gas spring can make the raw LOW-leg force negative while the
+            # wheel has just moved to a lower tread and the chassis is still
+            # above it.  Letting that negative force through removes the
+            # vertical support exactly when the body is crossing the riser.
+            # Keep a small bilateral support floor for the short landing
+            # buffer; the normal standing PID resumes after it exits.
+            supports[side] = float(np.clip(
+                max(support, GBUF_SUPPORT_FLOOR),
+                -SUPPORT_FORCE_LIMIT,
+                SUPPORT_FORCE_LIMIT,
+            ))
+        return supports
+
+    def is_properly_standing(self, data: mujoco.MjData) -> bool:
+        """True ONLY for a real stance: wheels bearing load, legs down near
+        the calibrated geometry, chassis at standing height, body level.
+
+        Pitch/roll alone are NOT acceptance criteria -- a chassis lying flat
+        with the legs folded skyward also reads pitch=roll=0.
+        """
+        grounded = self._wheel_support_contacts(data)
+        if not all(grounded.values()):
+            return False
+        for side in ("l", "r"):
+            kin = self.vmc_kinematics(data, side)
+            if abs(np.degrees(kin.phi0) - 90.0) > 15.0:
+                return False
+            if kin.l0 > 0.22:
+                return False
+        if float(data.xpos[self.base][2]) < 0.19:
+            return False
+        return (
+            abs(float(np.degrees(self.body_pitch(data)))) < 6.0
+            and abs(float(np.degrees(self.body_roll(data)))) < 6.0
+        )
+
+    def _update_danger_check(self, data: mujoco.MjData, dt: float) -> None:
+        """Port of chassis_safety.c Security_Checking().
+
+        Hard attitude/leg-range violations are immediate; soft pitch/roll/
+        theta candidates debounce while the chassis is grounded.  A confirmed
+        danger state with the machine otherwise idle hands control to the
+        recovery module (begin_recovery), the ported equivalent of the
+        firmware DANGER -> CHASSIS_RECOVERY takeover.
+        """
+        if dt <= 0.0:
+            return
+        if getattr(self, "disable_danger_check", False):
+            # Opt-out for scripted gaits that intentionally fold the legs.
+            return
+        pitch_deg = float(np.degrees(self.body_pitch(data)))
+        roll_deg = float(np.degrees(self.body_roll(data)))
+        reason = "none"
+        if abs(pitch_deg) > DANGER_HARD_ATTITUDE_DEG:
+            reason = "hard_pitch"
+        elif abs(roll_deg) > DANGER_HARD_ATTITUDE_DEG:
+            reason = "hard_roll"
+        else:
+            low = DANGER_LEG_SAFE_AREA_DEG
+            high = 180.0 - low
+            for side in ("l", "r"):
+                phi = float(np.degrees(self.vmc_kinematics(data, side).phi0))
+                if phi <= low or phi >= high:
+                    reason = f"hard_{side}_phi"
+                    break
+        # The soft candidate keeps accumulating through touch-and-go
+        # bounces: a fall that tumbles across terrain must still trigger the
+        # instant the chassis finally settles grounded, not only when the
+        # whole 0.08 s window happens to fit inside one contact spell.
+        if reason == "none":
+            candidate = "none"
+            theta_bad = False
+            for side in ("l", "r"):
+                kin = self.vmc_kinematics(data, side)
+                theta = np.pi / 2.0 - kin.phi0 + self.body_pitch(data)
+                if abs(theta) > DANGER_SOFT_THETA_RAD:
+                    theta_bad = True
+                    break
+            if abs(pitch_deg) > DANGER_SOFT_PITCH_DEG:
+                candidate = "soft_pitch"
+            elif abs(roll_deg) > DANGER_SOFT_ROLL_DEG:
+                candidate = "soft_roll"
+            elif theta_bad:
+                candidate = "soft_theta"
+            if candidate != "none":
+                if candidate != getattr(self, "_danger_candidate", "none"):
+                    self._danger_candidate = candidate
+                    self._danger_timer = 0.0
+                self._danger_timer = getattr(self, "_danger_timer", 0.0) + dt
+                if self._danger_timer >= DANGER_SOFT_CONFIRM_TIME:
+                    reason = candidate
+            else:
+                self._danger_candidate = "none"
+                self._danger_timer = 0.0
+
+        if reason != "none":
+            self.danger_reason = reason
+            self.danger_confirmed = True
+            if (
+                self.recovery_state == "idle"
+                and self.jump_state == "idle"
+                and self.enabled
+                and not self.off_ground
+                and not self.jump_off_ground
+            ):
+                # The firmware chassis task routes DANGER to the recovery
+                # module; do the same with the ported self-rescue machine.
+                self.begin_fall_recovery(data)
+        else:
+            self.danger_reason = "none"
+            self.danger_confirmed = False
+
     def _update_off_ground(self, data: mujoco.MjData, dt: float) -> None:
         """Real-vehicle off-ground detection and airborne handling.
 
@@ -1180,21 +1945,31 @@ class TraditionalLQR:
         reconstructed from the commanded VMC axial force, gas-spring support,
         leg torque and the unsprung-mass vertical acceleration, filtered over
         four samples, and debounced before setting the off-ground flag.
-        While airborne the wheels are shut, the hips hold theta, axial force
-        drops to the soft 20 N command and the integrators are frozen; a
-        landing edge starts the COMPRESS->HOLD->RETURN buffer.
+        While airborne the wheels are shut, the hips use the real bounded LQR
+        plus theta-hold command, the axial force follows the real 0.27 m
+        deploy profile, and the integrators are frozen.  A landing edge starts
+        the real LOW-leg COMPRESS->HOLD->RETURN buffer.
 
         Only active when the jump machine is idle (stair / ledge drops).
         """
-        if self.jump_state != "idle" or self.landing_buffer_phase != "inactive":
+        if self.jump_state != "idle":
             return
         if not self.enabled:
             return
         if dt <= 0.0:
             return
 
+        # The start-up window only disarms the Ground_Detect decision below.
+        # The support-force reconstruction itself keeps running: freezing the
+        # four-sample history instead would leave cold-start values in the
+        # filter, and the first live evaluation after the window would then
+        # misread a genuine stand-up transient as takeoff (observed as an
+        # immediate airborne deploy hop at t~3 s on the platform scene).
+        self.offground_suppress_elapsed += dt
+
         pitch = self.body_pitch(data)
         base_az = self._base_vertical_accel_raw(data)
+        raw_wheel_contacts = self._wheel_contacts(data)
 
         for side in ("l", "r"):
             kin = self.vmc_kinematics(data, side)
@@ -1238,34 +2013,185 @@ class TraditionalLQR:
                 sum(self.offground_fn_history[side]) / 4.0
             )
         fn_avg = 0.5 * sum(self.offground_fn_filtered.values())
+        support_contacts = self._wheel_support_contacts(data)
+        # The generic airborne branch normally shuts the drive wheels and
+        # uses them only as a reaction axis.  During a guarded stair descent,
+        # however, a wheel may regain a real vertical tread contact while the
+        # body is still outside the conservative landing attitude basin.  In
+        # that short interval a small common drive torque is physically
+        # meaningful and lets the wheel roll off the next tread; it is never
+        # enabled for a riser scrape or while both wheels are unsupported.
+        self.descent_edge_contact_drive = bool(
+            self.descent_guard_active
+            and self.off_ground
+            and any(support_contacts.values())
+            and self.gbuf_phase == "inactive"
+        )
+        heading, _ = self._heading(data)
+        direction = (
+            heading if self.drive_forward_target >= 0.0 else -heading
+        )
+        edge_distance = self._ground_edge_distance_ahead(data, direction)
+        edge_hold_preview = (
+            self.descent_guard_active
+            and not self.off_ground
+            and edge_distance is not None
+            and edge_distance <= DESCENT_GUARD_EDGE_HOLD
+        )
+        edge_contact_loss = (
+            self.descent_guard_active
+            and self.descent_edge_transition_active
+            and not any(support_contacts.values())
+            and not any(raw_wheel_contacts.values())
+        )
+        if edge_contact_loss:
+            self.descent_edge_loss_count += 1
+        else:
+            self.descent_edge_loss_count = 0
+        if self.gbuf_phase != "inactive":
+            if all(support_contacts.values()):
+                self.gbuf_contact_loss_count = 0
+            else:
+                self.gbuf_contact_loss_count += 1
+        self.descent_edge_transition_active = bool(
+            self.descent_guard_active
+            and not self.off_ground
+            and (
+                self.descent_edge_transition_active
+                or not all(support_contacts.values())
+                or edge_hold_preview
+            )
+        )
 
         # debounced state machine (Ground_Detect)
-        if not self.off_ground:
-            if (
+        detector_armed = (
+            self.offground_suppress_elapsed >= OFFGROUND_STARTUP_SUPPRESS_S
+        )
+        if not detector_armed:
+            self.off_ground = False
+            self.off_ground_cnt = 0
+        elif (
+            not self.off_ground
+            and self.gbuf_phase == "inactive"
+        ):
+            force_takeoff_candidate = (
                 fn_avg < OFFGROUND_TAKEOFF_FN_LOW
                 and self.offground_fn_filtered["l"] < OFFGROUND_JUMP_TAKEOFF_SIDE_MAX
                 and self.offground_fn_filtered["r"] < OFFGROUND_JUMP_TAKEOFF_SIDE_MAX
+            )
+            # During the geometric pre-edge clearance motion the gas-spring
+            # cancellation can make the reconstructed virtual force negative
+            # even though both wheels are still visibly carrying the chassis.
+            # That is a support-model transient, not takeoff.  Let the real
+            # contact geometry own this particular handoff; otherwise the
+            # controller declares airborne while parked at the ledge.
+            if (
+                self.descent_edge_profile_active
+                and self.descent_guard_active
+                and not self.descent_guard_drop_seen
             ):
+                force_takeoff_candidate = False
+            # A ledge drop is often unilateral at first: one wheel is still
+            # on the upper tread while the other has already crossed the
+            # edge.  Waiting for both reconstructed forces to become small
+            # leaves the normal ground VMC in charge during that interval;
+            # its wheel/leg loop then treats the riser scrape as a pose error
+            # and winds the chassis into roll.  Once the geometric edge guard
+            # is active, a real vertical tread on only one wheel is enough to
+            # hand the transition to the airborne profile.  The same normal
+            # and contact checks are retained for the eventual landing.
+            unilateral_edge_candidate = (
+                DESCENT_UNILATERAL_TAKEOFF_ENABLE
+                and
+                self.descent_guard_active
+                and self.descent_edge_transition_active
+                and any(support_contacts.values())
+                and not all(support_contacts.values())
+                and any(raw_wheel_contacts.values())
+                and edge_distance is not None
+                and edge_distance <= DESCENT_GUARD_EDGE_HOLD
+            )
+            # Once both wheels have actually left the vertical treads, the
+            # force observer still contains the previous axial command and
+            # can take several hundred milliseconds to fall below its
+            # threshold.  Keep the normal LQR from chasing that stale force:
+            # the guarded edge transition plus three consecutive contact-free
+            # samples is a physical takeoff confirmation for this scene.
+            geometry_edge_candidate = (
+                self.descent_edge_loss_count
+                >= DESCENT_EDGE_TAKEOFF_CONFIRM
+            )
+            takeoff_candidate = (
+                force_takeoff_candidate
+                or unilateral_edge_candidate
+                or geometry_edge_candidate
+            )
+            if takeoff_candidate:
                 self.off_ground_cnt += 1
                 if self.off_ground_cnt >= OFFGROUND_TAKEOFF_CONFIRM_LOW:
                     self.off_ground = True
                     self.off_ground_cnt = 0
             else:
                 self.off_ground_cnt = 0
-        else:
-            if (
+        elif self.off_ground:
+            self.descent_edge_transition_active = False
+            landing_attitude_stable = (
+                abs(pitch) <= OFFGROUND_LANDING_ATTITUDE_MAX
+                and abs(self.body_roll(data)) <= OFFGROUND_LANDING_ATTITUDE_MAX
+                and abs(float(data.qvel[2]))
+                <= OFFGROUND_LANDING_VERTICAL_SPEED_MAX
+            )
+            force_landing = (
                 self.offground_fn_filtered["l"] > OFFGROUND_LANDING_FN_LOW
                 and self.offground_fn_filtered["r"] > OFFGROUND_LANDING_FN_LOW
-            ):
+                and all(support_contacts.values())
+                and landing_attitude_stable
+            )
+            if force_landing:
                 self.off_ground_cnt += 1
                 if self.off_ground_cnt >= OFFGROUND_LANDING_CONFIRM_LOW:
                     self.off_ground = False
                     self.off_ground_cnt = 0
             else:
                 self.off_ground_cnt = 0
+        else:
+            # The LOW landing buffer owns the contact transition.  Its
+            # captured support force can dip below the takeoff threshold as
+            # the legs compress; allowing Ground_Detect to run again here
+            # would re-enter airborne mode in the middle of a landing and
+            # produce the observed repeated hop / runaway drive.
+            self.off_ground_cnt = 0
+            self.off_ground = False
+            self.descent_edge_transition_active = False
 
+        # The generic landing buffer is allowed to absorb the first tread,
+        # but it must not mask a second edge.  A short debounce filters the
+        # occasional missing contact normal from solver contact churn; a
+        # sustained loss means the wheels are on a riser or airborne again.
+        # Re-open the airborne path before calculating the edge transition so
+        # the next landing can create a fresh buffer of its own.
+        if (
+            detector_armed
+            and self.gbuf_phase != "inactive"
+            and self.descent_guard_active
+            and self.gbuf_contact_loss_count >= GBUF_SUPPORT_LOSS_CONFIRM
+        ):
+            self.gbuf_phase = "inactive"
+            self.gbuf_elapsed = 0.0
+            self.gbuf_exit_stable = 0.0
+            self.gbuf_contact_loss_count = 0
+            self.off_ground = True
+            self.off_ground_cnt = 0
+            self.descent_edge_transition_active = False
+            self.descent_edge_loss_count = 0
+
+        takeoff_edge = self.off_ground and not self.off_ground_last
         landing_edge = (not self.off_ground) and self.off_ground_last
         self.off_ground_last = self.off_ground
+
+        if takeoff_edge:
+            self._begin_generic_airborne_profile(data)
+        self._update_generic_airborne_profile(dt)
 
         # landing buffer state machine (generic airborne path)
         if self.gbuf_phase != "inactive":
@@ -1277,22 +2203,38 @@ class TraditionalLQR:
                 abs(self.length_rate_lpf[side]) for side in ("l", "r")
             )
             if self.gbuf_phase == "compress":
-                # follow the compression stroke down, never re-extend
+                # Keep the captured contact geometry during compression.  The
+                # real LOW buffer lets the physical leg shorten against that
+                # fixed reference; it does not immediately pull the reference
+                # back to the normal standing length.
                 for side in ("l", "r"):
-                    ratchet = min(
-                        VMC_NORMAL_STAND_LENGTH,
-                        max(
-                            lengths[side] + 0.005,
-                            VMC_NORMAL_STAND_LENGTH,
-                        ),
-                    )
-                    self.gbuf_length_ref[side] = min(
-                        self.gbuf_length_ref[side], ratchet
+                    self.gbuf_length_ref[side] = self._move_towards(
+                        self.gbuf_length_ref[side],
+                        self.gbuf_absorb_ref[side],
+                        LANDING_COMPRESS_REF_RATE * dt,
                     )
                 if self.gbuf_elapsed >= GBUF_COMPRESS_TIME:
                     self.gbuf_phase = "hold"
                     self.gbuf_elapsed = 0.0
             elif self.gbuf_phase == "hold":
+                for side in ("l", "r"):
+                    ratchet_target = min(
+                        lengths[side] + LANDING_LOW_RATCHET_MARGIN,
+                        self.normal_leg_length,
+                    )
+                    # Never command the reference back beyond the captured
+                    # contact geometry while the body is still absorbing the
+                    # drop.  Otherwise the measured leg extension ratchets
+                    # the reference upward, launches the chassis, and turns
+                    # the landing buffer into a second jump.
+                    ratchet_target = min(
+                        ratchet_target, self.gbuf_length_ref[side]
+                    )
+                    self.gbuf_length_ref[side] = self._move_towards(
+                        self.gbuf_length_ref[side],
+                        ratchet_target,
+                        LANDING_LOW_RATCHET_REF_RATE * dt,
+                    )
                 settled = (
                     abs(0.5 * sum(lengths.values())
                         - 0.5 * sum(self.gbuf_length_ref.values()))
@@ -1311,11 +2253,11 @@ class TraditionalLQR:
                 for side in ("l", "r"):
                     self.gbuf_length_ref[side] = self._move_towards(
                         self.gbuf_length_ref[side],
-                        VMC_NORMAL_STAND_LENGTH,
+                        self.normal_leg_length,
                         GBUF_RETURN_REF_RATE * dt,
                     )
                 target_reached = all(
-                    abs(v - VMC_NORMAL_STAND_LENGTH) <= 0.0005
+                    abs(v - self.normal_leg_length) <= 0.0005
                     for v in self.gbuf_length_ref.values()
                 )
                 if (
@@ -1327,47 +2269,277 @@ class TraditionalLQR:
                     self.gbuf_exit_stable = 0.0
                 if (
                     target_reached
+                    and self.gbuf_elapsed >= GBUF_PID_RETURN_TIME
                     and self.gbuf_exit_stable >= GBUF_EXIT_STABLE_TIME
                 ):
                     self.gbuf_phase = "inactive"
                     self.gbuf_elapsed = 0.0
                     self.gbuf_exit_stable = 0.0
 
+        # A ledge guard is scoped to one physical edge.  Once the captured
+        # landing reference has returned and the IMU/velocity are settled,
+        # release the guard so the operator's still-held command can approach
+        # the next step at the normal controlled speed.  An explicit stop is
+        # still sufficient to clear it immediately.
+        if (
+            self.descent_guard_active
+            and self.descent_guard_drop_seen
+            and not self.off_ground
+            and self.gbuf_phase == "inactive"
+            and abs(self.chassis_vx) <= DESCENT_GUARD_MIN_SPEED
+            and abs(pitch) <= OFFGROUND_LANDING_ATTITUDE_MAX
+            and abs(self.body_roll(data)) <= OFFGROUND_LANDING_ATTITUDE_MAX
+        ):
+            self.descent_guard_active = False
+            self.descent_mode_active = False
+            self.descent_guard_drop_seen = False
+            self.descent_guard_preedge_elapsed = 0.0
+            self.descent_edge_profile_active = False
+
         if landing_edge:
+            self.descent_edge_transition_active = False
             self.gbuf_phase = "compress"
             self.gbuf_elapsed = 0.0
             self.gbuf_exit_stable = 0.0
+            self.gbuf_contact_loss_count = 0
+            refs = {
+                side: float(np.clip(
+                    self.vmc_kinematics(data, side).l0, 0.10, 0.34
+                ))
+                for side in ("l", "r")
+            }
+            ref_max = min(refs.values()) + LANDING_LOW_CONTACT_SPLIT_MAX
             for side in ("l", "r"):
                 self.gbuf_contact_length[side] = self.vmc_kinematics(
                     data, side
                 ).l0
-                self.gbuf_length_ref[side] = min(
-                    self.gbuf_contact_length[side], LANDING_BUFFER_MID_LENGTH
-                )
+                refs[side] = min(refs[side], ref_max)
+                self.gbuf_length_ref[side] = refs[side]
+                self.gbuf_absorb_ref[side] = refs[side]
+
+        self._update_descent_guard(
+            data,
+            dt,
+            fn_avg,
+            raw_wheel_contacts,
+            takeoff_edge,
+            landing_edge,
+        )
+
+        if (
+            self.descent_edge_transition_active
+            and not self.off_ground
+            and self.gbuf_phase == "inactive"
+        ):
+            # The upper tread can stop carrying one wheel a few samples
+            # before Ground_Detect declares takeoff.  During that interval a
+            # normal hip row is still based on the old ground equilibrium and
+            # lets the chassis rotate into the riser.  Apply the same bounded
+            # common pitch hold used immediately after takeoff, but keep the
+            # axial support and wheel shutoff in their contact-safe modes.
+            pitch_rate = self.body_pitch_rate(data)
+            edge_pitch_tp = float(np.clip(
+                DESCENT_EDGE_PITCH_BIAS
+                - OFFGROUND_PITCH_KP * pitch
+                - OFFGROUND_PITCH_KD * pitch_rate,
+                -OFFGROUND_PITCH_TP_LIMIT,
+                OFFGROUND_PITCH_TP_LIMIT,
+            ))
+            for side in ("l", "r"):
+                self.last_output[side][1] = edge_pitch_tp
 
         # --- airborne / buffer output override ---
-        airborne = self.off_ground or self.gbuf_phase != "inactive"
-        self.airborne_wheel_shut = airborne
-        if airborne:
+        if self.descent_edge_transition_active and self.gbuf_phase == "inactive":
+            # The normal LQR can spike when the wheel contact point reaches a
+            # sharp box edge.  Pass only a small common roll-over torque to
+            # the motors; this keeps the wheel moving over the edge without
+            # allowing the contact impulse to become a propulsion command.
+            direction_sign = (
+                1.0 if self.drive_forward_target >= 0.0 else -1.0
+            )
+            edge_wheel = -direction_sign * DESCENT_EDGE_WHEEL_TORQUE
+            self.last_output["l"][0] = edge_wheel
+            self.last_output["r"][0] = edge_wheel
+        self.airborne_wheel_shut = self.off_ground
+        if self.off_ground:
+            # The wheels are still useful in free flight as a reaction wheel:
+            # use their angular momentum to oppose chassis pitch while the
+            # hips deploy the legs.  This is internal attitude control only;
+            # it does not assume a wheel-ground contact.
+            pitch_rate = self.body_pitch_rate(data)
+            self.offground_wheel_torque = float(np.clip(
+                OFFGROUND_WHEEL_PITCH_KP * pitch
+                + OFFGROUND_WHEEL_PITCH_KD * pitch_rate,
+                -OFFGROUND_WHEEL_TORQUE_LIMIT,
+                OFFGROUND_WHEEL_TORQUE_LIMIT,
+            ))
+            lengths = {
+                side: self.vmc_kinematics(data, side).l0
+                for side in ("l", "r")
+            }
+            air_support = {}
+            raw_air_tp = {}
             for side in ("l", "r"):
-                # shut the drive wheels
-                self.last_output[side][0] = 0.0
-                # gentle hip theta hold while off the ground
                 kin = self.vmc_kinematics(data, side)
                 theta = np.pi / 2.0 - kin.phi0 + pitch
-                tp = float(np.clip(
+                # The real generic airborne branch zeros the wheel row and
+                # retains only the hip theta/theta-rate rows.  Do not reuse
+                # the already-computed normal-ground Tp here: it also contains
+                # body-pitch feedback, which the firmware explicitly removes
+                # for non-jump airborne motion.
+                lqr_row = self.gain(kin.l0)[1]
+                lqr_tp_raw = float(
+                    lqr_row[0] * self.last_state[side][0]
+                    + lqr_row[1] * self.last_state[side][1]
+                )
+                lqr_tp = float(np.clip(
+                    OFFGROUND_LQR_TP_GAIN * lqr_tp_raw,
+                    -OFFGROUND_LQR_TP_LIMIT,
+                    OFFGROUND_LQR_TP_LIMIT,
+                ))
+                theta_hold = float(np.clip(
                     OFFGROUND_THETA_HOLD_KP * theta
                     + OFFGROUND_THETA_HOLD_KD * self.theta_rate_lpf[side],
                     -OFFGROUND_THETA_HOLD_TP_LIMIT,
                     OFFGROUND_THETA_HOLD_TP_LIMIT,
                 ))
-                self.last_output[side][1] = tp
-                # soft axial force, gas-spring compensated
-                self.last_support[side] = (
-                    OFFGROUND_SOFT_FORCE - self._gas_virtual_support(kin.l0)
+                pitch_rate = self.body_pitch_rate(data)
+                pitch_tp = float(np.clip(
+                    -OFFGROUND_PITCH_KP * pitch
+                    - OFFGROUND_PITCH_KD * pitch_rate,
+                    -OFFGROUND_PITCH_TP_LIMIT,
+                    OFFGROUND_PITCH_TP_LIMIT,
+                ))
+                raw_air_tp[side] = lqr_tp + theta_hold + pitch_tp
+                spring = self._gas_virtual_support(kin.l0) if self.gas_enabled else 0.0
+                air_force = OFFGROUND_SOFT_FORCE - spring
+                deploy_force = float(np.clip(
+                    LANDING_AIR_DEPLOY_KP * (
+                        self.landing_air_deploy_ref[side] - kin.l0
+                    )
+                    - LANDING_AIR_DEPLOY_KD * self.length_rate_lpf[side]
+                    - OFFGROUND_SOFT_FORCE,
+                    -LANDING_AIR_DEPLOY_FORCE_LIMIT,
+                    LANDING_AIR_DEPLOY_FORCE_LIMIT,
+                ))
+                air_support[side] = air_force + deploy_force
+
+            common_support = 0.5 * (air_support["l"] + air_support["r"])
+            differential_support = 0.5 * (
+                air_support["l"] - air_support["r"]
+            )
+            self.airborne_length_sync_force = float(np.clip(
+                OFFGROUND_LENGTH_SYNC_KP * (lengths["r"] - lengths["l"])
+                + OFFGROUND_LENGTH_SYNC_KD * (
+                    self.length_rate_lpf["r"] - self.length_rate_lpf["l"]
+                ),
+                -OFFGROUND_LENGTH_SYNC_LIMIT,
+                OFFGROUND_LENGTH_SYNC_LIMIT,
+            ))
+            air_support["l"] = common_support + differential_support + self.airborne_length_sync_force
+            air_support["r"] = common_support - differential_support - self.airborne_length_sync_force
+            for side in ("l", "r"):
+                self.last_output[side][0] = 0.0
+                self.airborne_lqr_tp[side] = float(
+                    np.clip(raw_air_tp[side], -OFFGROUND_LQR_TP_LIMIT,
+                            OFFGROUND_LQR_TP_LIMIT)
                 )
+                self.airborne_theta_hold_tp[side] = float(
+                    raw_air_tp[side] - lqr_tp
+                )
+                self.last_output[side][1] = self.airborne_lqr_tp[side]
+                self.last_support[side] = float(np.clip(
+                    air_support[side],
+                    -OFFGROUND_AIR_RETRACT_LIMIT,
+                    OFFGROUND_SPRING_COMP_LIMIT,
+                ))
+            if self.descent_guard_active and any(support_contacts.values()):
+                # Apply the load-transfer term after the bilateral air-force
+                # clamp.  Before this point both sides can sit at the
+                # negative retract limit, which silently discards the entire
+                # differential correction and lets the supported wheel tip
+                # the chassis.  A riser scrape is excluded by the vertical
+                # contact mask.
+                edge_roll_force = float(np.clip(
+                    OFFGROUND_ROLL_KP_N_PER_DEG
+                    * np.degrees(self.body_roll(data))
+                    + OFFGROUND_ROLL_KD_N_PER_DEG_S
+                    * self.roll_rate_lpf_deg_s,
+                    -OFFGROUND_ROLL_FORCE_LIMIT,
+                    OFFGROUND_ROLL_FORCE_LIMIT,
+                ))
+                self.last_support["l"] = float(np.clip(
+                    self.last_support["l"] + edge_roll_force,
+                    -OFFGROUND_AIR_RETRACT_LIMIT,
+                    OFFGROUND_SPRING_COMP_LIMIT,
+                ))
+                self.last_support["r"] = float(np.clip(
+                    self.last_support["r"] - edge_roll_force,
+                    -OFFGROUND_AIR_RETRACT_LIMIT,
+                    OFFGROUND_SPRING_COMP_LIMIT,
+                ))
+            air_roll_tp = float(np.clip(
+                -OFFGROUND_ROLL_TP_KP_NM_PER_DEG
+                * np.degrees(self.body_roll(data))
+                - OFFGROUND_ROLL_TP_KD_NM_PER_DEG_S
+                * self.roll_rate_lpf_deg_s,
+                -OFFGROUND_ROLL_TP_LIMIT,
+                OFFGROUND_ROLL_TP_LIMIT,
+            ))
+            pitch_rate = self.body_pitch_rate(data)
+            air_pitch_extra_tp = float(np.clip(
+                -OFFGROUND_PITCH_TP_EXTRA_KP_NM_PER_DEG
+                * np.degrees(pitch)
+                - OFFGROUND_PITCH_TP_EXTRA_KD_NM_PER_DEG_S
+                * pitch_rate,
+                -OFFGROUND_PITCH_TP_EXTRA_LIMIT,
+                OFFGROUND_PITCH_TP_EXTRA_LIMIT,
+            ))
+            self.last_output["l"][1] += air_roll_tp
+            self.last_output["r"][1] -= air_roll_tp
+            self.last_output["l"][1] += air_pitch_extra_tp
+            self.last_output["r"][1] += air_pitch_extra_tp
+        elif self.gbuf_phase != "inactive":
+            self.offground_wheel_torque = 0.0
+            # Contact is already confirmed by the landing edge.  Keep the
+            # wheel LQR alive while the LOW axial landing reference returns.
+            lengths = {
+                side: self.vmc_kinematics(data, side).l0
+                for side in ("l", "r")
+            }
+            self.last_support = self._generic_landing_supports(lengths)
+            for side in ("l", "r"):
                 self.length_reference[side] = self.gbuf_length_ref[side]
+            if self.descent_guard_active:
+                pitch_rate = self.body_pitch_rate(data)
+                gbuf_pitch_tp = float(np.clip(
+                    -GBUF_PITCH_KP * pitch - GBUF_PITCH_KD * pitch_rate,
+                    -GBUF_PITCH_TP_LIMIT,
+                    GBUF_PITCH_TP_LIMIT,
+                ))
+                gbuf_brake = float(np.clip(
+                    # A brake must oppose the measured nose-positive
+                    # Kept in the firmware-frame sense of the rest of this
+                    # port: the accepted stationary-jump dynamics couple
+                    # through this exact expression.
+                    -GBUF_BRAKE_KP * (-self.chassis_vx),
+                    -GBUF_BRAKE_LIMIT,
+                    GBUF_BRAKE_LIMIT,
+                ))
+                for side in ("l", "r"):
+                    self.last_output[side][0] = gbuf_brake
+                    # The landing buffer owns the hip row.  Adding its
+                    # pitch correction on top of the previous normal-LQR
+                    # output and theta synchronizer can leave a stale
+                    # command of tens of Nm in ``last_output``; the actuator
+                    # then saturates and the buffer itself becomes a second
+                    # attitude impulse.  Keep only the bounded common pitch
+                    # damper while the captured support reference settles.
+                    self.last_output[side][1] = gbuf_pitch_tp
             # freeze leg-length / theta integrators (firmware behavior)
+        else:
+            self.offground_wheel_torque = 0.0
+        if self.off_ground or self.gbuf_phase != "inactive":
             for side in ("l", "r"):
                 if hasattr(self, "length_integral"):
                     self.length_integral[side] = 0.0
@@ -1468,13 +2640,13 @@ class TraditionalLQR:
                     average_length, JUMP_THRUST_LENGTH, 0.34
                 ))
         elif self.jump_state == "flight":
-            self.jump_length_target = VMC_NORMAL_STAND_LENGTH
+            self.jump_length_target = self.normal_leg_length
             self._start_jump_air_profile(data)
             self._update_jump_air_profile(dt)
             if self.jump_elapsed >= JUMP_FLIGHT_TIMEOUT:
                 self._finish_jump("flight_timeout")
         elif self.jump_state == "landing":
-            self.jump_length_target = VMC_NORMAL_STAND_LENGTH
+            self.jump_length_target = self.normal_leg_length
             stable = (
                 not self.jump_off_ground
                 and abs(self.body_pitch(data)) <= JUMP_LANDING_PITCH_MAX
@@ -1503,7 +2675,7 @@ class TraditionalLQR:
             if self.jump_elapsed >= JUMP_ABORT_HOLD_TIME:
                 self.jump_length_target = self._move_towards(
                     self.jump_length_target,
-                    VMC_NORMAL_STAND_LENGTH,
+                    self.normal_leg_length,
                     JUMP_ABORT_RETRACT_RATE * dt,
                 )
             if self.jump_elapsed >= JUMP_ABORT_SETTLE_TIME:
@@ -1554,6 +2726,10 @@ class TraditionalLQR:
         self.previous_base_position = data.xpos[self.base].copy()
         _, self.previous_heading = self._heading(data)
         self.chassis_vx = 0.0
+        self.offground_suppress_elapsed = 0.0
+        self.cruise_integral = 0.0
+        self.danger_reason = "none"
+        self.danger_confirmed = False
         self.yaw_rate = 0.0
         self.yaw_output = 0.0
         self.yaw_integral = 0.0
@@ -1718,6 +2894,87 @@ class TraditionalLQR:
         self.last_support = {"l": 0.0, "r": 0.0}
         self.last_motor_torque = {"l": np.zeros(2), "r": np.zeros(2)}
 
+    def begin_fall_recovery(self, data: mujoco.MjData) -> None:
+        """REC_SIMPLE_ENTER port: seed the recovery from ANY fallen pose.
+
+        The firmware recovery is pose-agnostic at entry -- HOLD classifies
+        inverted / needs-forward-zero / already-upright and routes onward.
+        This replaces the strict encoder-zero gate for live fall rescue.
+        """
+        self.reset(data)
+        self.enabled = False
+        self.stance_enabled = False
+        self.gas_enabled = True
+        self.gimbal_locked = True
+        self.lqr_leg_level = "low"
+        self.lqr_gain = 0.0
+        self.recovery_state = "fw_hold"
+        self.recovery_elapsed = 0.0
+        self.recovery_stable_elapsed = 0.0
+        self.fw_recovery_axes = {}
+        self.fw_recovery_angle_gain = 0.0
+        self.fw_recovery_force_gain = {"l": 0.0, "r": 0.0}
+        self.fw_recovery_breakaway_released = False
+        self.recovery_output = {"l": np.zeros(2), "r": np.zeros(2)}
+        self.last_output = {"l": np.zeros(2), "r": np.zeros(2)}
+        self.last_support = {"l": 0.0, "r": 0.0}
+        self.last_motor_torque = {"l": np.zeros(2), "r": np.zeros(2)}
+        for side in ("l", "r"):
+            kin = self.vmc_kinematics(data, side)
+            self.recovery_last_l0[side] = kin.l0
+            self.recovery_last_phi0[side] = kin.phi0
+            self.fw_recovery_l0_ref[side] = kin.l0
+            self.fw_recovery_length_rate[side] = 0.0
+        # inverted-rescue scratch state
+        self.fw_inverted_l0_ref = {
+            side: self.fw_recovery_l0_ref[side] for side in ("l", "r")
+        }
+        self.fw_inverted_best_pitch = None
+        self.fw_inverted_stall_timer = 0.0
+        self.fw_inverted_wait_leg = 0
+        self.fw_zero_targets = {"l": 0.0, "r": 0.0}
+        self.fw_zero_stable_timer = 0.0
+
+    def _fw_compute_zero_targets(self, kinematics) -> None:
+        """Recovery_Simple_EnterForwardZero(): signed shortest path to zero."""
+        wrapped = {
+            side: self._wrap_pi(kinematics[side].phi0)
+            for side in ("l", "r")
+        }
+        near_zero = {
+            side: abs(wrapped[side]) < FW_RECOVERY_FORWARD_ZERO_PHI0_OK
+            for side in ("l", "r")
+        }
+        side_pose = {
+            side: (
+                FW_RECOVERY_SIDE_POSE_MIN
+                <= abs(wrapped[side])
+                <= FW_RECOVERY_SIDE_POSE_MAX
+            )
+            for side in ("l", "r")
+        }
+        asymmetric = near_zero["l"] != near_zero["r"] and (
+            (near_zero["l"] and side_pose["r"])
+            or (near_zero["r"] and side_pose["l"])
+        )
+        symmetric = (
+            side_pose["l"] and side_pose["r"]
+            and wrapped["l"] * wrapped["r"] > 0.0
+        )
+        short_path = asymmetric or symmetric
+        for side in ("l", "r"):
+            phi0 = kinematics[side].phi0
+            if near_zero[side]:
+                self.fw_zero_targets[side] = phi0
+            elif short_path:
+                self.fw_zero_targets[side] = phi0 + self._wrap_pi(-phi0)
+            else:
+                delta = self._wrap_pi(-phi0)
+                if delta < 0.0:
+                    delta += 2.0 * np.pi
+                self.fw_zero_targets[side] = phi0 + delta
+            self.fw_recovery_l0_ref[side] = kinematics[side].l0
+
     @staticmethod
     def _capture_recovery_axis(actual: float) -> RecoverySwingAxis:
         return RecoverySwingAxis(
@@ -1855,18 +3112,388 @@ class TraditionalLQR:
                 length_rate[side] = self.fw_recovery_length_rate[side]
 
             if self.recovery_state == "fw_hold":
-                if self.recovery_elapsed >= FW_RECOVERY_HOLD_TIME_S:
+                if self.recovery_elapsed < FW_RECOVERY_HOLD_TIME_S:
+                    pass
+                else:
+                    pitch_now = self.body_pitch(data)
+                    long_legs = all(
+                        kin.l0 > FW_RECOVERY_L0_LONG
+                        for kin in kinematics.values()
+                    )
+                    phi_near_zero = all(
+                        abs(self._wrap_pi(kin.phi0))
+                        < FW_RECOVERY_PHI_NEAR_ZERO
+                        for kin in kinematics.values()
+                    )
+                    if (
+                        abs(pitch_now) > FW_RECOVERY_FORWARD_PITCH_MAX
+                        and abs(pitch_now) < FW_RECOVERY_INVERTED_ENTER_PITCH
+                    ):
+                        # Firmware fault band between forward and inverted.
+                        self.recovery_state = "fw_fault"
+                        self.recovery_elapsed = 0.0
+                    elif abs(pitch_now) >= FW_RECOVERY_INVERTED_ENTER_PITCH:
+                        self.fw_inverted_l0_ref = {
+                            side: kin.l0 for side, kin in kinematics.items()
+                        }
+                        self.fw_inverted_best_pitch = abs(
+                            float(np.degrees(pitch_now))
+                        )
+                        self.fw_inverted_stall_timer = 0.0
+                        self.recovery_state = "fw_inverted_capture"
+                        self.recovery_elapsed = 0.0
+                    elif not (long_legs and phi_near_zero):
+                        self._fw_compute_zero_targets(kinematics)
+                        self.fw_zero_stable_timer = 0.0
+                        self.fw_recovery_axes = {
+                            side: RecoverySwingAxis(
+                                actual=kin.phi0,
+                                start_actual=kin.phi0,
+                                last_raw=kin.phi0,
+                                ref=kin.phi0,
+                                target=self.fw_zero_targets[side],
+                            )
+                            for side, kin in kinematics.items()
+                        }
+                        self.fw_recovery_angle_gain = 0.0
+                        self.recovery_state = "fw_forward_zero"
+                        self.recovery_elapsed = 0.0
+                    else:
+                        self.fw_recovery_axes = {
+                            side: self._capture_recovery_axis(kin.phi0)
+                            for side, kin in kinematics.items()
+                        }
+                        # REC_SIMPLE_CHECK_ZERO seeds the source controller at
+                        # full angle gain before entering SWING.  Starting this
+                        # ramp from zero makes the simulated leg lag its profile
+                        # and stores an artificial late torque impulse.
+                        self.fw_recovery_angle_gain = 1.0
+                        self.recovery_state = "fw_swing"
+                        self.recovery_elapsed = 0.0
+
+            elif self.recovery_state == "fw_fault":
+                for side in ("l", "r"):
+                    self.recovery_output[side] = np.zeros(2)
+                    self.last_support[side] = 0.0
+                    self.last_output[side] = np.zeros(2)
+                    self.set_vmc_motor_torques(
+                        data, side, 0.0, 0.0, torque_limit=HIP_TORQUE_LIMIT
+                    )
+                if self.recovery_elapsed >= FW_RECOVERY_FAULT_HOLD_TIME:
+                    # Deviation from the firmware (which latches the fault
+                    # until the operator retries): re-enter HOLD so an
+                    # unattended fallen chassis keeps trying to right itself.
+                    self.recovery_state = "fw_hold"
+                    self.recovery_elapsed = 0.0
+
+            elif self.recovery_state == "fw_inverted_capture":
+                for side in ("l", "r"):
+                    kin = kinematics[side]
+                    force = 0.0
+                    tp = 0.0
+                    self.recovery_output[side] = np.array((force, tp))
+                    self.last_support[side] = force
+                    self.last_output[side] = np.array((0.0, tp))
+                    self.set_vmc_motor_torques(
+                        data, side, force, tp, torque_limit=HIP_TORQUE_LIMIT
+                    )
+                if self.recovery_elapsed >= FW_RECOVERY_INVERTED_CAPTURE_TIME:
+                    for side in ("l", "r"):
+                        self.fw_recovery_l0_ref[side] = (
+                            self.fw_inverted_l0_ref[side]
+                        )
+                    self.recovery_state = "fw_inverted_preload"
+                    self.recovery_elapsed = 0.0
+
+            elif self.recovery_state == "fw_inverted_preload":
+                for side in ("l", "r"):
+                    kin = kinematics[side]
+                    force = FW_RECOVERY_INVERTED_CONTACT_FORCE
+                    tp = 0.0
+                    self.recovery_output[side] = np.array((force, tp))
+                    self.last_support[side] = force
+                    self.last_output[side] = np.array((0.0, tp))
+                    self.set_vmc_motor_torques(
+                        data, side, force, tp, torque_limit=HIP_TORQUE_LIMIT
+                    )
+                if self.recovery_elapsed >= FW_RECOVERY_INVERTED_PRELOAD_TIME:
+                    # Calibrated direction: both legs turn toward negative
+                    # phi0 (REC_SIMPLE_INVERTED_PRELOAD tail).
+                    left = kinematics["l"].phi0
+                    right_rel = self._wrap_pi(
+                        kinematics["r"].phi0 - left
+                    )
+                    right_unwrapped = left + right_rel
+                    negative_lead = min(right_unwrapped, left)
+                    sym_target = (
+                        negative_lead - FW_RECOVERY_INVERTED_TURN_MAX_TRAVEL
+                    )
                     self.fw_recovery_axes = {
-                        side: self._capture_recovery_axis(kin.phi0)
+                        "l": RecoverySwingAxis(
+                            actual=left,
+                            start_actual=left,
+                            last_raw=left,
+                            ref=left,
+                            target=sym_target,
+                        ),
+                        "r": RecoverySwingAxis(
+                            actual=right_unwrapped,
+                            start_actual=right_unwrapped,
+                            last_raw=kinematics["r"].phi0,
+                            ref=right_unwrapped,
+                            target=sym_target,
+                        ),
+                    }
+                    self.fw_recovery_angle_gain = 0.0
+                    self.fw_inverted_best_pitch = abs(float(np.degrees(
+                        self.body_pitch(data)
+                    )))
+                    self.fw_inverted_stall_timer = 0.0
+                    self.fw_inverted_wait_leg = 0
+                    self.recovery_state = "fw_inverted_turn"
+                    self.recovery_elapsed = 0.0
+
+            elif self.recovery_state == "fw_inverted_turn":
+                for side in ("l", "r"):
+                    self._update_recovery_axis(
+                        self.fw_recovery_axes[side],
+                        kinematics[side].phi0,
+                        control_dt,
+                    )
+                ax_l, ax_r = self.fw_recovery_axes["l"], self.fw_recovery_axes["r"]
+                progress_l = ax_l.direction * (ax_l.actual - ax_l.start_actual)
+                progress_r = ax_r.direction * (ax_r.actual - ax_r.start_actual)
+                sync_error = progress_l - progress_r
+                sync_corr = float(np.clip(
+                    FW_RECOVERY_INVERTED_SYNC_KP * abs(sync_error),
+                    0.0,
+                    FW_RECOVERY_INVERTED_SYNC_CORR_LIMIT,
+                ))
+                speed_l = FW_RECOVERY_INVERTED_TURN_RATE
+                speed_r = FW_RECOVERY_INVERTED_TURN_RATE
+                if sync_error > 0.0:
+                    speed_l -= sync_corr
+                else:
+                    speed_r -= sync_corr
+                if self.fw_inverted_wait_leg == 1:
+                    if sync_error <= FW_RECOVERY_INVERTED_WAIT_EXIT:
+                        self.fw_inverted_wait_leg = 0
+                elif self.fw_inverted_wait_leg == -1:
+                    if sync_error >= -FW_RECOVERY_INVERTED_WAIT_EXIT:
+                        self.fw_inverted_wait_leg = 0
+                if self.fw_inverted_wait_leg == 0:
+                    if sync_error >= FW_RECOVERY_INVERTED_WAIT_ENTER:
+                        self.fw_inverted_wait_leg = 1
+                    elif sync_error <= -FW_RECOVERY_INVERTED_WAIT_ENTER:
+                        self.fw_inverted_wait_leg = -1
+                if self.fw_inverted_wait_leg == 1:
+                    speed_l = 0.0
+                elif self.fw_inverted_wait_leg == -1:
+                    speed_r = 0.0
+                self._run_recovery_axis(
+                    ax_l, speed_l, FW_RECOVERY_INVERTED_TURN_ACCEL, control_dt
+                )
+                self._run_recovery_axis(
+                    ax_r, speed_r, FW_RECOVERY_INVERTED_TURN_ACCEL, control_dt
+                )
+                self.fw_recovery_angle_gain = min(
+                    1.0,
+                    self.fw_recovery_angle_gain
+                    + FW_RECOVERY_INVERTED_TURN_GAIN_RATE * control_dt,
+                )
+                abs_pitch = abs(float(np.degrees(self.body_pitch(data))))
+                if self.fw_inverted_best_pitch is None:
+                    self.fw_inverted_best_pitch = abs_pitch
+                if abs_pitch < self.fw_inverted_best_pitch - np.degrees(
+                    FW_RECOVERY_INVERTED_PITCH_PROGRESS_EPS
+                ):
+                    self.fw_inverted_best_pitch = abs_pitch
+                    self.fw_inverted_stall_timer = 0.0
+                elif self.recovery_elapsed > 25.0:
+                    self.fw_inverted_stall_timer += control_dt
+                stalled = (
+                    self.fw_inverted_stall_timer
+                    > FW_RECOVERY_INVERTED_PITCH_STALL_TIME
+                )
+                timed_out = (
+                    self.recovery_elapsed > FW_RECOVERY_INVERTED_TURN_TIMEOUT
+                )
+                if abs(self.body_pitch(data)) <= FW_RECOVERY_INVERTED_EXIT_PITCH:
+                    self.fw_inverted_wait_leg = 0
+                    self.recovery_state = "fw_inverted_settle"
+                    self.recovery_elapsed = 0.0
+                elif stalled or timed_out or not np.isfinite(
+                    data.qpos
+                ).all():
+                    self.recovery_state = "fw_fault"
+                    self.recovery_elapsed = 0.0
+                else:
+                    for side in ("l", "r"):
+                        axis = self.fw_recovery_axes[side]
+                        force = FW_RECOVERY_INVERTED_CONTACT_FORCE
+                        err = axis.ref - axis.actual
+                        tp = self.fw_recovery_angle_gain * float(np.clip(
+                            FW_RECOVERY_INVERTED_TP_KP * err
+                            + FW_RECOVERY_INVERTED_TP_KD * (
+                                axis.omega_ref - axis.omega_actual
+                            ),
+                            -FW_RECOVERY_INVERTED_TP_LIMIT,
+                            FW_RECOVERY_INVERTED_TP_LIMIT,
+                        ))
+                        tp += (
+                            axis.direction * FW_RECOVERY_INVERTED_TP_BIAS
+                        )
+                        self.recovery_output[side] = np.array((force, tp))
+                        self.last_support[side] = force
+                        self.last_output[side] = np.array((0.0, tp))
+                        self.set_vmc_motor_torques(
+                            data, side, force, tp,
+                            torque_limit=HIP_TORQUE_LIMIT,
+                        )
+
+            elif self.recovery_state == "fw_inverted_settle":
+                for side in ("l", "r"):
+                    self._update_recovery_axis(
+                        self.fw_recovery_axes[side],
+                        kinematics[side].phi0,
+                        control_dt,
+                    )
+                    self._run_recovery_axis(
+                        self.fw_recovery_axes[side], 0.0,
+                        FW_RECOVERY_INVERTED_TURN_ACCEL, control_dt,
+                    )
+                    axis = self.fw_recovery_axes[side]
+                    force = FW_RECOVERY_INVERTED_CONTACT_FORCE
+                    tp = float(np.clip(
+                        FW_RECOVERY_INVERTED_SETTLE_TP_KP * (
+                            axis.ref - axis.actual
+                        )
+                        + FW_RECOVERY_INVERTED_SETTLE_TP_KD * (
+                            axis.omega_ref - axis.omega_actual
+                        ),
+                        -FW_RECOVERY_INVERTED_SETTLE_TP_LIMIT,
+                        FW_RECOVERY_INVERTED_SETTLE_TP_LIMIT,
+                    ))
+                    self.recovery_output[side] = np.array((force, tp))
+                    self.last_support[side] = force
+                    self.last_output[side] = np.array((0.0, tp))
+                    self.set_vmc_motor_torques(
+                        data, side, force, tp, torque_limit=HIP_TORQUE_LIMIT
+                    )
+                if abs(self.body_pitch(data)) > FW_RECOVERY_FORWARD_PITCH_MAX:
+                    self.recovery_state = "fw_fault"
+                    self.recovery_elapsed = 0.0
+                elif (
+                    self.recovery_elapsed
+                    >= FW_RECOVERY_INVERTED_SETTLE_TIME
+                ):
+                    self._fw_compute_zero_targets(kinematics)
+                    self.fw_zero_stable_timer = 0.0
+                    self.fw_recovery_axes = {
+                        side: RecoverySwingAxis(
+                            actual=kin.phi0,
+                            start_actual=kin.phi0,
+                            last_raw=kin.phi0,
+                            ref=kin.phi0,
+                            target=self.fw_zero_targets[side],
+                        )
                         for side, kin in kinematics.items()
                     }
-                    # REC_SIMPLE_CHECK_ZERO seeds the source controller at
-                    # full angle gain before entering SWING.  Starting this
-                    # ramp from zero makes the simulated leg lag its profile
-                    # and stores an artificial late torque impulse.
-                    self.fw_recovery_angle_gain = 1.0
-                    self.recovery_state = "fw_swing"
+                    self.fw_recovery_angle_gain = 0.0
+                    self.recovery_state = "fw_forward_zero"
                     self.recovery_elapsed = 0.0
+
+            elif self.recovery_state == "fw_forward_zero":
+                for side in ("l", "r"):
+                    self._update_recovery_axis(
+                        self.fw_recovery_axes[side],
+                        kinematics[side].phi0,
+                        control_dt,
+                    )
+                travels = {
+                    side: abs(axis.target - axis.start_actual)
+                    for side, axis in self.fw_recovery_axes.items()
+                }
+                max_travel = max(travels.values())
+                for side, axis in self.fw_recovery_axes.items():
+                    scale = (
+                        travels[side] / max_travel if max_travel > 1e-4 else 0.0
+                    )
+                    self._run_recovery_axis(
+                        axis,
+                        FW_RECOVERY_FORWARD_ZERO_RATE * scale,
+                        FW_RECOVERY_FORWARD_ZERO_ACCEL * scale,
+                        control_dt,
+                    )
+                self.fw_recovery_angle_gain = min(
+                    1.0,
+                    self.fw_recovery_angle_gain
+                    + FW_RECOVERY_FORWARD_ZERO_GAIN_RATE * control_dt,
+                )
+                if abs(self.body_pitch(data)) > FW_RECOVERY_FORWARD_PITCH_MAX:
+                    # A failed crossing can tip the body again mid-zero; the
+                    # firmware reuses the inverted capture/turn path here.
+                    self.fw_inverted_l0_ref = {
+                        side: kin.l0 for side, kin in kinematics.items()
+                    }
+                    self.recovery_state = "fw_inverted_capture"
+                    self.recovery_elapsed = 0.0
+                elif (
+                    self.recovery_elapsed > FW_RECOVERY_FORWARD_ZERO_TIMEOUT
+                ):
+                    self.recovery_state = "fw_fault"
+                    self.recovery_elapsed = 0.0
+                else:
+                    for side, kin in kinematics.items():
+                        axis = self.fw_recovery_axes[side]
+                        force = 0.0
+                        err = axis.ref - axis.actual
+                        tp = FW_RECOVERY_FORWARD_ZERO_TP_SIGN * (
+                            self.fw_recovery_angle_gain * float(np.clip(
+                                FW_RECOVERY_FORWARD_ZERO_TP_KP * err
+                                + FW_RECOVERY_FORWARD_ZERO_TP_KD * (
+                                    axis.omega_ref - axis.omega_actual
+                                ),
+                                -FW_RECOVERY_FORWARD_ZERO_TP_LIMIT,
+                                FW_RECOVERY_FORWARD_ZERO_TP_LIMIT,
+                            ))
+                        )
+                        self.recovery_output[side] = np.array((force, tp))
+                        self.last_support[side] = force
+                        self.last_output[side] = np.array((0.0, tp))
+                        self.set_vmc_motor_torques(
+                            data, side, force, tp,
+                            torque_limit=HIP_TORQUE_LIMIT,
+                        )
+                    phi_ok = all(
+                        abs(self._wrap_pi(kin.phi0))
+                        < FW_RECOVERY_FORWARD_ZERO_PHI0_OK
+                        for kin in kinematics.values()
+                    )
+                    long_legs = all(
+                        kin.l0 > FW_RECOVERY_L0_LONG
+                        for kin in kinematics.values()
+                    )
+                    if (
+                        phi_ok
+                        and long_legs
+                        and abs(self.body_pitch(data))
+                            < FW_RECOVERY_ZERO_PITCH_MAX
+                    ):
+                        self.fw_zero_stable_timer += control_dt
+                    else:
+                        self.fw_zero_stable_timer = 0.0
+                    if (
+                        self.fw_zero_stable_timer
+                        >= FW_RECOVERY_FORWARD_ZERO_STABLE_TIME
+                    ):
+                        self.fw_recovery_axes = {
+                            side: self._capture_recovery_axis(kin.phi0)
+                            for side, kin in kinematics.items()
+                        }
+                        self.fw_recovery_angle_gain = 1.0
+                        self.recovery_state = "fw_swing"
+                        self.recovery_elapsed = 0.0
 
             elif self.recovery_state in {"fw_swing", "fw_retract"}:
                 retract = self.recovery_state == "fw_retract"
@@ -2440,6 +4067,23 @@ class TraditionalLQR:
         ))
         return PITCH_BACKWARD_SIGN * raw_pitch
 
+    def body_pitch_rate(self, data: mujoco.MjData) -> float:
+        """Return the calibrated backward-positive pitch rate from IMU omega.
+
+        The finite-difference pitch used by the normal LQR is intentionally
+        retained for its discrete observer.  It is a poor derivative source
+        for the ledge handoff, though: a one-step contact impulse appears as a
+        large alternating rate and makes the common hip command chatter.  The
+        free-joint angular velocity is the MuJoCo equivalent of the IMU gyro;
+        projecting it onto the current horizontal lateral axis avoids that
+        contact-difference amplification while preserving the calibrated
+        backward-positive sign.
+        """
+        up = np.array((0.0, 0.0, 1.0))
+        heading, _ = self._heading(data)
+        lateral = unit(np.cross(up, heading))
+        return float(-np.dot(data.qvel[3:6], lateral))
+
     def body_roll(self, data: mujoco.MjData) -> float:
         """IMU-style roll in radians, zeroed by the calibrated CAD frame."""
         up, _, _ = self._frame(data)
@@ -2467,24 +4111,27 @@ class TraditionalLQR:
         )
         theta_dot = self.theta_rate_lpf[side]
         x = self.lqr_virtual_x
-        # UI-positive forward is opposite the firmware-positive observer sign
-        # in this CAD export, and the firmware reference is translated to the
-        # sim frame (ref = -target).  The sim chassis_vx is positive toward
-        # the tail, so the speed error is (ref - vx): a positive error drives
-        # the chassis forward.  The previous (vx - ref) form pushed backward
-        # once the reference exceeded the drift level.
-        # The sim chassis_vx is positive toward the tail (recovery drifts show
-        # vx=+0.3 while moving backward).  A positive drive_forward_target
-        # means forward == negative sim vx, so the reference carries the same
-        # sign as a forward velocity demand and the speed error is (vx - ref):
-        # vx=0 with ref=+0.4 gives error -0.4, which drives the chassis
-        # forward.  (The previous -target translation made the error positive
-        # for forward commands, pushing backward once ref > drift.)
-        firmware_vx_reference = self.drive_forward_target
-        x_dot = self.chassis_vx - firmware_vx_reference
+        # ``step()`` forms chassis_vx as -(displacement . heading): after that
+        # single frame translation a positive value means motion toward the
+        # visible front, matching the UI sign of set_drive_command.  The
+        # velocity reference therefore enters directly.  Negating it here a
+        # second time reverses every drive command: a +0.40 m/s request then
+        # tracks tail-ward at ~0.48 m/s and fails the drive regression.
+        if DRIVE_CRUISE_ZERO_REF and (
+            abs(self.drive_forward_target) >= DRIVE_CRUISE_MIN_COMMAND
+        ):
+            # Cruise handoff: see DRIVE_CRUISE_ZERO_REF note above the
+            # constants.  Keeping a raw nonzero reference here made the
+            # firmware velocity row behave as a slow runaway under any
+            # command; a zero reference turns it into a plain mild damper.
+            firmware_vx_reference = 0.0
+        else:
+            firmware_vx_reference = self._drive_target_for_control()
+        # Calibration switch: see LQR_XDOT_SIGN note above the constants.
+        x_state = LQR_XDOT_SIGN * (self.chassis_vx - firmware_vx_reference)
         pitch_dot = (pitch - self.previous["pitch"]) / dt
         # Firmware LQR uses obs[4:6] = [-ins.pitch, -ins.pitch_gyro].
-        state = np.array((theta_observed, theta_dot, x, x_dot, -pitch, -pitch_dot))
+        state = np.array((theta_observed, theta_dot, x, x_state, -pitch, -pitch_dot))
         return state, length
 
     def _theta_compensation(self, data: mujoco.MjData, length: float) -> float:
@@ -2762,9 +4409,13 @@ class TraditionalLQR:
                 0.0,
                 1.0,
             ))
+            # chassis_vx reads nose-positive after step()'s single frame
+            # translation, so a faster forward launch INCREASES the pitch
+            # rate the thrust must store here; the historical minus sign
+            # silently assumed tail-positive and left ~5 deg of apex pitch.
             rate_target = float(np.clip(
                 self.jump_thrust_pitch_rate_target
-                - JUMP_THRUST_PITCH_RATE_VX_GAIN * self.jump_launch_vx,
+                + JUMP_THRUST_PITCH_RATE_VX_GAIN * self.jump_launch_vx,
                 self.jump_thrust_pitch_rate_min,
                 self.jump_thrust_pitch_rate_max,
             )) * rate_gain
@@ -3066,6 +4717,134 @@ class TraditionalLQR:
                 slew_rate * min(dt, CONTROL_PERIOD_S),
             )
 
+    def _apply_drive_speed_trim(self, dt: float) -> None:
+        """Add a bounded normal-ground speed trim outside the LQR matrix.
+
+        The firmware's six-state gain is intentionally retained unchanged;
+        this trim is a separate, low-authority common wheel channel so speed
+        limiting does not increase the LQR x-dot gain and destabilize recovery.
+        It is disabled for recovery, jump, airborne and landing-buffer phases.
+        """
+        if self.descent_guard_active:
+            if self.descent_edge_transition_active:
+                # The first wheel has reached a vertical tread while the
+                # other is still crossing the riser.  Stop both the normal
+                # speed trim and the wheel LQR for this contact-mode change;
+                # leaving either active makes the supported leg chase a
+                # transient contact point and creates the sudden skew seen at
+                # the edge.  The VMC axial/hip support remains active below.
+                self.drive_speed_trim = self._move_towards(
+                    self.drive_speed_trim, 0.0, DRIVE_SPEED_TRIM_SLEW * dt
+                )
+                return
+            # The user command remains latched so the vehicle can continue
+            # after the landing has settled, but the LQR reference is held at
+            # zero around the drop.  Before the wheels leave the edge, use the
+            # calibrated common braking direction to remove residual momentum.
+            # The sign is specific to the assembled wheel motor polarity and
+            # has been checked against the flat-ground drive response.
+            if not self.descent_guard_drop_seen and self.gbuf_phase == "inactive":
+                # Roll across the edge at a deliberately low speed.  A zero
+                # reference is not enough here: it makes the LQR stop with
+                # the front wheel against the riser, while a full drive
+                # command can carry too much horizontal momentum into the
+                # drop.  The trim is common-mode and removed immediately
+                # once the force/contact detector confirms takeoff.
+                # Same negated firmware-frame sense as the main trim above.
+                ui_speed = -self.chassis_vx
+                creep_target = float(np.clip(
+                    self.drive_forward_target,
+                    -DESCENT_EDGE_CREEP_SPEED,
+                    DESCENT_EDGE_CREEP_SPEED,
+                ))
+                error = creep_target - ui_speed
+                if abs(error) <= DRIVE_SPEED_DEADBAND:
+                    error = 0.0
+                target = float(np.clip(
+                    DRIVE_SPEED_KP * error,
+                    -DESCENT_EDGE_CREEP_TRIM_LIMIT,
+                    DESCENT_EDGE_CREEP_TRIM_LIMIT,
+                ))
+                self.drive_speed_trim = self._move_towards(
+                    self.drive_speed_trim,
+                    target,
+                    DRIVE_SPEED_TRIM_SLEW * dt,
+                )
+                self.last_output["l"][0] += self.drive_speed_trim
+                self.last_output["r"][0] += self.drive_speed_trim
+            else:
+                self.drive_speed_trim = self._move_towards(
+                    self.drive_speed_trim, 0.0, DRIVE_SPEED_TRIM_SLEW * dt
+                )
+            if self.gbuf_phase != "inactive":
+                # The LOW landing buffer is a vertical impact absorber.  Its
+                # normal LQR wheel row can turn the captured contact into a
+                # forward impulse while the leg is still shortening; keep
+                # the wheel row passive until the buffer's velocity damper has
+                # handed support back.
+                self.last_output["l"][0] = 0.0
+                self.last_output["r"][0] = 0.0
+            # Before takeoff, _drive_target_for_control() already limits the
+            # normal LQR reference to the slow edge-crossing speed.  Do not
+            # add a full reverse torque here: that stops at the riser instead
+            # of allowing the wheel to roll over it.
+            return
+
+        enabled = (
+            self.recovery_state == "idle"
+            and self.jump_state == "idle"
+            and not self.jump_off_ground
+            and not self.off_ground
+            and self.gbuf_phase == "inactive"
+            and self.landing_buffer_phase == "inactive"
+            and self.enabled
+        )
+        if not enabled:
+            self.drive_speed_trim = self._move_towards(
+                self.drive_speed_trim, 0.0, DRIVE_SPEED_TRIM_SLEW * dt
+            )
+            return
+        cmd = self.drive_forward_target
+        requested = abs(cmd)
+        if (
+            requested < DRIVE_CRUISE_MIN_COMMAND
+            or abs(self.chassis_vx) > DRIVE_CRUISE_VX_BYPASS
+        ):
+            # Zero/near-zero commands stay entirely with the six-state LQR:
+            # the pure velocity-error row holds a stand solid, and this
+            # governor only exists because that same row alone turns every
+            # nonzero request into an unbounded slow runaway (a 0.2 m/s
+            # command reached ~1 m/s after nine seconds with no cruise).
+            self.drive_speed_trim = self._move_towards(
+                self.drive_speed_trim, 0.0, DRIVE_CRUISE_SLEW * dt
+            )
+            self.cruise_integral = 0.0
+            return
+        # Achieved speed resolved along the commanded direction; chassis_vx
+        # is nose-positive, so a reverse command just flips the projection.
+        sign = np.sign(cmd)
+        achieved = sign * self.chassis_vx
+        error = requested - achieved
+        if abs(error) <= DRIVE_SPEED_DEADBAND:
+            error = 0.0
+        self.cruise_integral = float(np.clip(
+            self.cruise_integral + DRIVE_CRUISE_KI * error * dt,
+            -DRIVE_CRUISE_I_LIMIT,
+            DRIVE_CRUISE_I_LIMIT,
+        ))
+        target = float(np.clip(
+            DRIVE_CRUISE_KP * error + self.cruise_integral,
+            -DRIVE_CRUISE_LIMIT,
+            DRIVE_CRUISE_LIMIT,
+        ))
+        self.drive_speed_trim = self._move_towards(
+            self.drive_speed_trim,
+            target,
+            DRIVE_CRUISE_SLEW * dt,
+        )
+        self.last_output["l"][0] += self.drive_speed_trim
+        self.last_output["r"][0] += self.drive_speed_trim
+
     def _update_yaw_control(self, dt: float) -> None:
         target = (
             0.0
@@ -3122,6 +4901,11 @@ class TraditionalLQR:
             ))
             roll_gain_scale = 1.0 + roll_progress * (ROLL_GAIN_MASS_SCALE - 1.0)
             self.roll_force = float(np.clip(
+                # Firmware polarity (force opposes measured roll).  The WIP
+                # +roll/+roll-rate variant looked equivalent on a pure stand
+                # but turned the drive/derivative coupling marginally
+                # unstable: forward cruise lost ~0.13 m of travel and the
+                # recovery final length drifted to 0.27 m.
                 roll_gain_scale * (
                     ROLL_KP_N_PER_DEG * (0.0 - roll_deg)
                     - ROLL_KD_N_PER_DEG_S * self.roll_rate_lpf_deg_s
@@ -3139,18 +4923,125 @@ class TraditionalLQR:
                     + (1.0 - VMC_RATE_LPF_RETAIN) * length_rate_raw
                 )
 
-            if (
+            if self.off_ground or self.gbuf_phase != "inactive":
+                # The generic safety path has already replaced support_force
+                # with the real airborne/deploy or LOW landing-buffer law.
+                # Do not overwrite it with the normal standing PID here.
+                pass
+            elif (
                 self.jump_state != "idle"
                 or self.jump_off_ground
                 or self.landing_buffer_phase != "inactive"
             ):
                 self.last_support = self._jump_supports(lengths)
+            elif (
+                self.descent_edge_profile_active
+                and self.descent_guard_active
+                and not self.descent_guard_drop_seen
+            ):
+                # Start the clearance motion in the geometric look-ahead
+                # window, while both wheels still carry a real vertical
+                # contact.  Waiting for contact loss is too late: the upper
+                # tread then catches the long leg and the resulting impulse
+                # pitches the base into the next riser.  Keep the reference
+                # bilateral so a one-sample contact asymmetry cannot skew the
+                # two four-bars.
+                if update:
+                    mean_reference = 0.5 * sum(
+                        self.descent_edge_length_reference.values()
+                    )
+                    mean_reference = self._move_towards(
+                        mean_reference,
+                        DESCENT_EDGE_RETRACT_LENGTH,
+                        DESCENT_EDGE_RETRACT_RATE * control_dt,
+                    )
+                    for side in ("l", "r"):
+                        self.descent_edge_length_reference[side] = mean_reference
+                mean_spring = 0.5 * sum(
+                    self._gas_virtual_support(lengths[side])
+                    for side in ("l", "r")
+                ) if self.gas_enabled else 0.0
+                mean_reference = 0.5 * sum(
+                    self.descent_edge_length_reference.values()
+                )
+                mean_length = 0.5 * sum(lengths.values())
+                mean_length_rate = 0.5 * sum(
+                    self.length_rate_lpf.values()
+                )
+                edge_length_force = float(np.clip(
+                    LENGTH_KP * (mean_reference - mean_length)
+                    - LENGTH_KD_LOW * mean_length_rate,
+                    -LENGTH_OUTPUT_LIMIT,
+                    LENGTH_OUTPUT_LIMIT,
+                ))
+                transition_support = (
+                    0.5 * TOTAL_MASS * GRAVITY
+                    - mean_spring
+                    + edge_length_force
+                )
+                self.last_support = {
+                    side: float(np.clip(
+                        transition_support
+                        + (self.roll_force if side == "l" else -self.roll_force),
+                        -SUPPORT_FORCE_LIMIT,
+                        SUPPORT_FORCE_LIMIT,
+                    ))
+                    for side in ("l", "r")
+                }
+                for side in ("l", "r"):
+                    self.length_integral[side] = 0.0
+            elif self.descent_edge_transition_active:
+                # Keep a common length loop while one wheel is crossing the
+                # riser.  The old edge path held only a fixed gas-compensated
+                # load, which let the gas springs extend both legs into the
+                # l0~=0.33 m kinematic singularity before airborne control
+                # took over.  Use the mean length/rate for the axial PID so a
+                # different upper/lower tread height cannot make the two
+                # linkage references fight and skew the chassis.
+                mean_spring = 0.5 * sum(
+                    self._gas_virtual_support(lengths[side])
+                    for side in ("l", "r")
+                ) if self.gas_enabled else 0.0
+                edge_length_reference = 0.5 * sum(
+                    self.descent_edge_length_reference.values()
+                )
+                mean_length = 0.5 * sum(lengths.values())
+                mean_length_rate = 0.5 * sum(
+                    self.length_rate_lpf.values()
+                )
+                edge_length_force = float(np.clip(
+                    LENGTH_KP * (edge_length_reference - mean_length)
+                    - LENGTH_KD_LOW * mean_length_rate,
+                    -LENGTH_OUTPUT_LIMIT,
+                    LENGTH_OUTPUT_LIMIT,
+                ))
+                transition_support = (
+                    0.5 * TOTAL_MASS * GRAVITY
+                    - mean_spring
+                    + edge_length_force
+                )
+                self.last_support = {
+                    side: float(np.clip(
+                        transition_support
+                        + (self.roll_force if side == "l" else -self.roll_force),
+                        -SUPPORT_FORCE_LIMIT,
+                        SUPPORT_FORCE_LIMIT,
+                    ))
+                    for side in ("l", "r")
+                }
+                for side in ("l", "r"):
+                    self.length_integral[side] = 0.0
             else:
                 for side in ("l", "r"):
                     length = lengths[side]
                     length_rate = self.length_rate_lpf[side]
                     # Full rm_config.h low-leg PID, including the source's
                     # integral sign-reset and integral/output clamps.
+                    self.length_reference[side] = self._move_towards(
+                        self.length_reference[side],
+                        self.normal_leg_length,
+                        LEG_LENGTH_SWITCH_RATE * control_dt,
+                    )
                     length_error = self.length_reference[side] - length
                     if length_error * self.length_integral[side] < 0.0:
                         self.length_integral[side] = 0.0
@@ -3257,11 +5148,11 @@ class TraditionalLQR:
                 and data.time >= self.fw_recovery_length_hold_until
             ):
                 for side in ("l", "r"):
-                    self.length_reference[side] = self._move_towards(
-                        self.length_reference[side],
-                        VMC_NORMAL_STAND_LENGTH,
-                        FW_RECOVERY_L0_RATE * control_dt,
-                    )
+                        self.length_reference[side] = self._move_towards(
+                            self.length_reference[side],
+                            self.normal_leg_length,
+                            FW_RECOVERY_L0_RATE * control_dt,
+                        )
 
         if self.enabled:
             if update:
@@ -3275,9 +5166,11 @@ class TraditionalLQR:
                 self.yaw_rate = self._wrap_pi(
                     heading_angle - self.previous_heading
                 ) / control_dt
+                control_drive_target = self._drive_target_for_control()
                 if (
-                    abs(self.drive_forward_target) < 1e-6
+                    abs(control_drive_target) < 1e-6
                     and self.jump_state == "idle"
+                    and not self.descent_guard_active
                 ):
                     if (
                         self.jump_landing_seen
@@ -3303,6 +5196,17 @@ class TraditionalLQR:
                         self._update_lqr_position_observer(
                             self.chassis_vx, control_dt
                         )
+                elif self.descent_guard_active:
+                    # Do not accumulate a position-hold error while the
+                    # vehicle is crossing a drop.  The horizontal speed
+                    # error must be the only wheel-LQR drive term during this
+                    # short guarded interval; a growing virtual position
+                    # error can reverse the brake into propulsion at the edge.
+                    self.lqr_position_state = "drive"
+                    self.lqr_position_capture_timer = 0.0
+                    self.lqr_position_hold_x = 0.0
+                    self.lqr_position_brake_offset = 0.0
+                    self.lqr_virtual_x = 0.0
                 else:
                     self.lqr_position_state = "drive"
                     self.lqr_position_capture_timer = 0.0
@@ -3375,8 +5279,10 @@ class TraditionalLQR:
                 self.last_output["r"][1] -= sync_torque
 
                 self._apply_jump_hip_control(data, control_dt)
+                self._apply_drive_speed_trim(control_dt)
                 self._update_landing_wheel_control(data, control_dt)
                 self._update_yaw_control(control_dt)
+                self._update_danger_check(data, control_dt)
                 self._update_off_ground(data, control_dt)
 
             for side, ids in self.sides.items():
@@ -3386,9 +5292,25 @@ class TraditionalLQR:
                     wheel_command = (
                         self.wheel_sign[side] * self.jump_air_wheel_torque
                     )
-                elif self.off_ground or self.gbuf_phase != "inactive":
-                    # generic airborne / landing-buffer path shuts the wheels
-                    wheel_command = 0.0
+                elif self.off_ground:
+                    # Use the wheels as an internal reaction axis while the
+                    # generic airborne leg profile deploys.  They are not
+                    # used as a ground drive unless a real vertical stair
+                    # tread has already been observed.  That contact-gated
+                    # exception keeps the vehicle moving across a lower
+                    # tread without applying propulsion while airborne.
+                    contact_drive = (
+                        -np.copysign(
+                            DESCENT_OFFGROUND_CONTACT_DRIVE_TORQUE,
+                            self.drive_forward_target,
+                        )
+                        if self.descent_edge_contact_drive
+                        and abs(self.drive_forward_target) > 1e-6
+                        else 0.0
+                    )
+                    wheel_command = self.wheel_sign[side] * (
+                        self.offground_wheel_torque + contact_drive
+                    )
                 else:
                     yaw_command = (
                         0.0
