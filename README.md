@@ -49,6 +49,8 @@ Documentation index:
   allocation, torque envelope, acceptance results.
 - [docs/DESCENT_NOTES.md](docs/DESCENT_NOTES.md) — stair descent/climb
   development record (root causes R1–R3, mode-7 feasibility).
+- [docs/TURN_ROLL_NOTES.md](docs/TURN_ROLL_NOTES.md) — turn-roll
+  compensation port, cruise-governor arming, and the T1-A sign audit.
 - [tools/README.md](tools/README.md) — what the archived scripts are.
 
 ## Quick start (Linux)
@@ -94,6 +96,7 @@ python tests/test_firmware_recovery.py     # encoder zero → recovery → LQR
 python tests/test_calibrated_lqr.py        # 0.15 m stand + pitch pulse
 python tests/test_drive_controls.py        # drive/yaw commands
 python tests/test_firmware_jump.py         # physically actuated jump
+python tests/test_turn_stability.py        # low-leg hard-turn stability
 python tests/test_inertia_integrity.py     # CAD inertia guards
 python tests/test_sysid.py                 # identified-parameter pipeline
 python tests/smoke_test.py                 # finite-value sanity

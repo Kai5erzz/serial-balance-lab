@@ -119,3 +119,40 @@ and impact compliance. Re-run this regression after each plant update. The
 controller should be retuned against the identified plant; the 40 Nm window
 must not be copied to hardware without checking the motor/driver thermal and
 peak-duration limits.
+
+## 2026-09-05 night session: landing handoff and attitude quantified
+
+Prompted by "landing takes seconds to feel normal again" and "jump
+attitude is not great". New probe: `tools/probes/landing_timeline.py`
+(touchdown-anchored timeline of buffer phases, gains, position hold,
+drive-response latency, cooldown) plus a 25 ms-resolution attitude
+profile across all jump phases.
+
+Findings:
+
+1. The state machine is NOT the delay: touchdown -> idle in 0.145 s.
+2. **Buffer handoff timings diverged from the current real firmware.**
+   The sim shipped the aggressive sim-tuned set (return 1.20 m/s,
+   PID_RETURN 0.20 s, EXIT_STABLE 0.12 s, HOLD_MIN 0.12 s); code_611
+   rm_config.h has since been retuned gentler (0.80 / 0.30 / 0.18 /
+   0.18). All four ported. The buffer exit is now a single smooth pitch
+   hill instead of a double oscillation, and the jump regression stays
+   green (forward_delta -0.391 m, inside the +-1 m line; the deeper
+   backward drift is the trade for the gentler exit).
+3. **Jump cooldown runs from jump ACCEPT, 3 s** — same as the firmware
+   (`jump_last_accept_ms` stamped in `jump_control_try_start`). The
+   ~2 s post-landing lockout is firmware-faithful behaviour, not a sim
+   bug. Relaxing it would be a deliberate sim deviation.
+4. **Thrust-phase nose-up is design intent.** Pitch climbs to +6.7 deg
+   (79 deg/s) during thrust — the controller is parking angular momentum
+   at the firmware's 1.48 rad/s pitch-rate target — and the airborne
+   wheel-rotor loop spends it to level out (air pitch -0.3..+2.4 deg
+   after the recovery). The visible nose-up at liftoff will not go away
+   without retuning `JUMP_THRUST_PITCH_RATE_TARGET_ZERO`, which is a
+   firmware value.
+5. Remaining measurable wart: after buffer exit the leg rebuild
+   (0.12 -> 0.176 m overshoot, gas-spring driven) couples into a
+   backward pitch drift to -3.75 deg and a ~0.4 m/s backward slide,
+   giving ~1.3 s forward-drive latency after landing. Next lever: make
+   the post-exit length reference start from the actual length and slew
+   down (sim deviation), or slow the rebuild; not attempted tonight.

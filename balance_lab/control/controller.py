@@ -112,6 +112,13 @@ MJCF CAD hinge frame."""
         self.support_trim = {"l": 0.0, "r": 0.0}
         self.roll_force = 0.0
         self.roll_rate_lpf_deg_s = 0.0
+        # Real-vehicle roll compensation channels (code_611 port): the
+        # centrifugal feedforward and the learned static trim, feeding the
+        # same left/right differential path as roll_force in normal support.
+        self.lateral_inertial_ff = 0.0
+        self.roll_static_trim_force = 0.0
+        self.roll_static_trim_applied = 0.0
+        self.roll_static_trim_timer = 0.0
         self.last_motor_torque = {"l": np.zeros(2), "r": np.zeros(2)}
         self.control_elapsed = 0.0
         self.chassis_vx = 0.0
@@ -627,6 +634,10 @@ MJCF CAD hinge frame."""
         self.last_motor_torque = {"l": np.zeros(2), "r": np.zeros(2)}
         self.roll_force = 0.0
         self.roll_rate_lpf_deg_s = 0.0
+        self.lateral_inertial_ff = 0.0
+        self.roll_static_trim_force = 0.0
+        self.roll_static_trim_applied = 0.0
+        self.roll_static_trim_timer = 0.0
         self.length_integral = {"l": 0.0, "r": 0.0}
         self.theta_rate_lpf = {"l": 0.0, "r": 0.0}
         self.length_rate_lpf = {"l": 0.0, "r": 0.0}
@@ -1054,6 +1065,7 @@ MJCF CAD hinge frame."""
         requested = abs(cmd)
         if (
             requested < DRIVE_CRUISE_MIN_COMMAND
+            or cmd < 0.0  # reverse commands: see the velocity-row note below
             or abs(self.chassis_vx) > DRIVE_CRUISE_VX_BYPASS
         ):
             # Zero/near-zero commands stay entirely with the six-state LQR:
@@ -1066,18 +1078,34 @@ MJCF CAD hinge frame."""
             )
             self.cruise_integral = 0.0
             return
-        # Achieved speed resolved along the commanded direction; chassis_vx
-        # is nose-positive, so a reverse command just flips the projection.
+        # Achieved speed resolved along the commanded direction.  chassis_vx
+        # is UI-front-positive (see _state), while a POSITIVE common wheel
+        # output drives the vehicle BACKWARD in this CAD export -- measured
+        # tonight: a railed +1.2 Nm trim settled a +0.5 m/s request at
+        # -0.5 m/s.  The error therefore keeps the natural sense here and
+        # the application below negates the trim, closing the loop with
+        # negative gain.  (Resolves the boundary-sign question that kept
+        # this governor disarmed; the descent-edge creep branch above is
+        # independently self-consistent with its negated ui_speed measure.)
         sign = np.sign(cmd)
         achieved = sign * self.chassis_vx
         error = requested - achieved
         if abs(error) <= DRIVE_SPEED_DEADBAND:
             error = 0.0
-        self.cruise_integral = float(np.clip(
-            self.cruise_integral + DRIVE_CRUISE_KI * error * dt,
-            -DRIVE_CRUISE_I_LIMIT,
-            DRIVE_CRUISE_I_LIMIT,
-        ))
+        # Anti-windup: freeze the integral while either wheel already sits at
+        # its torque limit.  Integrating against a saturated wheel stored trim
+        # that released as a pitch impulse once the wheel desaturated (the
+        # 18.5 deg falls that first disarmed this governor).
+        wheel_saturated = (
+            abs(self.last_output["l"][0]) >= WHEEL_TORQUE_LIMIT - 1e-6
+            or abs(self.last_output["r"][0]) >= WHEEL_TORQUE_LIMIT - 1e-6
+        )
+        if not wheel_saturated:
+            self.cruise_integral = float(np.clip(
+                self.cruise_integral + DRIVE_CRUISE_KI * error * dt,
+                -DRIVE_CRUISE_I_LIMIT,
+                DRIVE_CRUISE_I_LIMIT,
+            ))
         target = float(np.clip(
             DRIVE_CRUISE_KP * error + self.cruise_integral,
             -DRIVE_CRUISE_LIMIT,
@@ -1088,8 +1116,22 @@ MJCF CAD hinge frame."""
             target,
             DRIVE_CRUISE_SLEW * dt,
         )
-        self.last_output["l"][0] += self.drive_speed_trim
-        self.last_output["r"][0] += self.drive_speed_trim
+        # Negative application: see the sign note above.  A positive error
+        # (too slow) must REDUCE the common wheel output to push the vehicle
+        # toward the visible front.
+        self.last_output["l"][0] -= self.drive_speed_trim
+        self.last_output["r"][0] -= self.drive_speed_trim
+
+        # OPEN ISSUE (next session, T1-A): with the governor holding forward
+        # speeds, a REVERSE request still diverges.  Trace: the six-state
+        # velocity row itself pushes AWAY from a negative setpoint (at
+        # vx=+1, cmd=-1 the row contributes ~-3.3 Nm of forward push), so
+        # the governor's 2.2 Nm authority loses that fight.  Flipping
+        # LQR_XDOT_SIGN stabilizes the row but destabilizes pitch (14-16
+        # deg) -- the same result the 2026-08-27 session recorded, so the
+        # row's plant sign is inverted somewhere past wheel_sign, likely in
+        # the mirrored wheel axes/gear path, and a clean fix needs the full
+        # wheel-output sign audit rather than another patch here.
 
     def _update_yaw_control(self, dt: float) -> None:
         target = (
@@ -1119,6 +1161,112 @@ MJCF CAD hinge frame."""
             self.yaw_output,
             float(np.clip(raw, -WHEEL_TORQUE_LIMIT, WHEEL_TORQUE_LIMIT)),
             YAW_OUTPUT_SLEW_RATE * dt,
+        )
+
+    def _roll_auxiliary_active(self) -> bool:
+        """True while normal ground control owns the support forces.
+
+        Firmware equivalent: the two compensation channels run inside
+        Leg_FN_Calculation, i.e. only during ordinary grounded driving --
+        not airborne, not in a landing buffer, not during a descent-edge
+        transition, and not while a recovery state machine owns the legs.
+        """
+        return (
+            not self.off_ground
+            and self.gbuf_phase == "inactive"
+            and self.jump_state == "idle"
+            and not self.jump_off_ground
+            and self.landing_buffer_phase == "inactive"
+            and not (self.descent_edge_profile_active and self.descent_guard_active)
+            and not self.descent_edge_transition_active
+            and self.recovery_state in ("idle", "fw_stand")
+        )
+
+    def _update_roll_lateral_ff(self, lengths: dict[str, float], dt: float) -> None:
+        """Centrifugal roll feedforward from the commanded motion (code_611).
+
+        Predicts the lateral acceleration of commanded circular motion and
+        pre-positions differential support through the load-transfer lever
+        arm, so the roll PD regulates around the banked turn equilibrium
+        instead of fighting it.  Firmware sign: positive vx*yaw yields
+        positive differential force (more support on the left wheel).
+        """
+        if not self._roll_auxiliary_active():
+            self.lateral_inertial_ff = 0.0
+            return
+        lateral_accel = (
+            self._drive_target_for_control() * self.drive_yaw_rate_target
+        )
+        if abs(lateral_accel) < LATERAL_INERTIAL_FF_ACCEL_DB:
+            target = 0.0
+        else:
+            average_length = 0.5 * sum(lengths.values())
+            if average_length >= LATERAL_INERTIAL_FF_HIGH_L0_MIN:
+                gain = LATERAL_INERTIAL_FF_GAIN_HIGH
+            elif average_length >= LATERAL_INERTIAL_FF_MID_L0_MIN:
+                gain = LATERAL_INERTIAL_FF_GAIN_MID
+            else:
+                gain = LATERAL_INERTIAL_FF_GAIN_LOW
+            target = gain * TOTAL_MASS * lateral_accel * average_length / (
+                2.0 * LATERAL_INERTIAL_FF_HALF_TRACK_M
+            )
+            target = float(np.clip(
+                target, -LATERAL_INERTIAL_FF_LIMIT, LATERAL_INERTIAL_FF_LIMIT
+            ))
+        self.lateral_inertial_ff = self._move_towards(
+            self.lateral_inertial_ff, target, LATERAL_INERTIAL_FF_SLEW_RATE * dt
+        )
+
+    def _update_roll_static_trim(
+        self, roll_deg: float, roll_rate_deg: float, dt: float
+    ) -> None:
+        """Static roll trim integrator, NORMAL profile (code_611 port).
+
+        Learns only while the chassis is settled (low speed, no yaw/roll
+        motion, length reference at target), then holds the learned trim
+        during motion; the slewed applied copy keeps the support force
+        step-free while the estimate changes.
+        """
+        if not self._roll_auxiliary_active():
+            self.roll_static_trim_force = 0.0
+            self.roll_static_trim_applied = 0.0
+            self.roll_static_trim_timer = 0.0
+            return
+        length_change_done = all(
+            abs(self.length_reference[side] - self.normal_leg_length) < 1e-9
+            for side in ("l", "r")
+        )
+        settled = (
+            length_change_done
+            and abs(self.drive_forward_target) <= ROLL_STATIC_TRIM_VX_CMD_DB
+            and abs(self.chassis_vx) <= ROLL_STATIC_TRIM_VX_FDB_DB
+            and abs(self.drive_yaw_rate_target) <= ROLL_STATIC_TRIM_YAW_RATE_DB
+            and abs(self.yaw_rate) <= ROLL_STATIC_TRIM_YAW_RATE_DB
+            and abs(roll_rate_deg) <= ROLL_STATIC_TRIM_ROLL_RATE_DB
+        )
+        if not settled:
+            self.roll_static_trim_timer = 0.0
+        else:
+            self.roll_static_trim_timer += dt
+            if (
+                self.roll_static_trim_timer >= ROLL_STATIC_TRIM_SETTLE_TIME
+                and abs(roll_deg) > ROLL_STATIC_TRIM_DEADBAND_DEG
+            ):
+                self.roll_static_trim_force -= ROLL_STATIC_TRIM_KI * roll_deg * dt
+                self.roll_static_trim_force = float(np.clip(
+                    self.roll_static_trim_force,
+                    -ROLL_STATIC_TRIM_LIMIT,
+                    ROLL_STATIC_TRIM_LIMIT,
+                ))
+        applied_target = float(np.clip(
+            self.roll_static_trim_force,
+            -ROLL_STATIC_TRIM_APPLY_LIMIT,
+            ROLL_STATIC_TRIM_APPLY_LIMIT,
+        ))
+        self.roll_static_trim_applied = self._move_towards(
+            self.roll_static_trim_applied,
+            applied_target,
+            ROLL_STATIC_TRIM_APPLY_SLEW_RATE * dt,
         )
 
     def _apply_vmc_support(self, data: mujoco.MjData, control_dt: float, update: bool) -> None:
@@ -1159,6 +1307,10 @@ MJCF CAD hinge frame."""
                 -ROLL_FORCE_LIMIT,
                 ROLL_FORCE_LIMIT,
             ))
+            self._update_roll_lateral_ff(lengths, control_dt)
+            self._update_roll_static_trim(
+                roll_deg, self.roll_rate_lpf_deg_s, control_dt
+            )
             self.previous["roll"] = roll
             for side in ("l", "r"):
                 length_rate_raw = (
@@ -1308,12 +1460,19 @@ MJCF CAD hinge frame."""
                         self._gas_virtual_support(length)
                         if self.gas_enabled else 0.0
                     )
+                    roll_auxiliary = (
+                        self.lateral_inertial_ff + self.roll_static_trim_applied
+                    )
                     support = (
                         0.5 * TOTAL_MASS * GRAVITY
                         - spring_support
                         + length_pid
                         + self.support_trim[side]
-                        + (self.roll_force if side == "l" else -self.roll_force)
+                        + (
+                            self.roll_force + roll_auxiliary
+                            if side == "l"
+                            else -self.roll_force - roll_auxiliary
+                        )
                     )
                     support = float(np.clip(
                         support, -SUPPORT_FORCE_LIMIT, SUPPORT_FORCE_LIMIT

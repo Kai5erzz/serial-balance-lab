@@ -527,7 +527,10 @@ LANDING_LOW_RATCHET_MARGIN = 0.035
 
 LANDING_LOW_RATCHET_REF_RATE = 1.20
 
-LANDING_HOLD_MIN_TIME = 0.12
+# 2026-09-05: the four handoff timings below were re-synced to the
+# current real-vehicle rm_config.h (code_611) after the landing-timeline
+# probe showed the sim exiting the buffer harder than the robot does.
+LANDING_HOLD_MIN_TIME = 0.18
 
 LANDING_HOLD_MAX_TIME = 0.30
 
@@ -535,11 +538,11 @@ LANDING_SETTLE_LENGTH_ERROR = 0.015
 
 LANDING_SETTLE_LENGTH_SPEED = 0.10
 
-LANDING_RETURN_REF_RATE_LOW = 1.20
+LANDING_RETURN_REF_RATE_LOW = 0.80
 
-LANDING_PID_RETURN_TIME = 0.20
+LANDING_PID_RETURN_TIME = 0.30
 
-LANDING_EXIT_STABLE_TIME = 0.12
+LANDING_EXIT_STABLE_TIME = 0.18
 
 LANDING_EXIT_LENGTH_SPEED = 0.12
 
@@ -600,11 +603,24 @@ DRIVE_CRUISE_KI = 6.0
 
 DRIVE_CRUISE_I_LIMIT = 1.5
 
-DRIVE_CRUISE_LIMIT = 1.20
+# Raised from 1.20: at the 1.0 m/s request the unregulated plant pushed
+# past 1.6 m/s with the governor railed at 1.20 Nm; 2.20 covers the
+# measured push with margin while leaving >=1.4 Nm of the 3.69 Nm wheel
+# budget for the yaw differential.
+DRIVE_CRUISE_LIMIT = 2.20
 
 DRIVE_CRUISE_SLEW = 8.0
 
-DRIVE_CRUISE_MIN_COMMAND = 99.0  # governor disarmed pending boundary-sign resolution (see docs/DESCENT_NOTES.md)
+# Armed (2026-09-05 night session): the turn-roll bench showed the
+# unregulated speed runaway is the root cause of low-leg high-yaw falls --
+# vx crept from the 1.0 m/s request to 2.1+ m/s, the turn radius kept
+# tightening past the roll channel's authority, the right wheel saturated
+# at 3.69 Nm and the yaw loop collapsed.  The governor arms above 0.10 m/s
+# so a zero command stand stays bit-identical to the accepted LQR
+# equilibrium; integration freezes while either wheel is saturated (the
+# 18.5 deg pitch falls of the disarmed attempt wound the integral against
+# a saturated wheel and released the stored trim afterwards).
+DRIVE_CRUISE_MIN_COMMAND = 0.10
 
 DRIVE_CRUISE_VX_BYPASS = 2.60
 
@@ -1000,7 +1016,65 @@ LOW_COEFFICIENTS = np.array([
     [[10.686609, -9.829563, 0.846726, 7.607636], [8.038049, -6.525741, 0.168430, 1.483438], [0.657245, -0.556778, 0.028162, 0.101608], [2.198227, -1.799988, 0.064107, 0.325382], [-16.337782, 10.735298, 0.878556, 39.530768], [-2.982729, 1.999001, 0.141819, 6.638457]],
 ], dtype=float)
 
+# --- Real-vehicle roll compensation port (code_611 chassis_control.c) ---
+# Two firmware channels the simulation lacked.  Both feed the same
+# left/right differential support path as the roll PD
+# (support_l += F, support_r -= F); see _update_roll_auxiliary_forces.
+
+# Centrifugal (lateral inertial) feedforward: predicts the lateral
+# acceleration of commanded circular motion, vx_ref * yaw_rate_ref, and
+# pre-positions the differential support through the load-transfer lever
+# arm body_height / (2 * half_track).  Gain is scheduled by leg geometry
+# exactly like the firmware's high/mid/low helpers: mid above 0.170 m,
+# high above 0.245 m average l0.  The firmware comment records why the
+# reference is the *commanded* product: the measured vx*yaw path was
+# delayed and weakened the correctly phased Roll PD.
+LATERAL_INERTIAL_FF_GAIN_LOW = 1.30
+LATERAL_INERTIAL_FF_GAIN_MID = 1.15
+LATERAL_INERTIAL_FF_GAIN_HIGH = 1.15
+LATERAL_INERTIAL_FF_LIMIT = 50.0
+LATERAL_INERTIAL_FF_SLEW_RATE = 100.0
+LATERAL_INERTIAL_FF_ACCEL_DB = 0.20
+LATERAL_INERTIAL_FF_MID_L0_MIN = 0.170
+LATERAL_INERTIAL_FF_HIGH_L0_MIN = 0.245
+# rm_config.h ``Rl`` (轮间距/half wheel track) in the load-transfer arm.
+LATERAL_INERTIAL_FF_HALF_TRACK_M = 0.214
+
+# Static roll trim integrator, NORMAL-mode profile (the spin-mode profile
+# stays firmware-only; the simulation has no spin mode).  It learns only
+# while the chassis is settled, then holds the learned trim during motion
+# so dynamic roll is never mistaken for an asymmetry.
+ROLL_STATIC_TRIM_KI = 1.20
+ROLL_STATIC_TRIM_LIMIT = 8.00
+ROLL_STATIC_TRIM_APPLY_LIMIT = 6.00
+ROLL_STATIC_TRIM_APPLY_SLEW_RATE = 12.00
+ROLL_STATIC_TRIM_SETTLE_TIME = 0.50
+ROLL_STATIC_TRIM_DEADBAND_DEG = 0.20
+ROLL_STATIC_TRIM_VX_CMD_DB = 20.0
+ROLL_STATIC_TRIM_VX_FDB_DB = 0.08
+ROLL_STATIC_TRIM_YAW_RATE_DB = 0.12
+ROLL_STATIC_TRIM_ROLL_RATE_DB = 0.10
+
 __all__ = [
+    "LATERAL_INERTIAL_FF_GAIN_LOW",
+    "LATERAL_INERTIAL_FF_GAIN_MID",
+    "LATERAL_INERTIAL_FF_GAIN_HIGH",
+    "LATERAL_INERTIAL_FF_LIMIT",
+    "LATERAL_INERTIAL_FF_SLEW_RATE",
+    "LATERAL_INERTIAL_FF_ACCEL_DB",
+    "LATERAL_INERTIAL_FF_MID_L0_MIN",
+    "LATERAL_INERTIAL_FF_HIGH_L0_MIN",
+    "LATERAL_INERTIAL_FF_HALF_TRACK_M",
+    "ROLL_STATIC_TRIM_KI",
+    "ROLL_STATIC_TRIM_LIMIT",
+    "ROLL_STATIC_TRIM_APPLY_LIMIT",
+    "ROLL_STATIC_TRIM_APPLY_SLEW_RATE",
+    "ROLL_STATIC_TRIM_SETTLE_TIME",
+    "ROLL_STATIC_TRIM_DEADBAND_DEG",
+    "ROLL_STATIC_TRIM_VX_CMD_DB",
+    "ROLL_STATIC_TRIM_VX_FDB_DB",
+    "ROLL_STATIC_TRIM_YAW_RATE_DB",
+    "ROLL_STATIC_TRIM_ROLL_RATE_DB",
     "GRAVITY",
     "TOTAL_MASS",
     "WHEEL_TORQUE_LIMIT",
