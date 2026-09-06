@@ -38,7 +38,13 @@ def main() -> None:
     ap.add_argument("--redrive", type=float, default=1.5)
     ap.add_argument("--rt", type=float, default=-2.0)
     ap.add_argument("--bias", type=float, default=-4.0)
-    ap.add_argument("--spawn", type=float, default=3.6)
+    ap.add_argument("--spawn", type=float, default=2.6)
+    ap.add_argument("--tlen", type=float, default=0.33)
+    ap.add_argument("--plen", type=float, default=0.117)
+    ap.add_argument("--tgain", type=float, default=0.2)
+    ap.add_argument("--land_ref", type=float, default=-8.0)
+    ap.add_argument("--wheel_kp", type=float, default=25.0)
+    ap.add_argument("--len_kp", type=float, default=3000.0)
     ap.add_argument("--out", default="climb_mount.gif")
     args = ap.parse_args()
 
@@ -58,6 +64,15 @@ def main() -> None:
     c.set_leg_length(0.24)
     c.jump_air_landing_length = 0.27
     c.jump_air_deploy_pitch_bias = np.radians(args.bias)
+    import balance_lab.control.jump as _jm
+    _jm.JUMP_THRUST_LENGTH = args.tlen
+    _jm.JUMP_PRELOAD_LENGTH = args.plen
+    _jm.JUMP_THRUST_THETA_LQR_GAIN = args.tgain
+    _jm.LANDING_LENGTH_KP = args.len_kp
+    c.jump_landing_wheel_pitch_kp = 0.0
+    c.jump_landing_wheel_pitch_kd = 0.0
+    c.jump_landing_capture_wheel_pitch_kp = 0.0
+    c.jump_landing_capture_wheel_pitch_kd = 0.0
 
     renderer = mujoco.Renderer(model, height=480, width=640)
     cam = mujoco.MjvCamera()
@@ -98,6 +113,14 @@ def main() -> None:
         if c.jump_state in ("preload", "thrust"):
             c.set_drive_command(args.redrive, 0.0)
         c.step(data, model.opt.timestep)
+        if c.jump_state == "landing":
+            pitch = c.body_pitch(data)
+            torque = float(np.clip(
+                args.wheel_kp * (pitch - np.radians(args.land_ref)),
+                -3.69, 3.69))
+            for side in ("l", "r"):
+                wm = c.sides[side].wheel_motor
+                data.ctrl[wm] = c.wheel_sign[side] * torque
         mujoco.mj_step(model, data)
         suppress()
         if c.jump_state in ("thrust", "flight"):

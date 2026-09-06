@@ -53,6 +53,18 @@ TIER_TOP = {"ground_outer": 0.0, "platform_step3": 0.0,
             "platform_step2": 0.2, "platform_step1": 0.4, "platform_top": 0.6}
 
 
+def tier_top_of(name: str):
+    """Map a terrain geom name to its tier top height (prefix-aware so the
+    decomposed nosing variants match too)."""
+    if name in TIER_TOP:
+        return TIER_TOP[name]
+    for base in ("platform_top", "platform_step1", "platform_step2",
+                 "platform_step3"):
+        if name.startswith(base):
+            return TIER_TOP[base]
+    return None
+
+
 @dataclass
 class Cell:
     tag: str = "cell"
@@ -84,6 +96,10 @@ class Cell:
     land_ref: float = 99.0      # landing pitch-ref shift: drive_forward poke
     deploy_kp: float = 0.0      # forward landing wheel damper gain
     land_len_kp: float = 0.0    # lock-legs: LANDING_LENGTH_KP override
+    flight_swing: float = 0.0   # hip swing torque during flight (Nm)
+    kick_z: float = 0.0         # late-flight wheel torque below this height
+    swing_t0: float = 0.10      # swing start, air elapsed (s)
+    swing_dt: float = 0.30      # swing duration (s)
     target_tier: int = 1
 
 
@@ -130,7 +146,7 @@ def wheel_support(model, data, c) -> tuple[dict, dict]:
                 continue
             other = g2 if b1 == bid else g1
             name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, other)
-            top = TIER_TOP.get(name)
+            top = tier_top_of(name)
             if top is None:
                 continue
             if abs(con.pos[2] - top) <= 0.035:
@@ -223,6 +239,20 @@ def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
         c.step(data, model.opt.timestep)
         # post-controller injection: c.step rewrites ctrl, so anything we
         # want in the physics must be written here, after it
+        if (c.jump_state == "flight" and cell.kick_z > 0
+                and cell.flight_kick):
+            zw = min(float(data.xpos[c.sides[s].wheel_body][2])
+                     for s in ("l", "r"))
+            if zw < cell.kick_z:
+                for side in ("l", "r"):
+                    wm = c.sides[side].wheel_motor
+                    data.ctrl[wm] = c.wheel_sign[side] * cell.flight_kick
+        if (c.jump_state == "flight" and cell.flight_swing
+                and cell.swing_t0 <= c.jump_air_elapsed
+                < cell.swing_t0 + cell.swing_dt):
+            for side in ("l", "r"):
+                for hm in c.sides[side].hip_motors:
+                    data.ctrl[hm] += cell.flight_swing
         if (c.jump_state == "thrust" and not c.jump_off_ground
                 and cell.thrust_kick):
             for side in ("l", "r"):
@@ -318,7 +348,15 @@ def stage_a(model, c) -> None:
 
 def main() -> None:
     which = sys.argv[1] if len(sys.argv) > 1 else "stage-a"
-    if "--c30" in sys.argv:
+    if "--v60" in sys.argv:
+        sys.argv.remove("--v60")
+        model = mujoco.MjModel.from_xml_path(
+            str(REPO_ROOT / "model" / "whole_body_lqr_fast_platform_v60.xml"))
+    elif "--v50" in sys.argv:
+        sys.argv.remove("--v50")
+        model = mujoco.MjModel.from_xml_path(
+            str(REPO_ROOT / "model" / "whole_body_lqr_fast_platform_v50.xml"))
+    elif "--c30" in sys.argv:
         sys.argv.remove("--c30")
         model = mujoco.MjModel.from_xml_path(
             str(REPO_ROOT / "model" / "whole_body_lqr_fast_platform_c30.xml"))

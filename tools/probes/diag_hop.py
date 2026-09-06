@@ -64,6 +64,9 @@ if "--rt" in sys.argv:
 PMIN = 0.0
 if "--pmin" in sys.argv:
     PMIN = float(sys.argv[sys.argv.index("--pmin") + 1])
+SWING = 0.0
+if "--swing" in sys.argv:
+    SWING = float(sys.argv[sys.argv.index("--swing") + 1])
 CROUCH = 0.0
 if "--crouch" in sys.argv:
     CROUCH = float(sys.argv[sys.argv.index("--crouch") + 1])
@@ -159,6 +162,10 @@ if ok:
             for side in ("l", "r"):
                 data.ctrl[c.sides[side].wheel_motor] = (
                     c.wheel_sign[side] * THK)
+        if SWING and c.jump_state == "flight":
+            for side in ("l", "r"):
+                for hm in c.sides[side].hip_motors:
+                    data.ctrl[hm] += SWING
         if LREF < 90.0 and c.jump_state == "landing":
             c.drive_forward_target = LREF
         if KICK and c.jump_state == "landing":
