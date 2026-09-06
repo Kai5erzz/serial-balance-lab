@@ -74,6 +74,16 @@ class Cell:
     thrust_vxgain: float = -1.0 # override JUMP_THRUST_PITCH_RATE_VX_GAIN
     rate_target: float = 99.0   # instance jump_thrust_pitch_rate_target rad/s
     thrust_max: float = 0.0     # override JUMP_THRUST_MAX_TIME (0 = keep)
+    tuck_hold: float = 0.0      # override jump_air_tuck_hold_time (0 = keep)
+    deploy_rate: float = 0.0    # override jump_air_deploy_ref_rate (0 = keep)
+    thrust_kick: float = 0.0    # logical wheel torque during preload/thrust
+    damp_wheels: int = 1        # 0 = kill landing wheel pitch damper
+    thrust_len: float = 0.0     # override JUMP_THRUST_LENGTH (0 = keep)
+    preload_len: float = 0.0    # override JUMP_PRELOAD_LENGTH (0 = keep)
+    theta_gain: float = -1.0    # override JUMP_THRUST_THETA_LQR_GAIN
+    land_ref: float = 99.0      # landing pitch-ref shift: drive_forward poke
+    deploy_kp: float = 0.0      # forward landing wheel damper gain
+    land_len_kp: float = 0.0    # lock-legs: LANDING_LENGTH_KP override
     target_tier: int = 1
 
 
@@ -143,6 +153,23 @@ def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
     c.jump_air_deploy_pitch_bias = np.radians(cell.deploy_pitch_bias_deg)
     if cell.rate_target < 90.0:
         c.jump_thrust_pitch_rate_target = cell.rate_target
+    if cell.tuck_hold > 0:
+        c.jump_air_tuck_hold_time = cell.tuck_hold
+    if cell.damp_wheels == 0:
+        c.jump_landing_wheel_pitch_kp = 0.0
+        c.jump_landing_wheel_pitch_kd = 0.0
+        c.jump_landing_capture_wheel_pitch_kp = 0.0
+        c.jump_landing_capture_wheel_pitch_kd = 0.0
+    if cell.thrust_len > 0:
+        _jump_mod.JUMP_THRUST_LENGTH = cell.thrust_len
+    if cell.preload_len > 0:
+        _jump_mod.JUMP_PRELOAD_LENGTH = cell.preload_len
+    if cell.theta_gain >= 0:
+        _jump_mod.JUMP_THRUST_THETA_LQR_GAIN = cell.theta_gain
+    if cell.land_len_kp > 0:
+        _jump_mod.LANDING_LENGTH_KP = cell.land_len_kp
+    if cell.deploy_rate > 0:
+        c.jump_air_deploy_ref_rate = cell.deploy_rate
     import balance_lab.control.tuning as _tun
     _jump_mod.JUMP_PRELOAD_MIN_TIME = (
         cell.preload_min if cell.preload_min > 0
@@ -196,10 +223,29 @@ def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
         c.step(data, model.opt.timestep)
         # post-controller injection: c.step rewrites ctrl, so anything we
         # want in the physics must be written here, after it
-        if c.jump_state == "landing" and cell.flight_kick:
+        if (c.jump_state == "thrust" and not c.jump_off_ground
+                and cell.thrust_kick):
+            for side in ("l", "r"):
+                wm = c.sides[side].wheel_motor
+                data.ctrl[wm] = c.wheel_sign[side] * cell.thrust_kick
+        elif c.jump_state == "landing" and cell.flight_kick:
             for side in ("l", "r"):
                 wm = c.sides[side].wheel_motor
                 data.ctrl[wm] = c.wheel_sign[side] * cell.flight_kick
+        elif (c.jump_state == "landing" and cell.land_ref < 90.0):
+            # reimplement the landing wheel damper with a nose-down
+            # reference so its whole budget drives the wheels FORWARD
+            # (the stock ref is clipped to 0 and goes REVERSE on a
+            # nose-down strike -- the measured +1.25 -> -0.12 kill)
+            pitch = c.body_pitch(data)
+            rate = -float(c.last_state["l"][5])
+            ref = np.radians(cell.land_ref)
+            torque = float(np.clip(
+                cell.deploy_kp * (pitch - ref),
+                -3.69, 3.69))
+            for side in ("l", "r"):
+                wm = c.sides[side].wheel_motor
+                data.ctrl[wm] = c.wheel_sign[side] * torque
         elif (c.landing_buffer_phase != "inactive"
                 and cell.landing_wheel_bias is not None):
             for side in ("l", "r"):
@@ -272,7 +318,20 @@ def stage_a(model, c) -> None:
 
 def main() -> None:
     which = sys.argv[1] if len(sys.argv) > 1 else "stage-a"
-    model, _ = load_model("platform")
+    if "--c30" in sys.argv:
+        sys.argv.remove("--c30")
+        model = mujoco.MjModel.from_xml_path(
+            str(REPO_ROOT / "model" / "whole_body_lqr_fast_platform_c30.xml"))
+    elif "--tire" in sys.argv:
+        sys.argv.remove("--tire")
+        model = mujoco.MjModel.from_xml_path(
+            str(REPO_ROOT / "model" / "whole_body_lqr_fast_platform_tire.xml"))
+    elif "--full" in sys.argv:
+        sys.argv.remove("--full")
+        model = mujoco.MjModel.from_xml_path(
+            str(REPO_ROOT / "model" / "whole_body_lqr_platform.xml"))
+    else:
+        model, _ = load_model("platform")
     c = TraditionalLQR(model)
     t0 = time.time()
     if which == "stage-a":

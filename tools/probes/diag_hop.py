@@ -34,6 +34,27 @@ if "--trig" in sys.argv:
 SPAWN = 2.6
 if "--spawn" in sys.argv:
     SPAWN = float(sys.argv[sys.argv.index("--spawn") + 1])
+THK = 0.0
+if "--thk" in sys.argv:
+    THK = float(sys.argv[sys.argv.index("--thk") + 1])
+TLEN = 0.0
+if "--tlen" in sys.argv:
+    TLEN = float(sys.argv[sys.argv.index("--tlen") + 1])
+PLEN = 0.0
+if "--plen" in sys.argv:
+    PLEN = float(sys.argv[sys.argv.index("--plen") + 1])
+TGAIN = -1.0
+if "--tgain" in sys.argv:
+    TGAIN = float(sys.argv[sys.argv.index("--tgain") + 1])
+LREF = 99.0
+if "--lref" in sys.argv:
+    LREF = float(sys.argv[sys.argv.index("--lref") + 1])
+THOLD = 0.0
+if "--thold" in sys.argv:
+    THOLD = float(sys.argv[sys.argv.index("--thold") + 1])
+DRATE = 0.0
+if "--drate" in sys.argv:
+    DRATE = float(sys.argv[sys.argv.index("--drate") + 1])
 KICK = 0.0
 if "--kick" in sys.argv:
     KICK = float(sys.argv[sys.argv.index("--kick") + 1])
@@ -134,6 +155,12 @@ if ok:
         if c.jump_state in ("preload", "thrust"):
             c.set_drive_command(REDRIVE, 0.0)
         c.step(data, model.opt.timestep)
+        if THK and c.jump_state == "thrust" and not c.jump_off_ground:
+            for side in ("l", "r"):
+                data.ctrl[c.sides[side].wheel_motor] = (
+                    c.wheel_sign[side] * THK)
+        if LREF < 90.0 and c.jump_state == "landing":
+            c.drive_forward_target = LREF
         if KICK and c.jump_state == "landing":
             for side in ("l", "r"):
                 data.ctrl[c.sides[side].wheel_motor] = (
