@@ -52,12 +52,12 @@ deploy_pitch_bias=-4°`：nose 清墙裕度 0.17m，落点轮心 1.65-1.71（差
 - 物理怀疑论:质量 12.8kg(非20)；垂直裕度仅 16mm(vz 下限 1.981)；vx≤1.3 弹道无解,vx 1.6-1.8 有解；首选锁腿跷跷板(能量裕度30倍)；tier-2/3 的蹲姿压缩几何是后续真障碍
 
 ## 已实测(圆桌后 ~50 格)
-- 杠杆包(tlen .33+plen .117+tgain .2)起效:穿越点 1.713→1.645,双轮触踏面 0.16s(fault=none,pitch -1.9°)——**历史最佳:可复现的棱沿栖息**
+- 杠杆包(tlen .33+plen .117+tgain .2)起效:穿越点 1.713→1.645,双轮触踏面(严格顶面容差 ~50ms,宽口径 0.16s)(fault=none,pitch -1.9°)——**历史最佳:可复现的棱沿栖息**
 - 但栖息态轮心仍在棱外 4.4cm,落地机器以 -0.26m/s 后拖,0.8s 内滚落
 - 修复尝试全败:land_ref 戳值被驱动机构每 tick 重算覆盖(改 step 后直接实现前向阻尼器);kd 项撞击瞬间仍反向;锁腿 LANDING_LENGTH_KP 650→1500/3000 无救;rt=-5 修 VX_GAIN 回灌;高速 regime(2.0) thrust 姿态崩坏(+46~72°)
 - c30 圆角地形(30mm worn nosing):不足以弥补 4-7cm 缺口
 
-## 最终结论（凌晨，237 格 + 落座实验后）
+## 最终结论（凌晨，248 格 + 落座实验后）
 **"固件跳跃机构弹道登上 200mm 锐棱台阶"在本刚性植物上按当前执行器包线不可完成**，
 证据链：
 1. vz=2.06 m/s 是髋电机 40Nm 饱和下的硬顶（轮轴顶点 0.274m，越棱需 0.258m，垂直裕度仅 16mm）
@@ -70,15 +70,16 @@ deploy_pitch_bias=-4°`：nose 清墙裕度 0.17m，落点轮心 1.65-1.71（差
 6. 栖息态本质是悬挂非台阶：轮钩在棱下，滚转=下滑，需提拉——已实验证(落座失败,滚回 d=2.28)
 
 ## 交付物
-- `artifacts/climb_matrix/perch_state.npz` — **RL 交接件**：双轮触棱的栖息态
-  (qpos/qvel)。弹道接近已解决到栖息；落座子问题(悬挂解钩+4-6cm 提拉碾上)
+- `artifacts/climb_matrix/perch_state.npz` — **RL 交接件**：双轮触棱瞬间的栖息态
+  (qpos/qvel, t=3.780, 轮位 1.667/1.670, base z=0.394)。弹道接近已解决到栖息；落座子问题(悬挂解钩+4-6cm 提拉碾上)
   是接触丰富型操作，正是参数化控制无法表达、RL 擅长的部分。建议 RL 从此态
   bootstrap。
 - `out/climb_perch.gif` — 最佳全程录像（624 帧）
 - `tools/probes/climb_matrix.py` — 15+ 杠杆的矩阵扫描器（cell 子命令可复现任意格）
 - `tools/probes/{diag_hop,perch_capture,perch_seat,render_climb}.py` — 诊断/捕获/落座/渲染
+  （perch_capture 经独立验收发现快照 bug 已修复：npz 现为触棱瞬间而非弹回后状态）
 - `tools/model/build_platform_model_{c30,v50,v60}.py` + 3 个地形变体 XML
-- `artifacts/climb_matrix/results.jsonl` — 237 格全量结果
+- `artifacts/climb_matrix/results.jsonl` — 248 格全量结果（含验收代理复跑 2 格）
 
 ## 给 RL 的三条路（按推荐排序）
 1. **从 perch_state.npz bootstrap 学落座**，弹道部分用本夜参数化脚本固定；

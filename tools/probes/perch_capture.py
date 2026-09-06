@@ -103,28 +103,15 @@ while data.time < 20.0 and c.jump_state != "idle":
         dwr = float(np.hypot(data.xpos[c.sides["r"].wheel_body][0],
                              data.xpos[c.sides["r"].wheel_body][1]))
         if max(dwl, dwr) < 1.67 and zw > 0.14:
-            captured = (data.qpos.copy(), data.qvel.copy(),
-                        float(data.time))
-            print(f"PERCH captured at t={data.time:.3f} "
+            captured = True
+            OUT.parent.mkdir(parents=True, exist_ok=True)
+            np.savez(OUT, qpos=data.qpos.copy(), qvel=data.qvel.copy(),
+                     time=float(data.time),
+                     wheel_d=np.array([dwl, dwr]), wheel_z=zw,
+                     config=np.array([APPROACH, TRIGGER, SPAWN]))
+            print(f"PERCH captured+saved at t={data.time:.3f} "
                   f"wheel_d=({dwl:.3f},{dwr:.3f}) wheel_z={zw:.3f}")
+            break
 
-if captured is not None:
-    qpos, qvel, t = captured
-    # roll forward another 120 ms of sim so the snapshot is mid-perch,
-    # not at the first-contact spike
-    t_end = t + 0.12
-    while data.time < t_end:
-        c.step(data, model.opt.timestep)
-        mujoco.mj_step(model, data)
-        if c.descent_guard_active:
-            c.descent_guard_active = False
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(OUT, qpos=data.qpos.copy(), qvel=data.qvel.copy(),
-             time=float(data.time),
-             perch_time=t,
-             config=np.array([APPROACH, TRIGGER, SPAWN]))
-    print(f"saved {OUT} at t={data.time:.3f} "
-          f"z={data.xpos[c.base][2]:.3f} "
-          f"pitch={np.degrees(c.body_pitch(data)):+.2f}")
 else:
     print("no perch captured this run")
