@@ -38,6 +38,7 @@ if str(REPO_ROOT) not in sys.path:
 import mujoco
 import numpy as np
 
+import balance_lab.control.jump as _jump_mod
 from balance_lab.plant import load_model
 from balance_lab.paths import CALIBRATED_STAND_POSE_PATH
 from balance_lab.plant.poses import apply_saved_pose
@@ -65,6 +66,13 @@ class Cell:
     deploy_pitch_bias_deg: float = 0.0
     landing_wheel_bias: float = None  # clamp wheel torque in landing buffer
     creep: float = 0.18
+    spawn_d: float = 2.6
+    approach_leg: float = 0.0   # optional pre-crouched approach leg length
+    flight_kick: float = 0.0    # logical wheel torque during flight/landing
+    preload_min: float = 0.0    # override JUMP_PRELOAD_MIN_TIME (0 = keep)
+    boost: float = 0.0          # override JUMP_THRUST_BOOST_FORCE (0 = keep)
+    thrust_vxgain: float = -1.0 # override JUMP_THRUST_PITCH_RATE_VX_GAIN
+    rate_target: float = 99.0   # instance jump_thrust_pitch_rate_target rad/s
     target_tier: int = 1
 
 
@@ -124,7 +132,7 @@ def wheel_support(model, data, c) -> tuple[dict, dict]:
 def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
     """One approach + wall-hop + mount cycle.  Returns a verdict dict."""
     data = mujoco.MjData(model)
-    spawn(model, data, c, 2.6)
+    spawn(model, data, c, cell.spawn_d)
     c.enable_calibrated_lqr(data)
     c.disable_descent_guard = True
     c.disable_danger_check = True
@@ -132,9 +140,25 @@ def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
     c.jump_air_landing_length = cell.air_deploy
     c.jump_air_tuck_pitch_bias = np.radians(cell.tuck_pitch_bias_deg)
     c.jump_air_deploy_pitch_bias = np.radians(cell.deploy_pitch_bias_deg)
+    if cell.rate_target < 90.0:
+        c.jump_thrust_pitch_rate_target = cell.rate_target
+    import balance_lab.control.tuning as _tun
+    _jump_mod.JUMP_PRELOAD_MIN_TIME = (
+        cell.preload_min if cell.preload_min > 0
+        else _tun.JUMP_PRELOAD_MIN_TIME)
+    _jump_mod.JUMP_THRUST_BOOST_FORCE = (
+        cell.boost if cell.boost > 0 else _tun.JUMP_THRUST_BOOST_FORCE)
+    _jump_mod.JUMP_THRUST_PITCH_RATE_VX_GAIN = (
+        cell.thrust_vxgain if cell.thrust_vxgain >= 0
+        else _tun.JUMP_THRUST_PITCH_RATE_VX_GAIN)
 
     while data.time < 2.5:
         step_pair(model, data, c)
+    if cell.approach_leg > 0.0:
+        c.set_leg_length(cell.approach_leg)
+        pre_end = data.time + 1.2
+        while data.time < pre_end:
+            step_pair(model, data, c)
 
     wall = TIER_WALL[cell.target_tier]
     c.set_drive_command(cell.approach, 0.0)
@@ -161,14 +185,26 @@ def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
     while data.time < deadline + 6.0 and c.jump_state != "idle":
         if c.jump_state in ("preload", "thrust"):
             c.set_drive_command(cell.redrive, 0.0)
-        if (c.landing_buffer_phase != "inactive"
+        elif cell.flight_kick:
+            # keep a forward wheel torque through flight/landing so the
+            # touchdown rolls OVER the lip corner instead of bouncing off it
+            c.set_drive_command(1.0, 0.0)
+        c.step(data, model.opt.timestep)
+        # post-controller injection: c.step rewrites ctrl, so anything we
+        # want in the physics must be written here, after it
+        if c.jump_state == "landing" and cell.flight_kick:
+            for side in ("l", "r"):
+                wm = c.sides[side].wheel_motor
+                data.ctrl[wm] = c.wheel_sign[side] * cell.flight_kick
+        elif (c.landing_buffer_phase != "inactive"
                 and cell.landing_wheel_bias is not None):
             for side in ("l", "r"):
                 wm = c.sides[side].wheel_motor
                 sign = c.wheel_sign[side]
                 if sign * data.ctrl[wm] > cell.landing_wheel_bias:
                     data.ctrl[wm] = sign * cell.landing_wheel_bias
-        step_pair(model, data, c)
+        mujoco.mj_step(model, data)
+        suppress_descent_guard(c)
     c.stop_drive()
     fault = c.jump_fault
     log(f"jump done fault={fault} d={base_diag(data, c):.3f}")
