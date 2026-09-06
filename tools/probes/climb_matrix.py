@@ -73,6 +73,7 @@ class Cell:
     boost: float = 0.0          # override JUMP_THRUST_BOOST_FORCE (0 = keep)
     thrust_vxgain: float = -1.0 # override JUMP_THRUST_PITCH_RATE_VX_GAIN
     rate_target: float = 99.0   # instance jump_thrust_pitch_rate_target rad/s
+    thrust_max: float = 0.0     # override JUMP_THRUST_MAX_TIME (0 = keep)
     target_tier: int = 1
 
 
@@ -151,6 +152,9 @@ def run_cell(model, c, cell: Cell, log=lambda m: None) -> dict:
     _jump_mod.JUMP_THRUST_PITCH_RATE_VX_GAIN = (
         cell.thrust_vxgain if cell.thrust_vxgain >= 0
         else _tun.JUMP_THRUST_PITCH_RATE_VX_GAIN)
+    _jump_mod.JUMP_THRUST_MAX_TIME = (
+        cell.thrust_max if cell.thrust_max > 0
+        else _tun.JUMP_THRUST_MAX_TIME)
 
     while data.time < 2.5:
         step_pair(model, data, c)
