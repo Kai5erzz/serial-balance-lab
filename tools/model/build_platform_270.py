@@ -21,10 +21,9 @@ import xml.etree.ElementTree as ET
 
 MODEL_DIR = REPO_ROOT / "model"
 FAST = MODEL_DIR / "whole_body_lqr_fast.xml"
-OUT = MODEL_DIR / "whole_body_lqr_fast_p270.xml"
-
 HALF = 1.2      # face at radial 1.2 m on the diagonal
-TOP = 0.27      # platform height, m
+TOP = float(__import__("sys").argv[1]) if len(sys.argv) > 1 else 0.27
+OUT = MODEL_DIR / f"whole_body_lqr_fast_p{int(TOP*1000):03d}.xml"
 
 
 def main() -> None:

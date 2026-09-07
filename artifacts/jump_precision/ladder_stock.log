@@ -1,0 +1,15 @@
+   v=0.2 stock: pass carry=0.099 apex=0.54 td_pitch=2.56 fault=none
+[ladder] v=0.2 -> pass
+   v=0.4 stock: pass carry=0.223 apex=0.537 td_pitch=4.38 fault=none
+[ladder] v=0.4 -> pass
+   v=0.6 stock: pass carry=0.266 apex=0.536 td_pitch=5.46 fault=none
+[ladder] v=0.6 -> pass
+   v=0.8 stock: pass carry=0.458 apex=0.533 td_pitch=8.3 fault=none
+[ladder] v=0.8 -> pass
+   v=1.0 stock: fail carry=0.637 apex=0.531 td_pitch=9.27 fault=none
+[ladder] v=1.0 -> fail
+   v=1.2 stock: fail carry=None apex=0.183 td_pitch=None fault=preload_timeout
+[ladder] v=1.2 -> fail
+   v=1.5 stock: fail carry=None apex=0.183 td_pitch=None fault=preload_timeout
+[ladder] v=1.5 -> fail
+[jump_precision] done in 21s wall

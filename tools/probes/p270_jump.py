@@ -30,7 +30,8 @@ from balance_lab.paths import CALIBRATED_STAND_POSE_PATH
 from balance_lab.plant.poses import apply_saved_pose
 from balance_lab.control.controller import TraditionalLQR
 
-MODEL = REPO_ROOT / "model" / "whole_body_lqr_fast_p270.xml"
+import os
+MODEL = REPO_ROOT / "model" / f"whole_body_lqr_fast_p{int(float(os.environ.get('P_H','0.27'))*1000):03d}.xml"
 RESULTS = REPO_ROOT / "artifacts" / "jump_precision" / "p270_results.jsonl"
 
 LIP_RADIAL = 1.2
