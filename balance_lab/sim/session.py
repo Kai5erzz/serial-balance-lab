@@ -14,6 +14,7 @@ import threading
 import time
 
 import mujoco
+import mujoco.viewer
 import numpy as np
 from mujoco.glfw import glfw
 
@@ -389,7 +390,7 @@ def run_session(config: dict) -> dict | None:
                     print("mode: calibrated encoder zero; firmware HOLD/SWING/RETRACT/HANDOFF armed; press Space")
                 elif key in (glfw.KEY_6, glfw.KEY_F6):
                     restart_request = {
-                        "model": str(PLATFORM_MODEL),
+                        "model": str(MODEL_FAST_PLATFORM),
                         "z_offset": PLATFORM_SPAWN_Z_OFFSET,
                         "platform_spawn": True,
                         "start_mode": "platform_lqr",
