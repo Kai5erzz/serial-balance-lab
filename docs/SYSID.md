@@ -119,6 +119,46 @@ for the nominal plant. Idempotence is tested.
    [docs/RECOVERY_PORT_NOTES.md](RECOVERY_PORT_NOTES.md) § system
    identification).
 
+
+
+## Real2Sim V2 Identification Profile (2026-09-07)
+
+Status: **Real2Sim V2 coupled-mechanics pass completed and validated via Leave-One-Pass-Out Cross-Validation on temp4.csv (50.0 Hz DMA telemetry).**
+
+`balance_lab/sysid/profiles/identified_2026-09-07_v2.yaml` (fingerprint `96beb674a89118c1`):
+
+| Section | Value | Origin |
+| --- | --- | --- |
+| `actuators.hip.viscous_friction_nms_rad` | **0.4604** | Real2Sim V2 Nelder-Mead Cross-Validation (`temp4.csv`) |
+| `actuators.hip.coulomb_friction_nm` | **0.2202** | Real2Sim V2 Coulomb friction parameter |
+| `actuators.hip.static_friction_nm` | **0.3184** | Stribeck low-speed peak static friction |
+| `actuators.hip.stribeck_velocity_rad_s` | **0.0310** | Stribeck transition characteristic velocity |
+| `actuators.hip.armature_kg_m2` | **0.0035** | DM4310/4340 rotor reflected inertia (`armature`) |
+| `latency.actuator_ms` | **20.0** | 实测 50.0 Hz DMA 零阻塞遥测步长 |
+| `fit.metrics` | Chirp RMSE **0.0757 rad**, Square corr **0.9194** | 留一轮交叉验证测试集 (Pass 3 hold-out) |
+
+### Usage in balance_lab
+
+```python
+from balance_lab.sysid import MechanicsFit, load_profile
+from balance_lab.plant import load_model
+
+# 1. Load with identified model parameters (damping, gains, contacts)
+model, applied = load_model("fast", plant="identified_2026-09-07_v2")
+
+# 2. Or load with full coupled-mechanics overlay (including coulomb friction and rotor armature)
+v2_profile = load_profile("identified_2026-09-07_v2")
+v2_fit = MechanicsFit(
+    hip_damping_scale=0.4604 / 0.35,  # 1.3154
+    hip_frictionloss_nm=0.2202,
+    hip_armature_kg_m2=0.0035,
+    wheel_damping_scale=1.0,
+    wheel_frictionloss_nm=0.0,
+    source="temp4.csv (Real2Sim V2)",
+)
+model, applied = load_model("fast", plant=(v2_profile, v2_fit))
+```
+
 ## Known gaps (tracked)
 
 - actuator latency (28 ms) is not simulated anywhere in rl-lab yet.

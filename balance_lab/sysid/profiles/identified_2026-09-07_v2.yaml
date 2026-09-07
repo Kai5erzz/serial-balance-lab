@@ -1,0 +1,100 @@
+schema_version: 1
+identity:
+  robot_id: serial_balance_nominal
+  source: real2sim_sysid_v2_temp4
+  revision: v2
+  base_model_fingerprint: db50d0ff116f9ee2
+  backfill_schema_version: 1
+geometry:
+  wheel_radius_m: 0.058
+  five_bar_l1_m: 0.21
+  five_bar_l2_m: 0.25
+  encoder_zero_rad:
+    left_j1: 0.8640252461997929
+    left_j2: 1.8065030422767308
+    right_j1: -0.8640252461997929
+    right_j2: -1.8065030422767308
+rigid_bodies:
+  total_mass_kg: 12.801
+  links: {}
+actuators:
+  hip:
+    torque_limit_nm: 20.0
+    strength_scale: 0.971
+    viscous_friction_nms_rad: 0.4604
+    coulomb_friction_nm: 0.2202
+    deadzone_nm: 0.0
+    static_friction_nm: 0.3184
+    stribeck_velocity_rad_s: 0.0310
+    armature_kg_m2: 0.0035
+  wheel:
+    torque_limit_nm: 3.69
+    strength_scale: 0.807
+    viscous_friction_nms_rad: 0.08
+    coulomb_friction_nm: 0.0
+    deadzone_nm: 0.0
+gas_springs:
+  force_n: 300.0
+  scale: 1.0
+  l6_m: 0.0503
+  ls2_m: 0.20209
+  alpha_rad: 0.214218
+contacts:
+  wheel_static_friction: 1.0
+  wheel_dynamic_friction: 1.0
+  ground_static_friction: 1.2
+  restitution: 0.0
+sensors:
+  gyro_bias_rad_s:
+  - 0.0
+  - 0.0
+  - 0.0
+  gyro_noise_std_rad_s: 0.0
+  encoder_bias_rad:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  encoder_noise_std_rad: 0.0
+  vx_estimator_tau_s: 0.035
+latency:
+  policy_ms: 0.0
+  observation_ms: 0.0
+  actuator_ms: 20.0
+coordinate_convention:
+  wheel_joint_forward_sign:
+  - -1.0
+  - 1.0
+theta_compensation:
+  convention: theta_corrected_equals_theta_raw_minus_compensation
+  dx_offset_left_m: 0.0182
+  dx_offset_right_m: 0.0182
+  geometry_sign_left: 1.0
+  geometry_sign_right: 1.0
+  length_fit_range_m:
+  - 0.13
+  - 0.3
+  length_center_m: 0.215
+  length_scale_m: 0.085
+  polynomial_rad:
+  - 0.010312509
+  - -0.009055911
+  - 0.001545024
+  common_trim_rad: 0.0
+  left_trim_rad: 0.0
+  right_trim_rad: 0.0
+  body_pitch_zero_rad: 0.0
+fit:
+  status: identified
+  dataset_ids:
+  - temp4.csv (2026-09-07, 50Hz DMA telemetry, 3 warm passes)
+  objective: Real2Sim V2 Leave-One-Pass-Out (Pass 2 vs Pass 3) short-horizon multiple shooting with measured motor torque
+  metrics:
+    chirp_rmse_rad: 0.0757
+    chirp_nrmse: 0.1238
+    chirp_corr: 0.7904
+    square_corr: 0.9194
+    square_rmse_rad: 0.3876
+  covariance_relative_std:
+    hip_gain: 0.044
+    wheel_gain: 0.008

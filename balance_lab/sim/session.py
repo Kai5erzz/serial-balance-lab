@@ -81,10 +81,36 @@ def run_session(config: dict) -> dict | None:
     # Python traceback on Windows.  Keep this enabled so an unexpected viewer
     # exit can be distinguished from a controller exception.
     faulthandler.enable(all_threads=True)
-    model = mujoco.MjModel.from_xml_path(str(config["model"]))
+    plant_spec = config.get("plant", "nominal")
+    if plant_spec != "nominal":
+        from ..plant import load_model
+        from ..sysid import load_profile, MechanicsFit
+        variant = "platform" if config.get("platform_spawn") else "fast"
+        profile = load_profile(plant_spec) if isinstance(plant_spec, str) else plant_spec
+        mechanics = None
+        if isinstance(plant_spec, str) and "v2" in plant_spec:
+            mechanics = MechanicsFit(
+                hip_damping_scale=0.4604 / 0.35,
+                hip_frictionloss_nm=0.2202,
+                hip_armature_kg_m2=0.0035,
+                wheel_damping_scale=1.0,
+                wheel_frictionloss_nm=0.0,
+                source="real2sim_sysid_v2_temp4",
+            )
+        model, applied = load_model(variant, plant=(profile, mechanics) if mechanics else profile)
+        print(f"[SysId] Loaded identified plant profile: {plant_spec}")
+        for k, v in applied.items():
+            print(f"  - {k}: {v}")
+        controller = TraditionalLQR(model)
+        try:
+            controller.apply_identified(profile)
+        except Exception as e:
+            print(f"[SysId] Note: controller apply_identified: {e}")
+    else:
+        model = mujoco.MjModel.from_xml_path(str(config["model"]))
+        controller = TraditionalLQR(model)
     data = mujoco.MjData(model)
     mujoco.mj_resetData(model, data)
-    controller = TraditionalLQR(model)
     controller.set_leg_length(LEG_LENGTH_DEFAULT)
     controller.reset(data)
     paused = {"value": True}
@@ -367,6 +393,7 @@ def run_session(config: dict) -> dict | None:
                         "z_offset": PLATFORM_SPAWN_Z_OFFSET,
                         "platform_spawn": True,
                         "start_mode": "platform_lqr",
+                        "plant": config.get("plant", "nominal"),
                     }
                     print(
                         "6: switching to 600 mm PLATFORM scene (LQR armed on the "

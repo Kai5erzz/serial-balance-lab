@@ -17,6 +17,7 @@ from ..sysid.apply import (
     MechanicsFit,
     apply_mechanics_fit,
     apply_model_parameters,
+    load_profile,
 )
 from ..sysid.parameters import ModelParameters, load_model_parameters
 
@@ -56,7 +57,7 @@ def load_model(
     if isinstance(plant, tuple):
         params, mechanics = plant
     elif isinstance(plant, (str, Path)):
-        params = load_model_parameters(plant)
+        params = load_profile(plant)
     else:
         params = plant
     applied = apply_model_parameters(model, params)
