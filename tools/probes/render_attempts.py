@@ -96,12 +96,15 @@ def render_attempt(tag: str, model_path: Path, speed: float, trigger: float,
         n += 1
         if n % 40 == 0:
             snap()
-    c.set_drive_command(speed, 0.0)
+    c.set_drive_command(0.35, 0.0)
+    t_drive = data.time
 
     def radial():
         return float(np.hypot(data.xpos[c.base][0], data.xpos[c.base][1]))
 
-    while data.time < 14.0:
+    while data.time < 16.0:
+        cmd = min(speed, 0.35 + 0.9 * (data.time - t_drive))
+        c.set_drive_command(cmd, 0.0)
         c.step(data, DT)
         mujoco.mj_step(model, data)
         n += 1
