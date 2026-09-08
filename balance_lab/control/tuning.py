@@ -788,6 +788,14 @@ LQR_POSITION_LIMIT = 1.50
 LQR_POSITION_BRAKE_RELEASE_RATE = 1.50
 
 THETA_DX_OFFSET_M = 0.013
+# chassis_control.c: the drive-speed ceiling follows the leg geometry
+# (chassis_vx_limit_calculate).  Missing from the earlier port -- the sim
+# happily drove long legs past the firmware's own safety envelope.
+CHASSIS_V_MAX_LOW = 2.30
+CHASSIS_V_MAX_MID = 1.85
+CHASSIS_V_MAX_HIGH = 1.20
+CHASSIS_V_HIGH_LEG_L0 = 0.245
+CHASSIS_V_MID_LEG_L0 = 0.170
 
 THETA_COMP_APPLY_RATE = 1.5
 
@@ -1382,6 +1390,11 @@ __all__ = [
     "LQR_POSITION_LIMIT",
     "LQR_POSITION_BRAKE_RELEASE_RATE",
     "THETA_DX_OFFSET_M",
+    "CHASSIS_V_MAX_LOW",
+    "CHASSIS_V_MAX_MID",
+    "CHASSIS_V_MAX_HIGH",
+    "CHASSIS_V_HIGH_LEG_L0",
+    "CHASSIS_V_MID_LEG_L0",
     "THETA_COMP_APPLY_RATE",
     "THETA_COMP_POLY_L0_MIN",
     "THETA_COMP_POLY_L0_MAX",

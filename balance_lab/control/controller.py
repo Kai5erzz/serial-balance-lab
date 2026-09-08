@@ -874,6 +874,23 @@ MJCF CAD hinge frame."""
             firmware_vx_reference = 0.0
         else:
             firmware_vx_reference = self._drive_target_for_control()
+            # chassis_control.c LQRXRefBuf clamp: the drive ceiling follows
+            # the live leg geometry (HIGH 1.20 / MID 1.85 / LOW 2.30 m/s).
+            # Without it the sim drives long legs past the firmware's own
+            # envelope and the theta loop diverges exactly as the real
+            # engineers predicted when they set these caps.
+            avg_length = 0.5 * sum(
+                self.vmc_kinematics(data, side).l0 for side in ("l", "r")
+            )
+            if avg_length >= CHASSIS_V_HIGH_LEG_L0:
+                vx_limit = CHASSIS_V_MAX_HIGH
+            elif avg_length >= CHASSIS_V_MID_LEG_L0:
+                vx_limit = CHASSIS_V_MAX_MID
+            else:
+                vx_limit = CHASSIS_V_MAX_LOW
+            firmware_vx_reference = float(np.clip(
+                firmware_vx_reference, -vx_limit, vx_limit
+            ))
         # Calibration switch: see LQR_XDOT_SIGN note above the constants.
         x_state = LQR_XDOT_SIGN * (self.chassis_vx - firmware_vx_reference)
         pitch_dot = (pitch - self.previous["pitch"]) / dt

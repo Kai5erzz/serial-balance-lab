@@ -86,10 +86,12 @@ def run_cell(model, c, speed: float, trigger: float,
         mujoco.mj_step(model, data)
         suppress()
 
-    c.set_drive_command(speed, 0.0)
+    t_drive = data.time
     deadline = data.time + 14.0
     d = radial()
     while data.time < deadline:
+        cmd = min(speed, 0.35 + 0.4 * (data.time - t_drive))
+        c.set_drive_command(cmd, 0.0)
         c.step(data, DT)
         mujoco.mj_step(model, data)
         suppress()

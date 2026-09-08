@@ -94,10 +94,16 @@ def run_cell(model, c, speed: float, package: str,
         mujoco.mj_step(model, data)
         suppress()
 
-    c.set_drive_command(speed, 0.0)
+    # acceleration-limited approach: the LQR theta loop diverges when the
+    # drive acceleration exceeds ~1 m/s^2 (legs fold back 60+ deg, the
+    # chassis falls onto them, the jump fires from the squat).  Ramp the
+    # command so the approach stays inside the stable band.
+    t_drive = data.time
     deadline = data.time + 14.0
     d = radial()
     while data.time < deadline:
+        cmd = min(speed, 0.35 + 0.4 * (data.time - t_drive))
+        c.set_drive_command(cmd, 0.0)
         c.step(data, DT)
         mujoco.mj_step(model, data)
         suppress()
