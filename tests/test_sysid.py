@@ -43,6 +43,8 @@ from balance_lab.sysid.apply import (
 )
 
 FINGERPRINT = "495989a22f4a6201"
+FINGERPRINT_2026_09_21 = "b3d77732f0b5d7ee"
+ASYMMETRIC = load_profile("identified_2026-09-21")
 
 PARAMS = load_profile()
 
@@ -230,6 +232,186 @@ def test_identified_plant_balances_under_firmware_lqr() -> None:
     assert np.isfinite(data.qpos).all() and np.isfinite(data.qvel).all()
     assert abs(float(np.degrees(controller.body_pitch(data)))) < 5.0
     assert controller.is_properly_standing(data)
+
+
+def test_identified_2026_09_21_profile_fingerprint() -> None:
+    """The adopted asymmetric profile keeps its cross-repo provenance key."""
+    assert ASYMMETRIC.fingerprint == FINGERPRINT_2026_09_21, (
+        "identified_2026-09-21.yaml changed; re-pin FINGERPRINT_2026_09_21 "
+        "and re-document the source hashes in its header"
+    )
+    source = bl.REPO_ROOT / "balance_lab" / "sysid" / "profiles" / "identified_2026-09-21.yaml"
+    assert load_model_parameters(source).fingerprint == FINGERPRINT_2026_09_21
+    # provenance: geometry carries the unified Z_new zero, not the legacy one
+    zeros = ASYMMETRIC.section("geometry")["encoder_zero_rad"]
+    assert zeros["left_j1"] == bl.VMC_ENCODER_ZERO_CAD_Q["l_j1"]
+    assert zeros["right_j2"] == bl.VMC_ENCODER_ZERO_CAD_Q["r_j2"]
+
+
+def test_legs_overlay_writes_documented_fields_idempotently() -> None:
+    """Per-motor/per-side/mass overlay: exact values, set semantics, no drift."""
+    from balance_lab.sysid.apply import _actuated_leg_dof_ids
+
+    model = mujoco.MjModel.from_xml_path(str(bl.MODEL_FAST))
+    nominal_mass = float(model.body_mass.sum())
+    applied = apply_model_parameters(model, ASYMMETRIC)
+    legs = ASYMMETRIC.section("legs")
+
+    # per-motor gain / damping / coulomb / armature
+    for joint_name, fields in legs["motors"].items():
+        joint = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
+        dof = int(model.jnt_dofadr[joint])
+        actuator = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"{joint_name}_motor"
+        )
+        assert model.actuator_gainprm[actuator, 0] == fields["strength_scale"]
+        assert model.dof_damping[dof] == fields["viscous_friction_nms_rad"]
+        assert model.dof_frictionloss[dof] == fields["coulomb_friction_nm"]
+        assert model.dof_armature[dof] == fields["armature_kg_m2"]
+        assert applied[f"strength_scale[{joint_name}]"] == fields["strength_scale"]
+
+    # passive side values on links/knee/closure, never on the motor hinges
+    actuated = _actuated_leg_dof_ids(model)
+    for name, dof in _named(model):
+        side = name[0]
+        if dof in actuated:
+            continue
+        assert model.dof_damping[dof] == legs["passive_joints"][side][
+            "viscous_friction_nms_rad"
+        ], name
+        assert model.dof_frictionloss[dof] == legs["passive_joints"][side][
+            "coulomb_friction_nm"
+        ], name
+
+    # mass scale: same body set the source profile defines, wheels included
+    scale = legs["mass_inertia_scale"]
+    pristine = mujoco.MjModel.from_xml_path(str(bl.MODEL_FAST))
+    for body in range(model.nbody):
+        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, body) or ""
+        factor = scale["l"] if name.startswith("l_") else (
+            scale["r"] if name.startswith("r_") else 1.0
+        )
+        np.testing.assert_allclose(model.body_mass[body], pristine.body_mass[body] * factor,
+                                   rtol=0.0, atol=1e-15)
+        np.testing.assert_allclose(model.body_inertia[body],
+                                   pristine.body_inertia[body] * factor,
+                                   rtol=0.0, atol=1e-15)
+    total = float(model.body_mass.sum())
+    np.testing.assert_allclose(
+        total, ASYMMETRIC.number("rigid_bodies", "total_mass_kg"), atol=1e-9
+    )
+    assert applied["plant_total_mass_kg"] == total
+    assert total > nominal_mass
+
+    # idempotence: same model, second application changes nothing
+    again = apply_model_parameters(model, ASYMMETRIC)
+    assert again == applied
+    assert float(model.body_mass.sum()) == total
+
+
+def _named(model: mujoco.MjModel) -> list[tuple[str, int]]:
+    from balance_lab.sysid.apply import _named_leg_dofs
+    return _named_leg_dofs(model)
+
+
+def test_per_leg_gain_table_matches_rl_serial_lock() -> None:
+    """THE locked 2026-09-21 table (rl-serial-balance, cloud recipe on).
+
+    rl-serial-balance ``virtual_leg.IDENTIFIED_PER_LEG_GAINS_2026_09_21`` /
+    ``tests/test_virtual_leg_per_leg_pid_2026_09_21.py`` (20 pins) and the
+    cloud recipe with ``vmc_per_leg_gains: True`` run these exact values at
+    ``support_mass_kg = 13.592626``; rl-lab must reproduce them digit for
+    digit or the two platforms are no longer validating the same controller.
+    """
+    from balance_lab.control.vmc_gains import derive_per_leg_gains
+
+    gains = derive_per_leg_gains(bl.IDENTIFIED_SUPPORT_MASS_KG)
+    expected = {
+        #            kp           kd
+        "l": {"length_kp": 2039.2593, "length_kd": 15.9257,
+              "theta_kp": 12.4129, "theta_kd": 1.3405},
+        "r": {"length_kp": 1960.7407, "length_kd": 28.0743,
+              "theta_kp": 11.4862, "theta_kd": 1.8888},
+    }
+    for side in ("l", "r"):
+        for channel, value in expected[side].items():
+            np.testing.assert_allclose(
+                gains[side][channel], value, rtol=0.0, atol=5e-4,
+                err_msg=f"{side}.{channel} diverged from the rl-serial lock",
+            )
+        np.testing.assert_allclose(gains[side]["length_ki"], 100.0, rtol=0.0, atol=0.0)
+    # mean stiffness stays the anchored design point for any support mass
+    np.testing.assert_allclose(
+        0.5 * (gains["l"]["length_kp"] + gains["r"]["length_kp"]), 2000.0, atol=1e-9
+    )
+    # design targets the table is solved onto
+    from balance_lab.control.vmc_gains import OMEGA_THETA_RAD_S, ZETA_THETA
+    np.testing.assert_allclose(OMEGA_THETA_RAD_S, 8.0, atol=0.0)
+    np.testing.assert_allclose(ZETA_THETA, 0.70, atol=0.0)
+    # static support at the ruling mass: 66.6718 N per leg
+    np.testing.assert_allclose(
+        0.5 * bl.IDENTIFIED_SUPPORT_MASS_KG * bl.GRAVITY, 66.6718, atol=5e-4
+    )
+
+
+def test_support_mass_defaults_to_ruling_and_profile_field_is_explicit() -> None:
+    """The controller anchors on the 2026-09-21 ruling out of the box.
+
+    Default (no profile): support_mass = 13.592626 -> the locked table and
+    the 66.6718 N/leg feedforward.  ``apply_identified`` only moves it when
+    a profile carries an explicit ``rigid_bodies.support_mass_kg``; the
+    bundled legacy profile has no such field, so loading it cannot silently
+    re-anchor the table (or drop it back to the stale firmware constant).
+    """
+    controller = bl.TraditionalLQR(mujoco.MjModel.from_xml_path(str(bl.MODEL_FAST)))
+    assert controller.support_mass == 13.592626
+    np.testing.assert_allclose(
+        controller.length_gains["l"]["length_kp"], 2039.2593, atol=5e-4
+    )
+    np.testing.assert_allclose(
+        controller.length_gains["r"]["length_kd"], 28.0743, atol=5e-4
+    )
+
+    # bundled legacy profile: no support_mass_kg field -> unchanged
+    legacy_record = controller.apply_identified(PARAMS)
+    assert "support_mass_kg" not in legacy_record
+    assert controller.support_mass == 13.592626
+
+    # adopted profile: explicit field, recorded, table re-derived identically
+    record = controller.apply_identified(ASYMMETRIC)
+    assert controller.support_mass == 13.592626
+    assert record["support_mass_kg"] == 13.592626
+    # total_mass_kg stays the ASSET number and must not leak into the anchor
+    np.testing.assert_allclose(
+        ASYMMETRIC.number("rigid_bodies", "total_mass_kg"), 13.836367294868388,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        controller.length_gains["l"]["length_kp"], 2039.2593, atol=5e-4
+    )
+    np.testing.assert_allclose(
+        controller.length_gains["r"]["length_kp"], 1960.7407, atol=5e-4
+    )
+
+
+def test_identified_2026_09_21_plant_balances_under_firmware_lqr() -> None:
+    """Smoke acceptance: the asymmetric identified plant is a usable plant."""
+    model, applied = load_model("fast", plant="identified_2026-09-21")
+    data = mujoco.MjData(model)
+    controller = bl.TraditionalLQR(model)
+    controller.apply_identified(ASYMMETRIC)
+    bl.apply_saved_pose(model, data, bl.CALIBRATED_STAND_POSE_PATH)
+    controller.reset(data, calibrate_frame=True)
+    controller.enable_calibrated_lqr(data)
+    for _ in range(int(3.0 / model.opt.timestep)):
+        controller.step(data, model.opt.timestep)
+        mujoco.mj_step(model, data)
+    assert np.isfinite(data.qpos).all() and np.isfinite(data.qvel).all()
+    assert abs(float(np.degrees(controller.body_pitch(data)))) < 5.0
+    assert controller.is_properly_standing(data), (
+        f"asymmetric plant failed to hold the stand; pitch="
+        f"{np.degrees(controller.body_pitch(data)):.3f} deg"
+    )
 
 
 if __name__ == "__main__":

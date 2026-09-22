@@ -1,5 +1,27 @@
 """Jump state machine: preload -> thrust -> flight -> touchdown capture -> landing buffer.
 
+Gas-spring extension safety (investigated and CLOSED 2026-09-22): a
+spring-only launch rule (thrust F0 <= 0) was implemented and measured --
+it cannot take off at all (0 m; force/energy accounting in
+docs/JUMP_CONTROL_NOTES.md).  The rule was then retracted because its
+premise did not hold: the mechanism's stops keep the gas spring's
+installed length inside [0.154, ~0.205] m at all times (compression-side
+bounded, never over-extended past its stroke), so in-stroke extension --
+including motor-assisted extension -- is normal working operation, not a
+damage mode.  The original thrust law (weight share + PID toward
+JUMP_THRUST_LENGTH + boost) is restored; the retained record of the
+experiment lives in the notes.
+Support-mass scope: the jump/landing support laws keep the firmware
+``CHASSIS_SUPPORT_MASS`` (``TOTAL_MASS = 12.801 kg``) they were ported and
+validated against -- the preload ready window sits a few millimetres from
+the equilibrium, and re-anchoring the feedforward to the 2026-09-21 ruling
+mass (13.592626 kg) moves it past ``JUMP_PRELOAD_READY_LENGTH``
+(measured: the jump then times out in preload).  The ruling mass applies to
+the VMC support path (controller._apply_vmc_support / lateral load
+transfer), i.e. the 66.6718 N/leg standing feedforward; on the real robot
+the firmware's stale 12.801 kg constant carries the same ~7.5 N deficit in
+every channel, which the length integrator absorbs either way.
+
 Mixin part of :class:`balance_lab.control.controller.TraditionalLQR`; every
 method accesses the shared controller state through ``self``.
 """
@@ -601,7 +623,7 @@ class JumpControlMixin:
                 LANDING_LENGTH_OUTPUT_LIMIT_LOW,
             ))
             supports[side] = (
-                0.5 * TOTAL_MASS * GRAVITY
+                0.5 * TOTAL_MASS * GRAVITY  # firmware CHASSIS_SUPPORT_MASS (see below)
                 - spring
                 + length_force
                 + self.support_trim[side]
@@ -666,7 +688,7 @@ class JumpControlMixin:
                 output_limit,
             ))
             supports[side] = (
-                0.5 * TOTAL_MASS * GRAVITY
+                0.5 * TOTAL_MASS * GRAVITY  # firmware CHASSIS_SUPPORT_MASS (see below)
                 - spring
                 + length_force
                 + self.support_trim[side]

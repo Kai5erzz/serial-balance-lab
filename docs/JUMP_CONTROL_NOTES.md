@@ -156,3 +156,85 @@ Findings:
    giving ~1.3 s forward-drive latency after landing. Next lever: make
    the post-exit length reference start from the actual length and slew
    down (sim deviation), or slow the rebuild; not attempted tonight.
+
+## 2026-09-22 — spring-only launch experiment (motor never extends)
+
+User ruling: at takeoff the motor must never help the gas spring extend
+(it shock-loads the rod); it may only compress the spring, or be idle, and
+keeps only the swing (theta) channel.
+
+Implementation (`jump._jump_supports`): the THRUST phase clips its
+leg-axial output to `F0 <= 0` (extension-side force removed: static share,
+the PID chase toward `JUMP_THRUST_LENGTH = 0.305 m`, and the retired
+`+70 N` boost / `120 N` floor). PRELOAD keeps its weight-bearing share —
+it folds the leg (`dl < 0`), so a positive `F0` there does *negative* work
+on extension (absorb/hold), never "helping it straighten". Landing/air
+laws untouched.
+
+Measured (fast model, flat scene, 3 s settle):
+
+| quantity | spring-only (new) | motor-assisted (before) |
+| --- | ---: | ---: |
+| thrust `F0` (sampled) | **0.00 N** throughout | ~140–200 N/leg |
+| takeoff | **none** (`fault=no_takeoff`, 0.70 s and 5.0 s windows) | `flight` @3.385 s |
+| airborne time | **0.000 s** | 0.43 s |
+| max wheel clearance | **0.0038 m** | 0.308 m |
+| body Δz | +0.15…0.17 m (wheels planted — a stand-up, not a jump) | +0.331 m |
+| leg length range | 0.111 → ~0.30–0.316 m | 0.125 → flight |
+
+Why zero (per-leg load `0.5·12.801·9.81 = 62.79 N` vs the control-side
+virtual spring `_gas_virtual_support(l)`):
+
+| l0 (m) | 0.115 | 0.125 | 0.150 | 0.200 | 0.2225 | 0.240 | 0.300 | 0.330 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| spring (N) | 24.5 | 28.5 | 38.3 | 56.3 | **62.8** | 69.3 | 86.7 | 94.7 |
+
+- At the preload release point the spring carries only 45 % of one leg's
+  load; with `F0 <= 0` the region below the 0.2225 m crossover cannot
+  produce net lift, so the launch can never be initiated from the
+  compressed pose.
+- The observed stand-up stalls around `l0 ≈ 0.30 m` where the *physical*
+  spring's virtual force reaches the leg load (the control-side curve
+  still reads ~85 N there — the feedforward overestimates the physical
+  spring near full extension; logged as a sysid follow-up), and at the
+  stall there is no residual kinetic energy → the wheels never unload.
+- Energy accounting: the net-positive region above the crossover holds
+  ∫(spring − load) dl ≈ 2–3 J/leg (v ≤ ~0.6 m/s ⇒ a few cm even under
+  perfect staging); harvesting the *whole* spring range
+  (∫ spring dl ≈ 11.5 J/leg) would cap around 0.10–0.20 m — and the
+  0.111→0.2225 m traversal it requires is precisely the motor extension
+  work the new rule forbids.
+- The previous 0.33 m apex was paid for by the motor: thrust floor 120 N
+  + boost 70 N + PID toward 0.305 m ≈ 270 N/leg net ≈ 49 J.
+
+Verdict: **spring-only takeoff height on this plant = 0** (no takeoff);
+the state machine and all safety/landing behaviour remain intact. A
+non-zero spring-only jump needs a hardware change (higher spring precharge
+/ better lever arm / more travel so that `spring_virtual > load` at the
+*compressed* pose), or a relaxation of the no-extension-work rule.
+
+**Closed the same day.** The premise of the no-extension rule was then
+checked against manufacturer guidance and the mechanism geometry and did
+not hold:
+
+- a gas spring's in-stroke extension is its normal working mode; the
+  documented damage modes are (a) using the full stroke / bottoming out
+  (manufacturer spec: leave ~8 mm of stroke margin), (b) side/inclined
+  loads bending the rod into the seal, (c) rod-surface damage -- not
+  "being extended" per se.  Pull-type applications use a different
+  product line (ACE tension series GZ, LQD/ELQD), confirming standard
+  QD springs are push-only *as force elements*, which is unrelated to
+  in-stroke length changes.
+- the mechanism's own stops bound the installed gas-spring length to
+  **[0.154, ~0.205] m** (measured at real closed-chain poses: 0.1542 at
+  l0=0.111, 0.2023 at the 0.3326 extension stop, ~0.2045 at the new knee
+  range top), i.e. the spring stays on the compression side of its stroke
+  at all times and cannot be over-extended by motor assist -- the leg
+  stops hit first.  (Hardware check still recommended:实物全伸安装距 −
+  8 mm ≥ ~0.205 m.)
+
+Ruling (user, 2026-09-22): the constraint is retracted; the thrust law is
+restored to the original motor-assisted version (weight share + PID toward
+0.305 m + 70 N boost / 120 N floor).  Battery green again; measured apex
+returns to the ~0.33 m body rise / 0.31 m wheel clearance of the
+pre-experiment machine.

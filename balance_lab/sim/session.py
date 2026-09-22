@@ -158,7 +158,11 @@ def run_session(config: dict) -> dict | None:
     original_joint_limited = model.jnt_limited.copy()
     hover_pose = np.zeros(7)
     calibration = {
-        "swing": 0.0,
+        # Per-side swing in the UI (mirrored-left) convention.  The unified
+        # encoder zero Z_new is not mirror symmetric (left/right solves differ
+        # by 0.822774 deg), so the Z preset needs one value per side; the M/C/N
+        # presets set both sides to the same scalar.
+        "swing": {"l": 0.0, "r": 0.0},
         "compression": 0.0,
         "target": {name: 0.0 for name in joint_qadr},
     }
@@ -172,15 +176,16 @@ def run_session(config: dict) -> dict | None:
 
         Within each physical leg, equal J1/J2 motion changes phi0 while
         opposite motion changes l0.  Left CAD hinge axes are mirrored, hence
-        the leading minus signs on that side.
+        the leading minus signs on that side.  The swing value is per side so
+        the Z preset can reproduce the asymmetric Z_new zero exactly.
         """
         swing = calibration["swing"]
         compression = calibration["compression"]
         calibration["target"].update({
-            "r_j1": swing + compression,
-            "r_j2": swing - compression,
-            "l_j1": -swing - compression,
-            "l_j2": -swing + compression,
+            "r_j1": swing["r"] + compression,
+            "r_j2": swing["r"] - compression,
+            "l_j1": -swing["l"] - compression,
+            "l_j2": -swing["l"] + compression,
         })
 
     def set_mode(name: str) -> None:
@@ -223,7 +228,7 @@ def run_session(config: dict) -> dict | None:
             set_calibration_limits_removed(True)
             # Start at the exact firmware-frame normal stance rather than an
             # arbitrary CAD q=0 pose.
-            calibration["swing"] = VMC_VERTICAL_SWING
+            calibration["swing"] = {"l": VMC_VERTICAL_SWING, "r": VMC_VERTICAL_SWING}
             calibration["compression"] = VMC_NORMAL_STAND_COMPRESSION
             update_calibration_target()
             mujoco.mj_forward(model, data)
@@ -413,9 +418,11 @@ def run_session(config: dict) -> dict | None:
                     print(f"leg length target: {selected:.3f} m")
                 elif mode["name"] == "leg_calibration" and key in {glfw.KEY_W, glfw.KEY_S, glfw.KEY_A, glfw.KEY_D}:
                     if key == glfw.KEY_W:
-                        calibration["swing"] += CALIBRATION_STEP_RAD
+                        for side in ("l", "r"):
+                            calibration["swing"][side] += CALIBRATION_STEP_RAD
                     elif key == glfw.KEY_S:
-                        calibration["swing"] -= CALIBRATION_STEP_RAD
+                        for side in ("l", "r"):
+                            calibration["swing"][side] -= CALIBRATION_STEP_RAD
                     elif key == glfw.KEY_D:
                         calibration["compression"] += CALIBRATION_STEP_RAD
                     elif key == glfw.KEY_A:
@@ -427,32 +434,33 @@ def run_session(config: dict) -> dict | None:
                     ))
                     update_calibration_target()
                     print(
-                        f"cal target: swing={np.degrees(calibration['swing']):+.1f} deg, "
+                        "cal target: swing="
+                        f"{np.degrees(calibration['swing']['l']):+.1f}/{np.degrees(calibration['swing']['r']):+.1f} deg (l/r), "
                         f"compression={np.degrees(calibration['compression']):+.1f} deg"
                     )
                 elif mode["name"] == "leg_calibration" and key in {
                     glfw.KEY_Z, glfw.KEY_M, glfw.KEY_C, glfw.KEY_N
                 }:
                     if key == glfw.KEY_Z:
-                        calibration["swing"] = VMC_ENCODER_ZERO_SWING
+                        calibration["swing"] = dict(VMC_ENCODER_ZERO_SWING)
                         calibration["compression"] = VMC_ENCODER_ZERO_COMPRESSION
-                        anchor_name = "firmware encoder zero"
+                        anchor_name = "encoder zero Z_new (E=0)"
                     elif key == glfw.KEY_M:
-                        calibration["swing"] = VMC_VERTICAL_SWING
+                        calibration["swing"] = {"l": VMC_VERTICAL_SWING, "r": VMC_VERTICAL_SWING}
                         calibration["compression"] = VMC_COMPRESSION_MAX
                         anchor_name = "vertical maximum"
                     elif key == glfw.KEY_C:
-                        calibration["swing"] = VMC_VERTICAL_SWING
+                        calibration["swing"] = {"l": VMC_VERTICAL_SWING, "r": VMC_VERTICAL_SWING}
                         calibration["compression"] = VMC_COMPRESSION_MIN
                         anchor_name = "vertical minimum"
                     else:
-                        calibration["swing"] = VMC_VERTICAL_SWING
+                        calibration["swing"] = {"l": VMC_VERTICAL_SWING, "r": VMC_VERTICAL_SWING}
                         calibration["compression"] = VMC_NORMAL_STAND_COMPRESSION
                         anchor_name = "normal 0.150 m stand"
                     update_calibration_target()
                     print(
                         f"cal anchor: {anchor_name}; "
-                        f"swing={np.degrees(calibration['swing']):+.3f} deg, "
+                        f"swing={np.degrees(calibration['swing']['l']):+.3f}/{np.degrees(calibration['swing']['r']):+.3f} deg (l/r), "
                         f"compression={np.degrees(calibration['compression']):+.3f} deg"
                     )
                 elif key == glfw.KEY_X and mode["name"] in {"lqr", "platform_lqr", "recovery"}:

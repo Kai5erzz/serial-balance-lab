@@ -24,6 +24,19 @@ GRAVITY = 9.81
 
 TOTAL_MASS = 12.801
 
+# Physical mass the VMC support feedforward carries (2026-09-21 user
+# ruling; rl-serial-balance virtual_leg.IDENTIFIED_SUPPORT_MASS_KG is the
+# same number).  The CAD leg model had omitted the CNC limit stops and the
+# gas-spring mass (+0.765223 kg vs the firmware's stale 12.801 kg constant)
+# -- those parts exist on the REAL robot, so this is a physical value, not
+# a simulation fit.  Per leg the static support is therefore
+# 0.5 * 13.592626 * 9.81 = 66.6718 N.  This support mass is also the anchor
+# the 2026-09-21 per-leg length PID is solved against (vmc_gains.py), i.e.
+# the locked rl-serial-balance table: kp 2039.2593 / 1960.7407 N/m,
+# kd 15.9257 / 28.0743 N s/m.  TOTAL_MASS stays the firmware constant for
+# every non-feedforward use (gain normalisation, off-ground bookkeeping).
+IDENTIFIED_SUPPORT_MASS_KG = 13.592626
+
 WHEEL_TORQUE_LIMIT = 3.69
 
 HIP_TORQUE_LIMIT = 20.0
@@ -40,7 +53,16 @@ SUPPORT_FORCE_LIMIT = 200.0
 
 LQR_RAMP_TIME_S = 0.8
 
-LENGTH_KP = 450.0
+# Length-loop stiffness.  The firmware normal-mode value (450 N/m) measured
+# only 4.5 N of axial force at a 1 cm error on the real machine -- too weak
+# to hold the stand length (rl-serial-balance control/virtual_leg.py
+# ``length_pid_kp`` note).  2000 N/m is the pair validated on hardware and in
+# the 60 s acceptance runs; it also anchors the 2026-09-21 per-leg split
+# (mean stiffness and mean closed-loop damping preserved, see
+# balance_lab/control/vmc_gains.py).  LENGTH_KP keeps its role in the
+# mean-based edge/jump support branches; the normal-ground PID consumes the
+# per-leg values derived from this anchor.
+LENGTH_KP = 2000.0
 
 LENGTH_KI = 100.0
 
@@ -48,8 +70,23 @@ LENGTH_INTEGRAL_LIMIT = 35.0
 
 LENGTH_OUTPUT_LIMIT = 150.0
 
-# rm_config.h normal low-leg derivative gain.
-LENGTH_KD_LOW = 18.0
+# code_611 rm_config.h ``length_Integral_CoefA/B`` + PID.c deadband clear,
+# ported with the 2000 N/m retune: integrate fully while |err| <= COEF_B,
+# taper linearly to zero by COefA+COEF_B, integrate nothing above it.  The
+# earlier simplified port (sign-flip clear only) let a small persistent
+# same-sign error wind the 35 N clamp -> slow asymmetric support -> the
+# measured slow roll drift (rl-serial-balance DIAG_slow_roll_drift).
+# Deadband 0.0 keeps the firmware clear-on-sign-flip semantics only.
+LENGTH_INTEGRAL_COEF_A = 0.040
+
+LENGTH_INTEGRAL_COEF_B = 0.004
+
+LENGTH_PID_DEADBAND = 0.0
+
+# Was the rm_config.h low-leg derivative gain (18 N s/m); the mid-mode value
+# 22 pairs with the 2000 N/m stiffness on hardware (rl-serial-balance
+# LENGTH_PID_KD, "the mid default and let the length PID handle the range").
+LENGTH_KD_LOW = 22.0
 
 VMC_RATE_LPF_RETAIN = 0.5
 
@@ -71,9 +108,18 @@ THETA_SYNC_KP_LOW = 15.0
 
 THETA_SYNC_KP_HIGH = 19.0
 
-THETA_SYNC_KD_LOW = 0.60
+# 2026-09-16 retune (rl-serial-balance control/virtual_leg.py THETA_SYNC_KD):
+# with only the firmware 0.60 the differential theta-sync channel left a
+# 3.1 Hz yaw limit cycle at zeta = 0.23 -- measured effective inertia
+# I = tau/(w^2*theta_diff) = 0.118 kg m^2 gives critical damping
+# 2*sqrt(K*I) = 2.66 with this channel's own K = 15, so 2.0 -> zeta = 0.75.
+# Its peak torque at the observed rate was 0.019 Nm against the 3 Nm clamp,
+# so the clamp was never what limited it.  Both schedule ends move: the mode
+# was undamped everywhere, and the HIGH end only raises stiffness for long
+# legs/spin (no separate high-leg damping measurement exists).
+THETA_SYNC_KD_LOW = 2.0
 
-THETA_SYNC_KD_HIGH = 0.90
+THETA_SYNC_KD_HIGH = 2.0
 
 THETA_SYNC_GAIN_L0_START = 0.160
 
@@ -701,31 +747,82 @@ GAS_LS2 = 0.20209
 
 GAS_ALPHA = 0.214218
 
-# Exact motor-zero conversion in ``drv_leg.c`` / ``rm_config.h``.  At four
-# raw motor angles of zero the firmware VMC evaluates to
-# l0=0.3325570820266586 m and phi0=18.495 deg on both legs.
+# -- encoder zero -----------------------------------------------------------
+# Legacy (Z_old) rod-angle anchors from ``drv_leg.c`` / ``rm_config.h``
+# (``DM_ZERO_OFFSET_LF/RF`` = 67.19 deg, LB/RB = -30.20 deg): at the
+# historical zero the firmware VMC evaluated to l0=0.3325570820266586 m and
+# phi0=18.495 deg on both legs.  Retained as the provenance of the geometry;
+# the controller anchors on the unified Z_new below.
 VMC_DM_ZERO_PHI1 = np.radians(67.19)
 
 VMC_DM_ZERO_PHI4 = np.radians(-30.20)
 
-VMC_ENCODER_ZERO_L0 = 0.33255708202665857
-
-VMC_ENCODER_ZERO_PHI0 = np.radians(18.495)
-
-# User-verified CAD calibration.  J1/J2 in the viewer are the opposite VMC
-# arm order: CAD J2 feeds firmware phi1 (FRONT), CAD J1 feeds phi4 (BACK).
-# The first visual placement was swing=-76 deg.  Anchoring it to the exact
-# firmware phi0 above and the two verified vertical poses refines the common
-# swing coordinate by -0.505 deg, so both vertical endpoints solve to 90 deg.
-VMC_ENCODER_ZERO_SWING = np.radians(-76.505)
+# Legacy CAD zero Z_old: the historical visual swing/compression solve
+# (swing=-76.505 deg mirrored, compression=27 deg).  Kept for the derivation
+# of the Z_new-anchored rod angles and for legacy-FK cross-checks.
+_LEGACY_ZERO_SWING = np.radians(-76.505)
 
 VMC_ENCODER_ZERO_COMPRESSION = np.radians(27.0)
 
+_LEGACY_ZERO_Q = {
+    "r_j1": _LEGACY_ZERO_SWING + VMC_ENCODER_ZERO_COMPRESSION,
+    "r_j2": _LEGACY_ZERO_SWING - VMC_ENCODER_ZERO_COMPRESSION,
+    "l_j1": -_LEGACY_ZERO_SWING - VMC_ENCODER_ZERO_COMPRESSION,
+    "l_j2": -_LEGACY_ZERO_SWING + VMC_ENCODER_ZERO_COMPRESSION,
+}
+
+# Unified physical encoder zero Z_new (2026-09-13, user-confirmed): chassis
+# belly flat on the ground, both legs swung back against the rear stops, both
+# 58 mm tires on the same ground plane; the four hip encoders read zero there
+# (E = Q - Z_new).  Source: rl-serial-balance
+# configs/calibration/encoder_zero_2026-09-13.json
+# (calibration_id flat_bottom_rear_stop_visual_2026-09-13_v1) and
+# HNU_Serial_Balance_H723/docs/RL_ZERO_UNIFICATION_PLAN.md.  The simulator
+# keeps consuming native CAD Q; only the zero anchor moved (plan section 3).
 VMC_ENCODER_ZERO_CAD_Q = {
-    "r_j1": VMC_ENCODER_ZERO_SWING + VMC_ENCODER_ZERO_COMPRESSION,
-    "r_j2": VMC_ENCODER_ZERO_SWING - VMC_ENCODER_ZERO_COMPRESSION,
-    "l_j1": -VMC_ENCODER_ZERO_SWING - VMC_ENCODER_ZERO_COMPRESSION,
-    "l_j2": -VMC_ENCODER_ZERO_SWING + VMC_ENCODER_ZERO_COMPRESSION,
+    "l_j1": 0.8888879963997892,
+    "l_j2": 1.831365792476727,
+    "r_j1": -0.8601638293762661,
+    "r_j2": -1.802641625453204,
+}
+
+# Per-side rod angles at Z_new -- the plan section 4 "direct encoder form":
+#     phi = VMC_ZERO_PHI{1,4}[side] + s * (Q - Z_new),   s = -1 left, +1 right
+# derived as DM_phi + s*(Z_new - Z_old), so this is algebraically the legacy
+# mapping: the FK (l0, phi0, Jacobian) on EVERY pose Q is unchanged.  This is
+# a coordinate migration, not a new measurement; tests/test_vmc_calibration.py
+# proves the identity against the legacy mapping.
+VMC_ZERO_PHI1 = {
+    "l": VMC_DM_ZERO_PHI1 - (VMC_ENCODER_ZERO_CAD_Q["l_j2"] - _LEGACY_ZERO_Q["l_j2"]),
+    "r": VMC_DM_ZERO_PHI1 + (VMC_ENCODER_ZERO_CAD_Q["r_j2"] - _LEGACY_ZERO_Q["r_j2"]),
+}
+
+VMC_ZERO_PHI4 = {
+    "l": VMC_DM_ZERO_PHI4 - (VMC_ENCODER_ZERO_CAD_Q["l_j1"] - _LEGACY_ZERO_Q["l_j1"]),
+    "r": VMC_DM_ZERO_PHI4 + (VMC_ENCODER_ZERO_CAD_Q["r_j1"] - _LEGACY_ZERO_Q["r_j1"]),
+}
+
+# VMC at E=0: l0 is still equal on both legs (the Z_new correction rotates
+# each four-bar rigidly: both of its crank deltas are equal per side), while
+# phi0 is now PER SIDE -- the confirmed zero posture lets the two legs swing
+# independently (+1.424531 deg left, +0.221243 deg right vs Z_old), so the
+# old symmetric 18.495 deg anchor is genuinely asymmetric there.
+VMC_ENCODER_ZERO_L0 = 0.3325570820266586
+
+VMC_ENCODER_ZERO_PHI0 = {
+    "l": 0.29793589495635486,
+    "r": 0.32666006197987757,
+}
+
+# Viewer leg-calibration preset: per-side swing in the UI (mirrored-left)
+# convention, i.e. target r_j1 = swing[r] + comp, l_j1 = -swing[l] - comp.
+# Both reproduce VMC_ENCODER_ZERO_CAD_Q exactly at compression=27 deg; the
+# sides differ by 0.822774 deg because the confirmed zero is not mirror
+# symmetric (RL_ZERO_UNIFICATION_PLAN section 2: each leg was solved
+# independently to touch the same ground plane).
+VMC_ENCODER_ZERO_SWING = {
+    "r": VMC_ENCODER_ZERO_CAD_Q["r_j1"] - VMC_ENCODER_ZERO_COMPRESSION,
+    "l": -(VMC_ENCODER_ZERO_CAD_Q["l_j1"] + VMC_ENCODER_ZERO_COMPRESSION),
 }
 
 VMC_VERTICAL_SWING = np.radians(-5.0)
@@ -1085,6 +1182,7 @@ __all__ = [
     "ROLL_STATIC_TRIM_ROLL_RATE_DB",
     "GRAVITY",
     "TOTAL_MASS",
+    "IDENTIFIED_SUPPORT_MASS_KG",
     "WHEEL_TORQUE_LIMIT",
     "HIP_TORQUE_LIMIT",
     "GIMBAL_YAW_TORQUE_LIMIT",
@@ -1098,6 +1196,9 @@ __all__ = [
     "LENGTH_INTEGRAL_LIMIT",
     "LENGTH_OUTPUT_LIMIT",
     "LENGTH_KD_LOW",
+    "LENGTH_INTEGRAL_COEF_A",
+    "LENGTH_INTEGRAL_COEF_B",
+    "LENGTH_PID_DEADBAND",
     "VMC_RATE_LPF_RETAIN",
     "ROLL_KP_N_PER_DEG",
     "ROLL_KD_N_PER_DEG_S",
@@ -1366,6 +1467,8 @@ __all__ = [
     "VMC_DM_ZERO_PHI4",
     "VMC_ENCODER_ZERO_L0",
     "VMC_ENCODER_ZERO_PHI0",
+    "VMC_ZERO_PHI1",
+    "VMC_ZERO_PHI4",
     "VMC_ENCODER_ZERO_SWING",
     "VMC_ENCODER_ZERO_COMPRESSION",
     "VMC_ENCODER_ZERO_CAD_Q",

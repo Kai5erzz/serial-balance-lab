@@ -122,19 +122,49 @@ Running on the identified plant is one explicit argument:
 from balance_lab.plant import load_model
 
 model, applied = load_model("fast", plant="identified_2026-09-04")
+model, applied = load_model("fast", plant="identified_2026-09-21")  # asymmetric adopted plant
 # applied: record of every parameter written; empty for plant="nominal"
 ```
 
 See [docs/SYSID.md](docs/SYSID.md) for the parameter→consumer mapping and
-the current identification status (PRBS actuator fit done; coupled
-mechanics reserved for the real2sim pass).
+the current identification status (PRBS actuator fit, the 2026-09-07
+scalar coupled-mechanics pass, and the adopted 2026-09-20 tensioned
+**asymmetric** per-side fit).
 
 ## Calibration summary
 
-- Encoder zero: `l0=0.332557082 m`, `phi0=18.495 deg`
-  (`encoder_zero_pose.json`, the active real-zero pose).
+- Encoder zero **Z_new** (2026-09-13, user-confirmed: chassis belly flat,
+  both legs against the rear stops, both 58 mm tires on one ground plane;
+  `E = Q − Z_new`): `l0=0.332557082 m` on both legs, per-side
+  `phi0 = 17.070469 deg` (left) / `18.716243 deg` (right)
+  (`encoder_zero_pose.json`). The migration is a pure re-anchor — the FK
+  on every pose is unchanged, proven by `tests/test_vmc_calibration.py`
+  (worst Δl0 = 6e-17 m), following rl-serial-balance
+  `docs/RL_ZERO_UNIFICATION_PLAN.md` §4 (direct-encoder form).
 - Vertical calibrated range: `0.116399057..0.332557082 m` at `phi0=90 deg`.
-- Normal stance: `l0=0.150 m`, `phi0=90 deg`, level chassis, wheels down.
+- Normal stance: `l0=0.150 m`, `phi0=90 deg`, level chassis, wheels down
+  (unchanged by the zero migration — the stand pose file is deliberately
+  not the zero posture).
+- Knee travel (`l_leg`/`r_leg` MJCF ranges): measured leg-limit envelope
+  ±0.01 rad MuJoCo/PhysX softness margin — `[-0.4155, 0.7598]` /
+  `[-0.7611, 0.41]` rad (rl-serial-balance
+  `configs/calibration/leg_limits_2026-09-21.json`; replaces the old
+  `±1.35`-derived endpoints that over-folded ~2× past the real lower stop
+  and blocked extension past `l_leg=0`).
+- VMC length PID (2026-09-21 port, **the locked rl-serial per-leg table**,
+  cloud recipe `vmc_per_leg_gains: True`): support mass
+  `IDENTIFIED_SUPPORT_MASS_KG = 13.592626 kg` (feedforward **66.6718 N/leg**),
+  `kp = 2039.2593 / 1960.7407 N/m` and `kd = 15.9257 / 28.0743 N·s/m`
+  (l/r), mean anchored at the hardware-validated 2000 N/m design point
+  (the firmware's 450 N/m measured only 4.5 N at 1 cm), code_611
+  variable-integration-rate + output-clamp anti-windup, theta-sync damping
+  `0.60 → 2.0` (3.1 Hz yaw-cycle fix). Scope: the VMC support path
+  (standing + descent-edge + lateral load transfer). The firmware
+  jump/landing/off-ground laws keep `CHASSIS_SUPPORT_MASS = 12.801 kg` —
+  their preload ready window sits a few mm from the equilibrium and
+  re-anchoring it times the jump out in preload (measured; see
+  `control/jump.py`). Derivation in `balance_lab/control/vmc_gains.py`,
+  table pinned in `tests/test_sysid.py`.
 - `code_zero_pose.json` is a retained legacy diagnostic; it is not used by
   recovery or the accepted LQR path.
 

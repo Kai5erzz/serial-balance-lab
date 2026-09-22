@@ -1,6 +1,6 @@
 # Encoder-zero recovery port record
 
-Last updated: 2026-08-25
+Last updated: 2026-09-22
 
 This note records the calibrated encoder-zero pose, the embedded recovery
 state machine port, every intentional simulation-only deviation, and the
@@ -25,25 +25,32 @@ record for the next system-identification pass.
 
 | Anchor | Swing | Compression | VMC l0 | VMC phi0 |
 | --- | ---: | ---: | ---: | ---: |
-| Real encoder zero / prone recovery start | -76.505 deg | +27.000 deg | 0.332557082 m | 18.495 deg |
+| Real encoder zero / prone recovery start (Z_new, 2026-09-13) | -77.929530 / -76.283757 deg (l/r) | +27.000 deg | 0.332557082 m | 17.070469 / 18.716243 deg (l/r) |
 | Vertical maximum length | -5.000 deg | +27.000 deg | 0.332557082 m | 90.000 deg |
 | Vertical minimum length | -5.000 deg | -20.000 deg | 0.116399057 m | 90.000 deg |
 | Normal stand target | -5.000 deg | -10.573590 deg | 0.150000000 m | 90.000 deg |
 
 The encoder-zero active CAD hinges saved in `encoder_zero_pose.json` are
-approximately:
+the unified Z_new (2026-09-13):
 
-- left J1 `+0.864025 rad`, left J2 `+1.806503 rad`;
-- right J1 `-0.864025 rad`, right J2 `-1.806503 rad`.
+- left J1 `+0.888888 rad`, left J2 `+1.831366 rad`;
+- right J1 `-0.860164 rad`, right J2 `-1.802642 rad`
+  (`E = Q − Z_new`; legacy Z_old differs by `+0.024862750` rad left,
+  `+0.003861417` rad right).
 
-The saved pose includes a rigid `-1.333 deg` roll about vehicle-forward to
-remove the exported left/right wheel-height asymmetry. This does not change
-any encoder, closed-chain, l0, or phi0 coordinate.
+The pose is the user-confirmed flat posture (root height
+`0.157445821 m`, both tires on the same ground, closure residual
+≈2.2e-7 m). It replaces the earlier pose whose `-1.333 deg` roll workaround
+hid an 8.0 mm left-tire / 1.2 mm right-tire ground mismatch. The VMC rod
+angles are re-anchored per side so the FK on every pose stays bit-identical
+to the legacy mapping (`tests/test_vmc_calibration.py` proves the identity).
 
 The calibrated passive closure limits are:
 
-- `l_leg`: `[-0.402691455, +0.749471192] rad`;
-- `r_leg`: `[-0.748581838, +0.401377801] rad`.
+- `l_leg`: `[-0.4155, +0.7598] rad`;
+- `r_leg`: `[-0.7611, +0.4100] rad`
+  (measured 2026-09-21 leg-limit travel ±0.01 rad softness margin;
+  rl-serial-balance `configs/calibration/leg_limits_2026-09-21.json`).
 
 These limits stay active during recovery. Calibration mode is the only mode
 that temporarily disables leg limits.
@@ -73,6 +80,14 @@ The recovery regression separately requires each leg to reach `l0 < 0.170 m`
 during `FW_RETRACT`, before LQR handoff.
 
 ## System-identification work needed
+
+Progress (2026-09-22): items 1 and 2 now have a first accepted
+implementation — `identified_2026-09-21.yaml` carries the tensioned
+per-side motor damping/friction/armature/gains and the passive-chain
+friction/damping from the 2026-09-20 real2sim fit (see docs/SYSID.md),
+and the VMC length PID was re-derived against those identified plants.
+The remaining items (gas spring, contact footprint, encoder/IMU timing)
+are still open.
 
 To further close the sim-to-real gap, identify and add:
 

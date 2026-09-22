@@ -69,7 +69,7 @@ class RecoveryMixin:
             kin = self.vmc_kinematics(data, side)
             if abs(kin.l0 - VMC_ENCODER_ZERO_L0) > 2e-5:
                 errors.append(f"{side}.l0={kin.l0:.9f}")
-            if abs(self._wrap_pi(kin.phi0 - VMC_ENCODER_ZERO_PHI0)) > np.radians(0.02):
+            if abs(self._wrap_pi(kin.phi0 - VMC_ENCODER_ZERO_PHI0[side])) > np.radians(0.02):
                 errors.append(f"{side}.phi0={np.degrees(kin.phi0):.6f}deg")
             self.recovery_last_l0[side] = kin.l0
             self.recovery_last_phi0[side] = kin.phi0

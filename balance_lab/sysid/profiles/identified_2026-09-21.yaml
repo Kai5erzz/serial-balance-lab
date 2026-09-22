@@ -1,0 +1,182 @@
+schema_version: 1
+
+# Asymmetric per-side identified plant, 2026-09-21 adoption.
+#
+# Source (cross-repo, read-only provenance):
+#   rl-serial-balance configs/model/leg_friction_damping_2026-09-21_asymmetric.json
+#     sha256 a5fa76890366bf6fd23d3e640b94bc031e4c17b81ff73a6850f297b2b3296b87
+#     (2026-09-20 tensioned real2sim fit, P1+P2 trained, whole P3 pass held
+#      out; user ruling: KEEP the left/right difference)
+#   rl-serial-balance configs/model/physical_fk_2026-09-18_v2.yaml
+#     sha256 df35b20cdfc01813276222bd90726f23904f83d025f0ba28cdbdbf3ba85fbea6
+#     (wheel viscous 0.0082 identified mean; left-leg mirror fix 12.801 ->
+#      12.827403 kg, ported into model/*.xml together with this profile)
+#
+# Divergences recorded, not hidden:
+#   * rl-serial applies mass_inertia_scale to ITS asset and reaches
+#     13.592626 kg.  This repo's asset carries the deliberate MATLAB wheel
+#     rebalance (wheels 0.577 kg vs 0.254858 kg, base shifted by the same
+#     0.644284 kg), and the same body-set rule (all l_*/r_* bodies, wheels
+#     included) is applied literally -- so THIS plant becomes 13.836367 kg.
+#     The two mass numbers are therefore deliberately separate fields:
+#     total_mass_kg describes the asset (13.836367), support_mass_kg is the
+#     physical support ruling (13.592626) the feedforward and the per-leg
+#     PID anchor to (2026-09-21 user ruling, 66.6718 N/leg).  The 0.2437 kg
+#     difference is the wheel-layout scope difference on already-fictional
+#     wheel mass; the length integrator absorbs the ~2.4 N residual.
+#   * fit deviations kept open in the source report (both optimizer runs hit
+#     nfev=max_nfev with success=false; 16 warm-fold RMSEs span
+#     0.0167..0.0471 rad, not all < 0.02; the fit ran on the knee-unlimited
+#     derived XML).  See fit.* below.
+
+identity:
+  robot_id: serial_balance_nominal
+  source: tensioned_real2sim_2026_09_20_asymmetric
+  revision: rl-lab-v1
+  source_profile: leg_friction_damping_2026-09-21_asymmetric.json
+  source_profile_sha256: a5fa76890366bf6fd23d3e640b94bc031e4c17b81ff73a6850f297b2b3296b87
+
+geometry:
+  # Unified encoder zero Z_new (2026-09-13); matches
+  # balance_lab.control.tuning.VMC_ENCODER_ZERO_CAD_Q exactly.
+  wheel_radius_m: 0.058
+  five_bar_l1_m: 0.210
+  five_bar_l2_m: 0.250
+  encoder_zero_rad:
+    left_j1: 0.8888879963997892
+    left_j2: 1.831365792476727
+    right_j1: -0.8601638293762661
+    right_j2: -1.802641625453204
+
+rigid_bodies:
+  # Asset total 12.827403 kg (post left-leg mirror fix) after the asymmetric
+  # leg-subtree scale: 12.827403 + (1.2438141-1)*1.33350386
+  #                        + (1.5128123-1)*1.33350386
+  #                  = 13.836367294868388 kg  (= mass_inertia_scale result;
+  # apply_model_parameters recomputes and records it as plant_total_mass_kg).
+  # This is what THIS asset weighs; it is NOT the feedforward anchor.
+  total_mass_kg: 13.836367294868388
+  # Physical support mass the VMC feedforward carries (2026-09-21 user
+  # ruling; = rl-serial-balance virtual_leg.IDENTIFIED_SUPPORT_MASS_KG):
+  # 0.5 * 13.592626 * 9.81 = 66.6718 N per leg.  This is also the anchor
+  # the locked per-leg length PID is solved against (kp 2039.2593 /
+  # 1960.7407 N/m, kd 15.9257 / 28.0743 N s/m -- rl-serial-balance
+  # tests/test_virtual_leg_per_leg_pid_2026_09_21.py).  Consumed by
+  # TraditionalLQR.apply_identified; profiles without this field keep the
+  # controller's current value.
+  support_mass_kg: 13.592626
+  links: {}
+
+actuators:
+  hip:
+    # Scalar fallback only: legs.motors below overrides all four hinges
+    # (gain, viscous, coulomb, armature) when this profile is applied.
+    torque_limit_nm: 20.0
+    strength_scale: 1.0
+    viscous_friction_nms_rad: 0.35
+    coulomb_friction_nm: 0.0
+    deadzone_nm: 0.0
+  wheel:
+    # identified mean of wheel_0 0.00699 / wheel_1 0.00948 (physical_fk
+    # 2026-09-18_v2).  strength 0.807 and coulomb 0.09 were measured
+    # harmful/neutral on the accepted checkpoint and are NOT applied.
+    torque_limit_nm: 3.69
+    strength_scale: 1.0
+    viscous_friction_nms_rad: 0.0082
+    coulomb_friction_nm: 0.0
+    deadzone_nm: 0.0
+
+gas_springs:
+  force_n: 300.0
+  scale: 1.0
+  l6_m: 0.05030
+  ls2_m: 0.20209
+  alpha_rad: 0.214218
+
+contacts:
+  wheel_static_friction: 1.0
+  wheel_dynamic_friction: 1.0
+  ground_static_friction: 1.2
+  restitution: 0.0
+
+sensors:
+  gyro_bias_rad_s: [0.0, 0.0, 0.0]
+  gyro_noise_std_rad_s: 0.0
+  encoder_bias_rad: [0.0, 0.0, 0.0, 0.0]
+  encoder_noise_std_rad: 0.0
+  vx_estimator_tau_s: 0.035
+
+latency:
+  policy_ms: 0.0
+  observation_ms: 0.0
+  actuator_ms: 0.0
+
+theta_compensation:
+  convention: theta_corrected_equals_theta_raw_minus_compensation
+  dx_offset_left_m: 0.0182
+  dx_offset_right_m: 0.0182
+  geometry_sign_left: 1.0
+  geometry_sign_right: 1.0
+  length_fit_range_m: [0.13, 0.30]
+  length_center_m: 0.215
+  length_scale_m: 0.085
+  polynomial_rad: [0.010312509, -0.009055911, 0.001545024]
+  common_trim_rad: 0.0
+  left_trim_rad: 0.0
+  right_trim_rad: 0.0
+  body_pitch_zero_rad: 0.0
+
+legs:
+  source: tensioned_real2sim_2026_09_20_mjcf_p3_holdout
+  # Multiplies body_mass/body_inertia of every l_*/r_* body (wheels included
+  # -- the source profile's leg-subtree rule, applied literally to this
+  # asset; see the header divergence note).
+  mass_inertia_scale:
+    l: 1.2438141063778598
+    r: 1.5128123460332965
+  # Per-motor: damping / Coulomb / reflected rotor armature / torque gain
+  # (gain = 1 + relative_motor_gain on j1, 1 - relative on j2 per side; each
+  # pair sums to 2).  motor1 damping differs ~19x between the sides -- this
+  # is the point of the asymmetric fit, do not average it away.
+  motors:
+    l_j1:
+      strength_scale: 0.9135259906829889
+      viscous_friction_nms_rad: 0.7390161167017616
+      coulomb_friction_nm: 0.515039664402823
+      armature_kg_m2: 0.0715363622195374
+    l_j2:
+      strength_scale: 1.086474009317011
+      viscous_friction_nms_rad: 0.09271161155796247
+      coulomb_friction_nm: 0.4248727258613644
+      armature_kg_m2: 0.013735196208922626
+    r_j1:
+      strength_scale: 1.1095217929911114
+      viscous_friction_nms_rad: 0.03889497754503786
+      coulomb_friction_nm: 0.5462388727607369
+      armature_kg_m2: 0.020815077292583056
+    r_j2:
+      strength_scale: 0.8904782070088885
+      viscous_friction_nms_rad: 0.08240369033198351
+      coulomb_friction_nm: 0.44581742829864274
+      armature_kg_m2: 0.026699010335894474
+  # Remaining passive leg hinges per side (links, *_leg knee, closure
+  # hinges): right passive damping is 12x the left -- least-constrained
+  # equivalent, kept as fitted (sensitivity recorded in the source report).
+  passive_joints:
+    l:
+      viscous_friction_nms_rad: 0.02543409365021704
+      coulomb_friction_nm: 0.15305309669107042
+    r:
+      viscous_friction_nms_rad: 0.30233752237130707
+      coulomb_friction_nm: 0.5630673014953006
+
+fit:
+  status: identified
+  dataset_ids:
+    - "tensioned 2026-09-20 capture set; own-side P1+P2 trained, whole P3 pass held out (identification_actual.csv + recovery_actual.csv)"
+  objective: "per-side single-leg MJCF least-squares (chirp + square waves, wheels-off-ground bench), schema serial_balance.fitted_leg_plant.v1"
+  metrics:
+    holdout_rmse_rad_range: [0.0167, 0.0471]
+    optimizer_success: false
+    optimizer_note: "both sides exhausted nfev=max_nfev=40 (rl-serial-balance runbook 6.2 left OPEN; adopted anyway on the user's 2026-09-21 ruling)"
+  covariance_relative_std: {}

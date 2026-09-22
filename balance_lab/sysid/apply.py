@@ -25,8 +25,10 @@ explicitly, which is what keeps the regression battery meaningful.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
+from weakref import WeakKeyDictionary
 
 import mujoco
 
@@ -53,6 +55,183 @@ GROUND_GEOM_NAMES = (
     "platform_step2",
     "platform_step3",
 )
+
+# Baseline mass/inertia snapshot per model, taken before the first ``legs``
+# overlay is written.  Applying the multiplicative leg scale from the
+# pristine baseline (instead of the current values) is what makes the
+# overlay idempotent, matching the set-semantics rule of every other field.
+_MASS_BASELINE: WeakKeyDictionary = WeakKeyDictionary()
+
+LEGS_SECTION_KEYS = {"source", "mass_inertia_scale", "motors", "passive_joints"}
+MOTOR_LEG_JOINTS = ("l_j1", "l_j2", "r_j1", "r_j2")
+MOTOR_FIELDS = (
+    "strength_scale",
+    "viscous_friction_nms_rad",
+    "coulomb_friction_nm",
+    "armature_kg_m2",
+)
+
+
+def _finite(section: str, key: str, value) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"model parameter {section}.{key} must be a number, got {value!r}")
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError(f"model parameter {section}.{key} must be finite, got {value!r}")
+    return number
+
+
+def _apply_legs_section(model: mujoco.MjModel, legs: dict) -> dict[str, float]:
+    """Apply the asymmetric per-side leg overlay (optional ``legs`` section).
+
+    Three physically distinct pieces, all written with set semantics from the
+    model's pristine baseline (idempotent; see ``_MASS_BASELINE``):
+
+    ``mass_inertia_scale`` {l, r}
+        Multiplies ``body_mass`` / ``body_inertia`` of every body whose name
+        starts with ``l_`` / ``r_`` -- the same body set (wheels included) the
+        source profile defines as the leg subtree.  Solver inverse-weight
+        hints stay at their compile-time values (refreshing them needs a
+        recompile); their role is constraint warm-start weighting only.
+    ``motors`` {l_j1, l_j2, r_j1, r_j2}
+        Per-motor gain, viscous damping, Coulomb friction and reflected
+        rotor armature -- overrides the scalar ``actuators.hip`` values for
+        these four hinges.
+    ``passive_joints`` {l, r}
+        Viscous/Coulomb values for the remaining passive leg hinges of that
+        side (links, ``*_leg`` knee, closure hinges); motor hinges excluded.
+    """
+    if not isinstance(legs, dict):
+        raise ValueError(f"legs section must be a mapping, got {legs!r}")
+    unknown = set(legs) - LEGS_SECTION_KEYS
+    if unknown:
+        raise ValueError(f"legs section has unknown keys: {sorted(unknown)}; "
+                         f"expected {sorted(LEGS_SECTION_KEYS)}")
+    applied: dict[str, float] = {}
+    if "source" in legs:
+        if not isinstance(legs["source"], str) or not legs["source"].strip():
+            raise ValueError("legs.source must be a non-empty string")
+        applied["legs_source"] = 1.0  # presence marker (string kept in the profile)
+
+    scale = legs.get("mass_inertia_scale")
+    if scale is not None:
+        if not isinstance(scale, dict) or set(scale) != {"l", "r"}:
+            raise ValueError("legs.mass_inertia_scale must map exactly {'l', 'r'}")
+        factors = {side: _finite("legs.mass_inertia_scale", side, scale[side])
+                   for side in ("l", "r")}
+        for side, factor in factors.items():
+            if not 0.5 <= factor <= 3.0:
+                raise ValueError(f"legs.mass_inertia_scale.{side} out of range: {factor}")
+        baseline = _MASS_BASELINE.get(model)
+        if baseline is None:
+            baseline = (model.body_mass.copy(), model.body_inertia.copy())
+            _MASS_BASELINE[model] = baseline
+        base_mass, base_inertia = baseline
+        for side, factor in factors.items():
+            body_ids = [
+                body for body in range(model.nbody)
+                if (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, body) or "")
+                .startswith(f"{side}_")
+            ]
+            if not body_ids:
+                raise ValueError(f"model has no bodies named {side}_*")
+            for body in body_ids:
+                model.body_mass[body] = base_mass[body] * factor
+                model.body_inertia[body] = base_inertia[body] * factor
+            applied[f"mass_inertia_scale[{side}]"] = factor
+        applied["plant_total_mass_kg"] = float(model.body_mass.sum())
+
+    motors = legs.get("motors")
+    if motors is not None:
+        if not isinstance(motors, dict):
+            raise ValueError("legs.motors must be a mapping of joint -> fields")
+        unknown = set(motors) - set(MOTOR_LEG_JOINTS)
+        if unknown:
+            raise ValueError(f"legs.motors names unknown joints: {sorted(unknown)}")
+        for joint_name, fields in motors.items():
+            if not isinstance(fields, dict) or not fields:
+                raise ValueError(f"legs.motors.{joint_name} must be a non-empty mapping")
+            unknown = set(fields) - set(MOTOR_FIELDS)
+            if unknown:
+                raise ValueError(
+                    f"legs.motors.{joint_name} has unknown fields {sorted(unknown)}; "
+                    f"expected {sorted(MOTOR_FIELDS)}"
+                )
+            joint = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
+            if joint < 0:
+                raise ValueError(f"model has no joint named {joint_name!r}")
+            dof = int(model.jnt_dofadr[joint])
+            actuator = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR,
+                                         f"{joint_name}_motor")
+            if actuator < 0:
+                raise ValueError(f"model has no actuator named {joint_name}_motor")
+            for field, value in fields.items():
+                number = _finite(f"legs.motors.{joint_name}", field, value)
+                if field == "strength_scale":
+                    if not 0.0 < number <= 1.5:
+                        raise ValueError(
+                            f"legs.motors.{joint_name}.strength_scale out of range: {number}"
+                        )
+                    model.actuator_gainprm[actuator, 0] = number
+                elif field == "viscous_friction_nms_rad":
+                    if number < 0.0:
+                        raise ValueError(f"{joint_name}.viscous_friction_nms_rad < 0")
+                    model.dof_damping[dof] = number
+                elif field == "coulomb_friction_nm":
+                    if number < 0.0:
+                        raise ValueError(f"{joint_name}.coulomb_friction_nm < 0")
+                    model.dof_frictionloss[dof] = number
+                else:  # armature_kg_m2
+                    if not 0.0 <= number <= 0.08:
+                        raise ValueError(
+                            f"{joint_name}.armature_kg_m2 outside the validated "
+                            f"fixture bound [0, 0.08]: {number}"
+                        )
+                    model.dof_armature[dof] = number
+                applied[f"{field}[{joint_name}]"] = number
+
+    passive = legs.get("passive_joints")
+    if passive is not None:
+        if not isinstance(passive, dict) or set(passive) != {"l", "r"}:
+            raise ValueError("legs.passive_joints must map exactly {'l', 'r'}")
+        actuated = _actuated_leg_dof_ids(model)
+        for side, fields in passive.items():
+            if not isinstance(fields, dict):
+                raise ValueError(f"legs.passive_joints.{side} must be a mapping")
+            unknown = set(fields) - {"viscous_friction_nms_rad", "coulomb_friction_nm"}
+            if unknown:
+                raise ValueError(
+                    f"legs.passive_joints.{side} has unknown fields {sorted(unknown)}"
+                )
+            values = {field: _finite(f"legs.passive_joints.{side}", field, value)
+                      for field, value in fields.items()}
+            for field, number in values.items():
+                if number < 0.0:
+                    raise ValueError(f"legs.passive_joints.{side}.{field} must be >= 0")
+            dof_ids = [
+                dof for name, dof in _named_leg_dofs(model)
+                if name.startswith(f"{side}_") and dof not in actuated
+            ]
+            if not dof_ids:
+                raise ValueError(f"model has no passive leg dofs on side {side!r}")
+            for dof in dof_ids:
+                if "viscous_friction_nms_rad" in values:
+                    model.dof_damping[dof] = values["viscous_friction_nms_rad"]
+                if "coulomb_friction_nm" in values:
+                    model.dof_frictionloss[dof] = values["coulomb_friction_nm"]
+            for field, number in values.items():
+                applied[f"{field}[passive_{side}]"] = number
+    return applied
+
+
+def _named_leg_dofs(model: mujoco.MjModel) -> list[tuple[str, int]]:
+    """``(joint name, dof)`` of every five-bar chain + closure hinge."""
+    dofs = []
+    for joint in range(model.njnt):
+        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, joint) or ""
+        if name.startswith(("l_", "r_")) and not name.endswith("_wheel"):
+            dofs.append((name, int(model.jnt_dofadr[joint])))
+    return dofs
 
 
 def _leg_dof_ids(model: mujoco.MjModel) -> list[int]:
@@ -170,6 +349,12 @@ def apply_model_parameters(
     # contacts.restitution is nominal 0, and MuJoCo encodes restitution via a
     # negative-solref parametrization; applying it is deferred until a
     # non-zero value is actually identified.
+
+    # Optional asymmetric per-side leg overlay (2026-09-21 profile): runs
+    # after the scalar path so its per-motor / per-side values win.
+    legs = params.data.get("legs")
+    if legs is not None:
+        applied.update(_apply_legs_section(model, legs))
     return applied
 
 

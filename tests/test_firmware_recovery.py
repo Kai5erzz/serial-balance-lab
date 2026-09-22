@@ -60,7 +60,9 @@ def main() -> None:
     }
     for side, kin in initial.items():
         np.testing.assert_allclose(kin.l0, VMC_ENCODER_ZERO_L0, atol=2e-8)
-        np.testing.assert_allclose(kin.phi0, VMC_ENCODER_ZERO_PHI0, atol=2e-8)
+        np.testing.assert_allclose(
+            kin.phi0, VMC_ENCODER_ZERO_PHI0[side], atol=2e-8
+        )  # per-side zero anchor (2026-09-13 Z_new: asymmetric phi0 at E=0)
 
     phase = controller.recovery_state
     transitions = [(

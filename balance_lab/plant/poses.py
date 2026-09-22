@@ -71,11 +71,15 @@ def apply_code_zero_pose(model: mujoco.MjModel, data: mujoco.MjData) -> None:
     mujoco.mj_forward(model, data)
 
 def apply_encoder_zero_pose(model: mujoco.MjModel, data: mujoco.MjData) -> None:
-    """Load the calibrated real-encoder zero with both four-bars closed.
+    """Load the unified physical encoder zero Z_new with both four-bars closed.
 
-    This is the verified ``l0=0.332557082 m, phi0=18.495 deg`` pose.  It is
-    intentionally separate from the legacy CAD-q-zero experiment above,
-    which predates the user's three-pose VMC calibration.
+    The 2026-09-13 user-confirmed posture: chassis belly flat, both legs
+    against the rear stops, both 58 mm tires on the same ground plane (hip
+    encoders read zero there).  The VMC reads ``l0=0.332557082 m`` on both
+    legs and a per-side ``phi0`` (17.070469 / 18.716243 deg) because the
+    confirmed zero lets the two legs swing independently.  It is intentionally
+    separate from the legacy CAD-q-zero experiment above, which predates the
+    user's three-pose VMC calibration.
     """
     apply_saved_pose(model, data, ENCODER_ZERO_POSE_PATH)
 

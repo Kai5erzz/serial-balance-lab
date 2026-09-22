@@ -1,4 +1,15 @@
-"""Generate the loop-closed MuJoCo pose for the calibrated encoder zero."""
+"""LEGACY generator for the pre-2026-09-13 encoder-zero pose.
+
+Superseded: the authoritative encoder zero is now the user-confirmed flat
+solve (chassis belly flat, legs against the rear stops, both tires on one
+ground plane) recorded in rl-serial-balance
+``configs/calibration/evidence/encoder_zero_candidate_pose.json`` and
+checked in as ``encoder_zero_pose.json``; its per-side rod angles are
+``tuning.VMC_ZERO_PHI1/PHI4``.  This tool's continuation + wheel-height
+leveling-roll procedure produced the OLD tilted pose and is retained only
+for archaeology -- it refuses to overwrite the committed pose unless
+``--regenerate-legacy`` is passed explicitly.
+"""
 
 from __future__ import annotations
 
@@ -31,6 +42,13 @@ OUTPUT_PATH = ROOT / "encoder_zero_pose.json"
 
 
 def main() -> None:
+    if "--regenerate-legacy" not in sys.argv:
+        raise SystemExit(
+            "This tool reproduces the SUPERSEDED pre-2026-09-13 tilted zero "
+            "pose. The committed encoder_zero_pose.json is the user-confirmed "
+            "flat Z_new solve. Pass --regenerate-legacy only if you really "
+            "intend to overwrite it with the legacy procedure."
+        )
     model = mujoco.MjModel.from_xml_path(str(MODEL_PATH))
     data = mujoco.MjData(model)
     source = json.loads(CALIBRATED_STAND_POSE_PATH.read_text(encoding="utf-8"))
@@ -79,7 +97,7 @@ def main() -> None:
         kin = controller.vmc_kinematics(data, side)
         if not np.isclose(kin.l0, VMC_ENCODER_ZERO_L0, atol=2e-9):
             raise RuntimeError(f"{side} encoder-zero l0 mismatch: {kin.l0}")
-        if not np.isclose(kin.phi0, VMC_ENCODER_ZERO_PHI0, atol=2e-9):
+        if not np.isclose(kin.phi0, VMC_ENCODER_ZERO_PHI0[side], atol=2e-9):
             raise RuntimeError(f"{side} encoder-zero phi0 mismatch: {kin.phi0}")
 
     # The calibrated left/right linkages are not perfectly mirror-symmetric.
@@ -135,7 +153,8 @@ def main() -> None:
     print(f"Wrote {OUTPUT_PATH}")
     print(
         f"l0={VMC_ENCODER_ZERO_L0:.9f} m, "
-        f"phi0={np.degrees(VMC_ENCODER_ZERO_PHI0):.6f} deg, "
+        f"phi0={np.degrees(VMC_ENCODER_ZERO_PHI0['l']):.6f}/"
+        f"{np.degrees(VMC_ENCODER_ZERO_PHI0['r']):.6f} deg (l/r), "
         f"max loop error={loop_error:.3e} m, "
         f"wheel-level roll={np.degrees(roll):+.3f} deg"
     )

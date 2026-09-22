@@ -72,11 +72,11 @@
         <geom name="fast_collision_l_j2" type="box" pos="0.00271660785 0.0410447677 -0.005" size="0.0196406923 0.0483868136 0.00487500018" density="0" contype="1" conaffinity="4" condim="3" friction="1.0 .02 .001" solref=".008 1" solimp=".92 .99 .002" rgba="0 0 0 0" />
       </body>
       <body name="l_j1" pos="0.0688497 0.00605 -0.153717" quat="0.906948 -0.0729293 -0.37567 0.176067">
-        <inertial pos="-0.149625 0.000886098 -0.0119585" quat="-0.0120807 0.70642 0.0168707 0.707488" mass="0.32658" diaginertia="0.00170288 0.00161585 0.000136136" />
+        <inertial pos="-0.149625 0.000886098 -0.0119585" quat="-0.0120807 0.70642 0.0168707 0.707488" mass="0.349894" diaginertia="0.00170598 0.00161762 0.000138069" />
         <joint name="l_j1" pos="0 0 0" axis="0 0 -1" damping=".35" />
         <body name="l_leg" pos="-0.21 0 0.004" quat="0 0.945913 0.324421 0">
-          <inertial pos="0.000337469 0.112348 0.0286792" quat="0.496335 0.500405 -0.500578 0.502661" mass="0.205252" diaginertia="0.00206487 0.0020002 7.18145e-05" />
-          <joint name="l_leg" pos="0 0 0" axis="0 0 1" range="-0.402691455 0.749471192" actuatorfrcrange="-120 120" damping=".35" />
+          <inertial pos="0.000337469 0.112348 0.0286792" quat="0.496335 0.500405 -0.500578 0.502661" mass="0.208341" diaginertia="0.00206505 0.0020003 7.1914e-05" />
+          <joint name="l_leg" pos="0 0 0" axis="0 0 1" range="-0.4155 0.7598" actuatorfrcrange="-120 120" damping=".35" />
           <body name="l_wheel" pos="-0.00139071 0.251074 0.05705" quat="0 0.707107 -0.707107 0">
             <inertial pos="0.00125874 -0.00157967 0.000823586" quat="0.5 0.5 -0.5 0.5" mass="0.577" diaginertia="0.001941 0.0009705 0.0009705" />
             <joint name="l_wheel" pos="0 0 0" axis="0 0 -1" damping=".08" />
@@ -116,7 +116,7 @@
         <joint name="r_j1" pos="0 0 0" axis="0 0 -1" damping=".35" />
         <body name="r_leg" pos="0.21 0 -0.056" quat="0.437829 0 0 -0.899058">
           <inertial pos="0.109752 -0.000581896 0.0238308" quat="-0.00447091 0.707802 -0.000119973 0.706397" mass="0.208341" diaginertia="0.00206505 0.0020003 7.1914e-05" />
-          <joint name="r_leg" pos="0 0 0" axis="0 0 -1" range="-0.748581838 0.401377801" actuatorfrcrange="-120 120" damping=".35" />
+          <joint name="r_leg" pos="0 0 0" axis="0 0 -1" range="-0.7611 0.41" actuatorfrcrange="-120 120" damping=".35" />
           <body name="r_wheel" pos="0.25 0 0.0115" quat="0 -1 0 0">
             <inertial pos="-0.00023484 -0.000120807 0.0152264" quat="0.5 0.5 -0.5 0.5" mass="0.577" diaginertia="0.001941 0.0009705 0.0009705" />
             <joint name="r_wheel" pos="0 0 0" axis="0 0 1" damping=".08" />

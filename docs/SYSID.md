@@ -1,9 +1,13 @@
 # System identification pipeline
 
-Status: **PRBS actuator-level identification done; coupled-mechanics
-real2sim pass not yet accepted.** This document records what is
-identified, where each parameter lands in the simulator, and how to add
-the next measurement set.
+Status: **three identification generations are on file; the 2026-09-20
+tensioned *asymmetric* fit is the adopted plant (2026-09-21 user ruling).**
+Generations: `identified_2026-09-04` (PRBS actuator fit, bundled default),
+`identified_2026-09-07_v2` (scalar coupled-mechanics pass), and
+`identified_2026-09-21` (per-side equivalent plant: damping/friction/
+armature/gains/passive chain/mass scale — adopted). This document records
+what is identified, where each parameter lands in the simulator, and how to
+add the next measurement set.
 
 ## The loop
 
@@ -46,6 +50,61 @@ fails the battery instead of quietly changing the plant.
 | `gas_springs.force_n` | 300 | = nominal parity |
 | `fit.status` | `identified` | dataset id + covariance metadata |
 
+## Adopted asymmetric profile (2026-09-21)
+
+`balance_lab/sysid/profiles/identified_2026-09-21.yaml`
+(fingerprint `b3d77732f0b5d7ee`), ported from rl-serial-balance:
+
+| Source | sha256 (first 16) |
+| --- | --- |
+| `configs/model/leg_friction_damping_2026-09-21_asymmetric.json` | `a5fa76890366bf6f` |
+| `configs/model/physical_fk_2026-09-18_v2.yaml` (wheel viscous 0.0082 + left-leg mirror fix) | `df35b20cdfc01813` |
+
+| Section | Value | Origin / notes |
+| --- | --- | --- |
+| `legs.motors.*.viscous/friction/armature/strength` | per-motor (l_j1 damping 0.739 vs r_j1 0.0389 — 19× apart) | 2026-09-20 tensioned fit, P3 held out; **never average the sides** |
+| `legs.passive_joints.{l,r}` | 0.0254 / 0.3023 N·m·s/rad (+ Coulomb) | passive chain, right 12× left (least-constrained equivalent) |
+| `legs.mass_inertia_scale` | l 1.2438, r 1.5128 | missing CNC limit stops + gas-spring mass; applied to every `l_*`/`r_*` body (source profile's body set, wheels included) |
+| `rigid_bodies.total_mass_kg` | **13.836367** | what THIS asset weighs after the scale (MATLAB wheel layout); recorded as `plant_total_mass_kg`, **not** the feedforward anchor |
+| `rigid_bodies.support_mass_kg` | **13.592626** | 2026-09-21 physical ruling → controller support feedforward (**66.6718 N/leg**) and the per-leg PID anchor (`TraditionalLQR.apply_identified`) |
+| `actuators.wheel.viscous_friction_nms_rad` | 0.0082 | identified mean of 0.00699 / 0.00948; strength 0.807 measured harmful → 1.0 |
+| `geometry.encoder_zero_rad` | Z_new (2026-09-13) | matches `tuning.VMC_ENCODER_ZERO_CAD_Q` |
+
+Asset prerequisites ported together with the profile (both in
+`model/*.xml`, all 10 variants): the **left-leg mirror fix** (`l_j1`
+−23.31 g, `l_leg` −3.09 g dropped by the URDF export → total
+12.801 → 12.827403 kg, guarded by `tests/test_inertia_integrity.py`) and
+the **measured knee ranges** (see the calibration note in README).
+
+Recorded divergences (not hidden):
+
+- rl-serial-balance reaches 13.592626 kg on *its* asset; this repo's
+  deliberate MATLAB wheel rebalance (wheels 0.577 vs 0.254858 kg, base
+  offset by the same 0.644284 kg) makes the same body-set rule land on
+  13.836367 kg. The two numbers are therefore separate fields:
+  `total_mass_kg` describes the asset, `support_mass_kg` (13.592626) is the
+  physical support ruling the feedforward and the PID anchor use — so
+  rl-lab and rl-serial run the **same locked table** (2039.2593/1960.7407,
+  15.9257/28.0743) while each asset keeps its own measured total.
+- The source fit's runbook items stay open: optimizer `success=false` at
+  `nfev=max_nfev`, 16 warm-fold RMSEs span 0.0167–0.0471 rad, fit ran on
+  the knee-unlimited derived XML. Adopted anyway on the 2026-09-21 ruling.
+
+Controller side: `support_mass` defaults to
+`tuning.IDENTIFIED_SUPPORT_MASS_KG = 13.592626` (the 2026-09-21 ruling),
+i.e. a fresh controller already carries the locked rl-serial table;
+`apply_identified` only re-anchors it when a profile ships an explicit
+`rigid_bodies.support_mass_kg` (the bundled legacy profile does not, so it
+can never silently re-anchor). The per-leg derivation
+(`balance_lab/control/vmc_gains.py`) keeps the mean stiffness anchored at
+`LENGTH_KP = 2000 N/m` for any supported mass.
+
+```python
+model, applied = load_model("fast", plant="identified_2026-09-21")
+controller = TraditionalLQR(model)
+controller.apply_identified(load_profile("identified_2026-09-21"))
+```
+
 ## Parameter → consumer mapping
 
 | Profile field | Applied by | Target | Notes |
@@ -60,6 +119,10 @@ fails the battery instead of quietly changing the plant.
 | `contacts.restitution` | — | **not applied** | nominal 0; MuJoCo encodes restitution via negative solref — deferred until a non-zero value is identified |
 | `latency.actuator_ms` | — | **not yet simulated** | TODO: bounded torque first-order lag on the actuator path; must stay opt-in |
 | `sensors.*`, `identity`, `fit` | — | metadata | logged, not simulated |
+| `legs.motors.*` | `apply_model_parameters` | per-motor `gainprm`/`dof_damping`/`dof_frictionloss`/`dof_armature` | overrides the scalar `actuators.hip` path; armature bounded [0, 0.08] like the fixture validator |
+| `legs.passive_joints.*` | `apply_model_parameters` | `dof_damping`/`dof_frictionloss` on the side's passive leg hinges | motor hinges excluded |
+| `legs.mass_inertia_scale` | `apply_model_parameters` | `body_mass`/`body_inertia` of `l_*`/`r_*` bodies | multiplicative **from the pristine baseline** (idempotent); solver inverse-weight hints stay compile-time |
+| `rigid_bodies.support_mass_kg` (optional) | `TraditionalLQR.apply_identified` | `controller.support_mass` + per-leg length gains | VMC support path (standing/descent-edge/lateral load transfer) only; jump/landing/off-ground keep firmware `CHASSIS_SUPPORT_MASS` (preload window, measured); absent → current value kept |
 
 The **coupled-mechanics** results of the PRBS fitter
 (`hip_damping_scale`, `hip_frictionloss_nm`, `hip_armature_kg_m2`,
@@ -96,6 +159,7 @@ from balance_lab.plant import load_model
 
 model, applied = load_model("fast")                     # nominal (battery default)
 model, applied = load_model("fast", plant="identified_2026-09-04")
+model, applied = load_model("fast", plant="identified_2026-09-21")  # adopted asymmetric
 model, applied = load_model("full")                     # mesh-collision regression plant
 model, applied = load_model("platform")                 # 600 mm stair terrain
 ```

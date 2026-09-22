@@ -5,7 +5,10 @@ Two guards with different environment requirements:
 - Always runnable: the committed ``model/whole_body_lqr.xml`` and
   ``model/whole_body_lqr_fast.xml`` must carry identical masses/inertias,
   only ``l_wheel``/``r_wheel`` may use the wheel inertia override, and the
-  total mass must stay 12.801 kg.
+  total mass must stay 12.827403 kg (12.801 kg plus the 2026-09-18 left-leg
+  mirror fix: the URDF export had dropped parts on ``l_j1`` (-23.31 g) and
+  ``l_leg`` (-3.09 g); rl-serial-balance physical_fk_2026-09-18_v2 carries
+  the same correction, ported here together with the identified profile).
 - Windows-CAD-only: URDF/CAD-CSV cross-validation against the original
   chassis export (``D:\\User\\balance_infantry\\...``). When those files
   are absent the guard reports SKIP instead of failing -- the committed
@@ -85,7 +88,10 @@ def validate_mjcf() -> None:
 
     if CLOSED_MJCF.is_file():
         closed = body_data(mujoco.MjModel.from_xml_path(str(CLOSED_MJCF)))
-        for name in set(closed) & set(full) - {"base_link"}:
+        # l_j1 / l_leg now carry the 2026-09-18 left-leg mirror fix and
+        # intentionally differ from the raw Windows CAD/URDF export.
+        mirror_fix = {"l_j1", "l_leg"}
+        for name in set(closed) & set(full) - {"base_link"} - mirror_fix:
             np.testing.assert_allclose(closed[name][0], full[name][0], rtol=2e-5, atol=1e-12)
             np.testing.assert_allclose(closed[name][1], full[name][1], rtol=2e-5, atol=1e-12)
     else:
@@ -101,7 +107,7 @@ def validate_mjcf() -> None:
     assert matching_wheel_signature == WHEELS, (
         f"wheel inertia leaked to non-wheel bodies: {sorted(matching_wheel_signature - WHEELS)}"
     )
-    np.testing.assert_allclose(sum(value[0] for value in full.values()), 12.801, atol=1e-9)
+    np.testing.assert_allclose(sum(value[0] for value in full.values()), 12.827403, atol=1e-9)
 
 
 def main() -> None:
@@ -113,7 +119,7 @@ def main() -> None:
     if not ran_urdf:
         print("SKIP: Windows CAD export not present; URDF cross-validation skipped.")
     validate_mjcf()
-    print("PASS: full/fast rigid-body masses and inertias match; total mass=12.801 kg.")
+    print("PASS: full/fast rigid-body masses and inertias match; total mass=12.827403 kg.")
     print("PASS: only l_wheel/r_wheel use the wheel inertia override.")
 
 

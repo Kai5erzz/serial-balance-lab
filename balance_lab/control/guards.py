@@ -2,6 +2,13 @@
 
 Mixin part of :class:`balance_lab.control.controller.TraditionalLQR`; every
 method accesses the shared controller state through ``self``.
+
+Support-mass scope: these chassis_safety laws (off-ground force
+reconstruction, LOW landing buffer) keep the firmware
+``CHASSIS_SUPPORT_MASS`` they were ported with; the 2026-09-21 ruling mass
+(13.592626 kg, 66.6718 N/leg) applies to the VMC support path in
+controller.py -- see jump.py's module note for the measured reason the
+jump window must not be re-anchored.
 """
 
 from __future__ import annotations
@@ -251,7 +258,7 @@ class TerrainSafetyMixin:
                 LANDING_LENGTH_OUTPUT_LIMIT_LOW,
             ))
             support = (
-                0.5 * TOTAL_MASS * GRAVITY
+                0.5 * TOTAL_MASS * GRAVITY  # firmware CHASSIS_SUPPORT_MASS (safety path)
                 - spring
                 + length_force
                 + self.support_trim[side]
@@ -409,7 +416,7 @@ class TerrainSafetyMixin:
                 + OFFGROUND_UNSPRUNG_MASS * leg_vertical_accel
             )
             self.offground_fn_raw[side] = (
-                fn if np.isfinite(fn) else 0.5 * TOTAL_MASS * GRAVITY
+                fn if np.isfinite(fn) else 0.5 * TOTAL_MASS * GRAVITY  # firmware CHASSIS_SUPPORT_MASS (safety path)
             )
             self.offground_fn_history[side][self.offground_filter_index] = (
                 self.offground_fn_raw[side]

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 from .tuning import *  # noqa: F401,F403
 from .kinematics import RecoverySwingAxis, SideIds, VmcKinematics, unit
+from .vmc_gains import derive_per_leg_gains
 from .jump import JumpControlMixin
 from .guards import TerrainSafetyMixin
 from .recovery import RecoveryMixin
@@ -164,6 +165,14 @@ MJCF CAD hinge frame."""
         # changing the UI default does not invalidate headless calibration
         # tests or firmware-frame startup checks.
         self.normal_leg_length = VMC_NORMAL_STAND_LENGTH
+        # Weight the VMC feedforwards carry: the 2026-09-21 physical ruling
+        # (13.592626 kg -> 66.6718 N per leg), NOT the stale firmware
+        # constant.  The default therefore already produces the locked
+        # rl-serial-balance per-leg table; ``apply_identified()`` only
+        # overrides it when a profile carries an explicit
+        # ``rigid_bodies.support_mass_kg``.
+        self.support_mass = IDENTIFIED_SUPPORT_MASS_KG
+        self.length_gains = derive_per_leg_gains(self.support_mass)
         self.yaw_rate = 0.0
         self.yaw_output = 0.0
         self.yaw_integral = 0.0
@@ -647,14 +656,38 @@ MJCF CAD hinge frame."""
     def apply_identified(self, params: "ModelParameters") -> dict[str, float]:
         """Apply the controller-side parameters of an identified profile.
 
-        Only what the controller itself consumes is read here: gas-spring
-        force and the theta-compensation fit.  Plant-side parameters
+        Only what the controller itself consumes is read here: the support
+        mass (optional ``rigid_bodies.support_mass_kg``; profiles without it
+        keep the current/ruling value), gas-spring force and the
+        theta-compensation fit.  Plant-side parameters
         (actuator strength, joint damping/friction/inertia, contact
         friction) belong to the MuJoCo model and are applied by
         :func:`balance_lab.sysid.apply.apply_model_parameters`.  See
         docs/SYSID.md for the full parameter -> consumer mapping.
         """
         applied: dict[str, float] = {}
+        # The support mass is a controller ruling, NOT the plant's total
+        # mass: ``rigid_bodies.total_mass_kg`` describes what the scale rule
+        # makes this asset weigh (13.836367 kg with the MATLAB wheel layout),
+        # while ``rigid_bodies.support_mass_kg`` is the physical support
+        # mass (13.592626 kg) the feedforward and the per-leg PID anchor to.
+        # Profiles without the field keep the current value, so loading the
+        # legacy bundled profile can never silently re-anchor the table.
+        support = params.data.get("rigid_bodies", {})
+        if isinstance(support, dict) and "support_mass_kg" in support:
+            support_mass = params.number("rigid_bodies", "support_mass_kg")
+            if support_mass <= 0.0:
+                raise ValueError(
+                    f"rigid_bodies.support_mass_kg must be positive, got {support_mass}"
+                )
+            # Re-derive the per-leg length gains for this support mass so
+            # their mean stiffness stays anchored at LENGTH_KP.
+            self.support_mass = support_mass
+            self.length_gains = derive_per_leg_gains(self.support_mass)
+            applied["support_mass_kg"] = support_mass
+            for side in ("l", "r"):
+                applied[f"length_kp[{side}]"] = self.length_gains[side]["length_kp"]
+                applied[f"length_kd[{side}]"] = self.length_gains[side]["length_kd"]
         force = params.number("gas_springs", "force_n")
         scale = params.number("gas_springs", "scale")
         if force <= 0.0:
@@ -714,12 +747,15 @@ MJCF CAD hinge frame."""
     def vmc_kinematics(self, data: mujoco.MjData, side: str) -> VmcKinematics:
         """Exact calibrated port of ``drv_leg.c::vmc_calc`` and its Jacobian.
 
-        The firmware's raw encoder zero is the kinematic anchor.  The user's
-        three measured poses establish its CAD counterpart and reveal that
-        the exported CAD names are crossed relative to the firmware arms:
-        CAD J2 is phi1/FRONT and CAD J1 is phi4/BACK.  The left raw angles
-        enter ``drv_leg.c`` with the opposite sign.  Keeping those facts here
-        makes l0/phi0 and the virtual-work motor Jacobian one consistent map.
+        The anchor is the unified physical encoder zero Z_new (2026-09-13,
+        ``E = Q - Z_new``), with per-side rod angles at that zero:
+        ``phi = VMC_ZERO_PHI{1,4}[side] + s*(Q - Z_new)`` (direct encoder
+        form of RL_ZERO_UNIFICATION_PLAN section 4).  Algebraically identical
+        to the legacy ``DM_ZERO_OFFSET + s*(Q - Z_old)`` mapping on every
+        pose, so l0/phi0/Jacobian are unchanged -- only the zero moved.  The
+        exported CAD names are crossed relative to the firmware arms: CAD J2
+        is phi1/FRONT and CAD J1 is phi4/BACK; the left raw angles enter with
+        the opposite sign.
         """
         ids = self.sides[side]
         q_j1 = float(data.qpos[self.model.jnt_qposadr[ids.j1]])
@@ -727,8 +763,8 @@ MJCF CAD hinge frame."""
         q0_j1 = VMC_ENCODER_ZERO_CAD_Q[f"{side}_j1"]
         q0_j2 = VMC_ENCODER_ZERO_CAD_Q[f"{side}_j2"]
         raw_sign = -1.0 if side == "l" else 1.0
-        phi1 = self._wrap_2pi(VMC_DM_ZERO_PHI1 + raw_sign * (q_j2 - q0_j2))
-        phi4 = self._wrap_2pi(VMC_DM_ZERO_PHI4 + raw_sign * (q_j1 - q0_j1))
+        phi1 = self._wrap_2pi(VMC_ZERO_PHI1[side] + raw_sign * (q_j2 - q0_j2))
+        phi4 = self._wrap_2pi(VMC_ZERO_PHI4[side] + raw_sign * (q_j1 - q0_j1))
 
         xb, yb = VMC_L1 * np.cos(phi1), VMC_L1 * np.sin(phi1)
         xd, yd = VMC_L1 * np.cos(phi4), VMC_L1 * np.sin(phi4)
@@ -1224,7 +1260,7 @@ MJCF CAD hinge frame."""
                 gain = LATERAL_INERTIAL_FF_GAIN_MID
             else:
                 gain = LATERAL_INERTIAL_FF_GAIN_LOW
-            target = gain * TOTAL_MASS * lateral_accel * average_length / (
+            target = gain * self.support_mass * lateral_accel * average_length / (
                 2.0 * LATERAL_INERTIAL_FF_HALF_TRACK_M
             )
             target = float(np.clip(
@@ -1390,7 +1426,7 @@ MJCF CAD hinge frame."""
                     LENGTH_OUTPUT_LIMIT,
                 ))
                 transition_support = (
-                    0.5 * TOTAL_MASS * GRAVITY
+                    0.5 * self.support_mass * GRAVITY
                     - mean_spring
                     + edge_length_force
                 )
@@ -1431,7 +1467,7 @@ MJCF CAD hinge frame."""
                     LENGTH_OUTPUT_LIMIT,
                 ))
                 transition_support = (
-                    0.5 * TOTAL_MASS * GRAVITY
+                    0.5 * self.support_mass * GRAVITY
                     - mean_spring
                     + edge_length_force
                 )
@@ -1450,26 +1486,60 @@ MJCF CAD hinge frame."""
                 for side in ("l", "r"):
                     length = lengths[side]
                     length_rate = self.length_rate_lpf[side]
-                    # Full rm_config.h low-leg PID, including the source's
-                    # integral sign-reset and integral/output clamps.
+                    # Per-leg length PID (2026-09-21 VMC PID port): the
+                    # firmware structure -- sign-flip/deadband clear,
+                    # code_611 variable-integration-rate law
+                    # (rm_config length_Integral_CoefA/B), output-clamp
+                    # anti-windup -- with kp/kd from vmc_gains.solve, i.e.
+                    # both legs solved onto one closed-loop target for their
+                    # separately identified plants.  The increment is applied
+                    # from a zero integral (rl-lab's pre-existing authority
+                    # for the static load); rl-serial's extra same-sign mask
+                    # would freeze a cold integrator at zero and is not
+                    # ported.
+                    gains = self.length_gains[side]
+                    kp = gains["length_kp"]
+                    kd = gains["length_kd"]
                     self.length_reference[side] = self._move_towards(
                         self.length_reference[side],
                         self.normal_leg_length,
                         LEG_LENGTH_SWITCH_RATE * control_dt,
                     )
                     length_error = self.length_reference[side] - length
-                    if length_error * self.length_integral[side] < 0.0:
-                        self.length_integral[side] = 0.0
+                    integral = self.length_integral[side]
+                    abs_error = abs(length_error)
+                    if abs_error <= LENGTH_PID_DEADBAND or (
+                        length_error * integral < 0.0
+                    ):
+                        integral = 0.0
+                    if abs_error <= LENGTH_INTEGRAL_COEF_B:
+                        rate = 1.0
+                    elif abs_error <= LENGTH_INTEGRAL_COEF_A + LENGTH_INTEGRAL_COEF_B:
+                        rate = (
+                            LENGTH_INTEGRAL_COEF_A - abs_error
+                            + LENGTH_INTEGRAL_COEF_B
+                        ) / LENGTH_INTEGRAL_COEF_A
+                    else:
+                        rate = 0.0
+                    increment = LENGTH_KI * length_error * control_dt * rate
+                    p_term = kp * length_error
+                    d_term = kd * length_rate
+                    integral = integral + increment
+                    # Output-clamp anti-windup (code_611 PID.c): drop this
+                    # tick's increment when the force that would be produced
+                    # saturates the 150 N output while error and integral are
+                    # still aligned -- the case that wound the old port up
+                    # into the slow asymmetric-support roll drift.
+                    if (
+                        abs(p_term + integral - d_term) > LENGTH_OUTPUT_LIMIT
+                        and length_error * integral > 0.0
+                    ):
+                        integral -= increment
                     self.length_integral[side] = float(np.clip(
-                        self.length_integral[side]
-                        + LENGTH_KI * length_error * control_dt,
-                        -LENGTH_INTEGRAL_LIMIT,
-                        LENGTH_INTEGRAL_LIMIT,
+                        integral, -LENGTH_INTEGRAL_LIMIT, LENGTH_INTEGRAL_LIMIT
                     ))
                     length_pid = float(np.clip(
-                        LENGTH_KP * length_error
-                        + self.length_integral[side]
-                        - LENGTH_KD_LOW * length_rate,
+                        p_term + self.length_integral[side] - d_term,
                         -LENGTH_OUTPUT_LIMIT,
                         LENGTH_OUTPUT_LIMIT,
                     ))
@@ -1481,7 +1551,7 @@ MJCF CAD hinge frame."""
                         self.lateral_inertial_ff + self.roll_static_trim_applied
                     )
                     support = (
-                        0.5 * TOTAL_MASS * GRAVITY
+                        0.5 * self.support_mass * GRAVITY
                         - spring_support
                         + length_pid
                         + self.support_trim[side]
