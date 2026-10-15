@@ -1,4 +1,4 @@
-# RMUC 轮腿机器人仿真
+# HNU serial balance lab
 
 基于 **MuJoCo** 的 RoboMaster 轮腿机器人仿真项目。将轮腿底盘与云台放入 RMUC 比赛场地，通过键盘和鼠标驾驶，用于观察平衡、转向、跳跃、磕台阶和地形接触表现。
 
