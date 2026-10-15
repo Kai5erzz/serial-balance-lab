@@ -1,0 +1,9 @@
+{
+  "source_sha256": "a5ad3ede3b7674fc98f2e73b71717216383cb2b4b5dcdbe900c2038918bea8e0",
+  "reference_source_sha256": "8dfe9ebd761e44d91361b3e593bc05416329112217b58cb35800b3cde2ffae33",
+  "method": "exact ordered vertices/faces/volume SHA-256; no year-specific ID assumptions",
+  "matches": [],
+  "road_cell_ids": [],
+  "boundary_shell_ids": [],
+  "fine_decomposition_ids": []
+}

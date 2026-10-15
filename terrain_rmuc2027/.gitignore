@@ -1,0 +1,12 @@
+build
+pack
+checks
+preview
+*.zip
+!assets/runtime.zip
+!assets/operator_visual.zip
+__pycache__/
+research/*.stp
+research/*.pdf
+research/official_top_view.png
+research/source.json

@@ -1,0 +1,452 @@
+--- a/src/modules/motor/DM_motor/DM_motor.h
++++ b/src/modules/motor/DM_motor/DM_motor.h
+@@ -17,8 +17,8 @@
+ #define DM_KP_MAX 3.0	//Kp最大值,目前根据上位机控制设置中读取的值设定,实际mit模式下位置和速度基本不起作用,主要为力矩T
+ #define DM_KD_MIN 0		//Kd最小值
+ #define DM_KD_MAX 5.0		//Kd最大值
+-#define DM_T_MIN -35			//转矩最小值
+-#define DM_T_MAX 35			//转矩最大值
++#define DM_T_MIN -40
++#define DM_T_MAX 40
+ 
+ #define DM_ANGLE_DELTA_THRESHOLD   12.0f  //实测数据电机套圈时角度的变化,此值观测得到,和上位机DM_P_MAX取值有关
+ 
+--- a/src/rm_config.h
++++ b/src/rm_config.h
+@@ -357,11 +357,11 @@
+ #define JUMP_FLIGHT_LENGTH_SYNC_KP       1200.0f
+ #define JUMP_FLIGHT_LENGTH_SYNC_KD         60.0f
+ #define JUMP_FLIGHT_LENGTH_SYNC_LIMIT      70.0f
+-#define JUMP_FLIGHT_ROLL_KP                20.0f /* N/deg */
+-#define JUMP_FLIGHT_ROLL_KD               180.0f /* N/(rad/s) */
++#define JUMP_FLIGHT_ROLL_KP                5.00f
++#define JUMP_FLIGHT_ROLL_KD               45.00f
+ #define JUMP_FLIGHT_ROLL_LIMIT             80.0f
+-#define JUMP_FLIGHT_COMPACT_HOLD            0.084f /* >=80 ms with 2 ms feedback */
+-#define JUMP_FLIGHT_COMPACT_HARD_MAX        0.400f
++#define JUMP_FLIGHT_COMPACT_HOLD            0.090f
++#define JUMP_FLIGHT_COMPACT_HARD_MAX        0.500f
+ #define JUMP_TOUCH_SPECIFIC_FORCE_MIN       6.0f
+ #define JUMP_TOUCH_COMPRESSION_RATE_MAX    (-0.02f)
+ #define LANDING_BUFFER_MID_LENGTH        0.21f
+--- a/src/task/chassis/chassis_task.c
++++ b/src/task/chassis/chassis_task.c
+@@ -420,9 +420,9 @@
+ float dm_obs[4];
+ #define DM_RATIO 1.0f
+ #define DM_OUTPUT_LIMIT_NOMINAL 20.0f
+-#define DM_OUTPUT_LIMIT_JUMP_THRUST 35.0f /* 2026-09-22: cut 40->35, big jumps tripped battery OCP */
+-#define DM_OUTPUT_LIMIT_JUMP_AIR    35.0f /* 2026-09-22: cut 40->35, same battery-OCP reason */
+-#define DM_OUTPUT_LIMIT_JUMP_LANDING 36.0f
++#define DM_OUTPUT_LIMIT_JUMP_THRUST 40.0f
++#define DM_OUTPUT_LIMIT_JUMP_AIR    40.0f
++#define DM_OUTPUT_LIMIT_JUMP_LANDING 40.0f
+ 
+ /* Page 47 captures the complete six-actuator chassis execution chain. */
+ /* Both the on-vehicle task and host replay use this exact page dispatch,
+--- a/src/task/chassis/control/chassis_control.c
++++ b/src/task/chassis/control/chassis_control.c
+@@ -175,27 +175,34 @@
+ #define LEG_LENGTH_REF_SLEW_RATE_SPIN 0.40f
+ #define LEG_LENGTH_REF_EPSILON   0.0001f
+ #define FORCE_Length_LIMIT 200.0f //
+-#define FORCE_LIMIT 200.0f // 支持力限幅,保护电机,防止起跳时电压过低电机保护
++#define FORCE_LIMIT (jump_thrust_active ? 500.0f : 200.0f)
+ 
+ /* BUMP 台阶模式参数。长度单位 m、力矩单位 N m、时间单位 ms；
+  * 接触阈值按本机 M3508_TOR_MAX=3.69 N m 留出余量，不能使用 4 N m。 */
+-/* 2026-10-07: 接近/完成腿长 0.34 -> 0.30 m（按实车要求降低 BUMP 工作高度）。
+- * 该值同时是 APPROACH、EXTEND、DONE 三态的目标腿长，也是 CONTACT/RETRACT
+- * 之外的基准高度；RETRACT(0.13) 与 ABORT(LEN_LEN_LOW) 是瞬态目标，未改。
+- * 注意不要用本文件里的 LEN_LEN_HIG（=0.30f）代替：那个宏在本文件表示
+- * 0.21~0.30 混合区间的上界，与 chassis_task.c 的 LEG_HIG 档位(0.34f) 语义不同。 */
+-#define BUMP_APPROACH_LENGTH             0.30f
++/* Simulation: raise the BUMP approach target from 0.30 to 0.32 m.
++ * Keep the normal LQR gain-schedule boundary LEN_LEN_HIG at 0.30 m and
++ * retain the existing RETRACT/ABORT targets. These are separate controls. */
++#define BUMP_APPROACH_LENGTH             0.320f
++#define BUMP_EXIT_START_LENGTH           0.322f
++#define BUMP_EXIT_LENGTH_REF_RATE        0.10f
++#define BUMP_EXIT_LENGTH_TOLERANCE       0.025f
++#define BUMP_EXIT_ATTITUDE_DEG           4.0f
++#define BUMP_EXIT_STABLE_TIME_S          0.080f
++#define BUMP_EXIT_TIMEOUT_S              3.0f
+ #define BUMP_RETRACT_LENGTH              0.13f
+-#define BUMP_APPROACH_VX_RC_LIMIT       150.0f
++/* Simulation: preserve the driver's full stick range inside the normal high-leg speed limit. */
++#define BUMP_APPROACH_VX_RC_LIMIT       660.0f
+ #define BUMP_APPROACH_VX_MIN_MPS          0.08f /* chassis_vx_filter, m/s */
+ #define BUMP_APPROACH_WHEEL_TORQUE_LIMIT 2.20f
+ #define BUMP_CONTACT_TORQUE_ON          1.30f
+ #define BUMP_CONTACT_TORQUE_OFF         1.10f
+ #define BUMP_CONTACT_THETA_MIN_RAD      0.20f
+ #define BUMP_CONTACT_THETA_MAX_RAD      1.40f
+-#define BUMP_CONTACT_WHEEL_SPEED_MAX_RADPS 3.0f
+-#define BUMP_CONTACT_CONFIRM_TIME_MS    35U
+-#define BUMP_CONTACT_PAIR_WINDOW_MS    150U
++#define BUMP_CONTACT_WHEEL_SPEED_MAX_RADPS 10.0f
++#define BUMP_CONTACT_SPIN_THETA_MIN_RAD 0.90f
++#define BUMP_CONTACT_SPIN_SPEED_MAX_RADPS 250.0f
++#define BUMP_CONTACT_CONFIRM_TIME_MS    20U
++#define BUMP_CONTACT_PAIR_WINDOW_MS    50U
+ #define BUMP_CONTACT_TIMEOUT_MS         900U
+ /* 2026-10-07: 已停用（保留宏供追溯）。APPROACH 不再有超时 —— 接触前就是
+  * 正常行驶，无限等待。原值 1800 ms 会让「按拨杆+前进」在 1.8 s 后必然进
+@@ -205,7 +212,7 @@
+ #define BUMP_APPROACH_LENGTH_TOLERANCE  0.020f
+ #define BUMP_APPROACH_RATE_MAX          0.080f
+ #define BUMP_LENGTH_REF_SLEW_RATE       0.30f
+-#define BUMP_CONTACT_HOLD_TIME_MS      60U
++#define BUMP_CONTACT_HOLD_TIME_MS      20U
+ #define BUMP_RETRACT_TOLERANCE          0.015f
+ #define BUMP_RETRACT_MIN_STABLE_LENGTH  0.100f
+ #define BUMP_RETRACT_REACQUIRE_ANGLE_RAD (8.0f * DEGREE_2_RAD)
+@@ -218,7 +225,8 @@
+  * inside this band instead of waiting stationary for the 1 s timeout. */
+ #define BUMP_SWING_SUPPORT_ANGLE_OK     (6.0f * DEGREE_2_RAD)
+ #define BUMP_SWING_ANGLE_RATE_MAX       (0.10f)
+-#define BUMP_SWING_OVER_PHI0_RAD       (-10.0f * DEGREE_2_RAD)
++/* Low vertical steps need wheel clearance, not a full backward over-body swing. */
++#define BUMP_SWING_OVER_PHI0_RAD       (40.0f * DEGREE_2_RAD)
+ #define BUMP_SWING_SUPPORT_PHI0_RAD     (80.0f * DEGREE_2_RAD)
+ #define BUMP_PHI0_MIN_RAD               (-25.0f * DEGREE_2_RAD)
+ #define BUMP_PHI0_MAX_RAD               (110.0f * DEGREE_2_RAD)
+@@ -304,13 +312,13 @@
+  * wheel LQR remains active through thrust; after takeoff the normal wheel row
+  * is shut and a separate bounded reaction-wheel channel is applied. */
+ #define JUMP_COOLDOWN_MS                 3000U
+-#define JUMP_PRELOAD_LENGTH              0.125f
++#define JUMP_PRELOAD_LENGTH              0.110f
+ #define JUMP_THRUST_LENGTH               0.305f
+-#define JUMP_PRELOAD_MIN_TIME            0.22f
++#define JUMP_PRELOAD_MIN_TIME            0.35f
+ #define JUMP_PRELOAD_MAX_TIME             0.85f
+-#define JUMP_PRELOAD_READY_LENGTH        0.155f
++#define JUMP_PRELOAD_READY_LENGTH        0.145f
+ #define JUMP_PRELOAD_READY_RATE          0.25f
+-#define JUMP_THRUST_BOOST_FORCE          70.0f
++#define JUMP_THRUST_BOOST_FORCE          370.0f
+ /* 2026-09-23 (jump21.csv): this is the TUCK-RELEASE instant, so it must coincide
+  * with the moment the legs finish extending -- not overshoot it.
+  *
+@@ -328,7 +336,7 @@
+  * tuck 0.183 s of the 0.207 s physical flight (~0.20 m of travel) -- double what
+  * it needs. */
+ #define JUMP_THRUST_BOOST_TIME           0.32f
+-#define JUMP_THRUST_SUPPORT_FLOOR       120.0f
++#define JUMP_THRUST_SUPPORT_FLOOR       470.0f
+ #define JUMP_THRUST_MAX_TIME             0.85f
+ #define JUMP_ABORT_HOLD_TIME              0.12f
+ #define JUMP_ABORT_SETTLE_TIME            0.60f
+@@ -367,14 +375,14 @@
+ /* The stroke release and the final length reference share the feasible 0.30 m
+  * target. The former 0.36 m request was clamped to 0.30 m downstream, leaving
+  * travel release unreachable until the timer had already consumed flight. */
+-#define JUMP_THRUST_TARGET_LENGTH           0.30f
+-#define JUMP_THRUST_FORCE_FADE_START        0.26f
++#define JUMP_THRUST_TARGET_LENGTH           0.35f
++#define JUMP_THRUST_FORCE_FADE_START        0.30f
+ /* Roll uses degrees for position and rad/s for angular rate. Grounded launch
+  * damping includes the unequal leg-extension momentum below; the 60 N clamp
+  * and final motor budget bound its authority. Air control owns flight forces. */
+ #define JUMP_ROLL_DIFF_KP                   8.0f
+ #define JUMP_ROLL_DIFF_KD                1000.0f
+-#define JUMP_ROLL_DIFF_LIMIT               60.0f
++#define JUMP_ROLL_DIFF_LIMIT               325.0f
+ #define JUMP_ROLL_DIFF_DEADBAND_DEG         0.1f
+ /* Effective left/right leg inertia ratio from the identified plant. Regulate
+  * launch momentum, not just body gyro: unequal extending legs can carry a
+@@ -385,11 +393,11 @@
+  * measured leg-velocity term anticipates angular momentum released when the
+  * moving legs tuck; damping only the current body gyro worsens flight yaw.
+  * These launch gains are validated against the identified simulation plant. */
+-#define JUMP_GROUND_YAW_KP                   4.0f
+-#define JUMP_GROUND_YAW_KD                   2.0f
+-#define JUMP_GROUND_YAW_MOMENTUM_GAIN        10.0f
++#define JUMP_GROUND_YAW_KP                   8.0f
++#define JUMP_GROUND_YAW_KD                   1.0f
++#define JUMP_GROUND_YAW_MOMENTUM_GAIN        4.0f
+ #define JUMP_GROUND_YAW_LEFT_INERTIA_RATIO    0.82f
+-#define JUMP_GROUND_YAW_TORQUE_LIMIT          1.0f
++#define JUMP_GROUND_YAW_TORQUE_LIMIT          2.0f
+ /* Jump gates re-aligned 2026-09-22 to the validated rl-lab sim
+  * (precheck 25/25 deg, vx 10, abort 40/30, landing 12/10, preload
+  * max 0.85 s, ready 0.155 m).  The earlier relaxation (12/12, 2.5,
+@@ -474,7 +482,12 @@
+ #define JUMP_AIR_WHEEL_TORQUE_LIMIT       M3508_TOR_MAX
+ #define JUMP_AIR_TUCK_PITCH_BIAS_RAD       (4.0f * DEGREE_2_RAD)
+ #define JUMP_AIR_DEPLOY_PITCH_BIAS_RAD     (4.0f * DEGREE_2_RAD)
+-#define JUMP_AIR_MOVING_PITCH_GAIN_RAD    (3.0f * DEGREE_2_RAD)
++/* Simulation moving landing: preserve the validated standstill trim, then
++ * smoothly reverse the velocity feedforward over 0.2--0.8 m/s. Its previous
++ * sign put the body farther from its catch posture at high running speeds. */
++#define JUMP_AIR_MOVING_PITCH_GAIN_RAD \
++    ((3.0f - 6.0f * fminf(1.0f, fmaxf(0.0f, \
++      (fabsf(jump_launch_vx) - 0.2f) / 0.6f))) * DEGREE_2_RAD)
+ /* Landing-buffer wheel pitch damper (ported from the rl-lab jump landing
+  * capture).  While the landing buffer absorbs the impact, the two wheel
+  * rotors act as a soft, slew-limited body-Pitch damper instead of the full
+@@ -1311,7 +1324,12 @@
+     uint8_t handoff_started;
+ } bump_stand_handoff_state_t;
+ 
++static uint8_t bump_operator_drive_seen = 0U;
+ static bump_state_e bump_state = BUMP_STATE_IDLE;
++static uint8_t bump_exit_lowering;
++static float bump_exit_lower_elapsed_s;
++static float bump_exit_lower_stable_s;
++static float bump_exit_length_ref;
+ static uint32_t bump_state_enter_ms;
+ static float bump_state_elapsed_s_accum;
+ static uint8_t bump_request_consumed;
+@@ -1582,6 +1600,15 @@
+  * （CONTACT/SWING_OVER/RETRACT/SWING_SUPPORT）都关轮子；STAND 交回低腿长普通控制；
+  * DONE 交回普通控制；
+  * ABORT 关断。 */
++/* Simulation low-step handoff: keep the landing owner from reopening the
++ * just-retracted legs. Ordinary LOW LQR still controls support and wheels;
++ * the independent physical-airborne lockout retains priority. */
++static uint8_t bump_stand_transfer_active(void)
++{
++    return (uint8_t)(bump_state == BUMP_STATE_STAND &&
++        (uint32_t)(HAL_GetTick() - bump_state_enter_ms) < 500U);
++}
++
+ static uint8_t bump_wheel_shut_requested(void)
+ {
+     return (uint8_t)(bump_state == BUMP_STATE_ABORT ||
+@@ -1612,7 +1639,13 @@
+         memset(bump_retract_lower_latched, 0,
+                sizeof(bump_retract_lower_latched));
+     }
++    if (state == BUMP_STATE_IDLE || state == BUMP_STATE_APPROACH) {
++        bump_exit_lowering = 0U;
++        bump_exit_lower_elapsed_s = 0.0f;
++        bump_exit_lower_stable_s = 0.0f;
++    }
+     if (state == BUMP_STATE_APPROACH) {
++        bump_operator_drive_seen = 0U;
+         bump_approach_speed_seen = 0U;
+         bump_buffer_seen = 0U;
+         bump_abort_reason = BUMP_ABORT_NONE;
+@@ -1863,7 +1896,9 @@
+ 
+ static uint8_t bump_contact_condition(uint8_t side, float torque_threshold)
+ {
+-    if (!bump_wheel_feedback_valid(side) || leg[side] == NULL ||
++    /* A brake/reverse request is not a forward obstacle contact. */
++    if (chassis_cmd.vx <= 20.0f ||
++        !bump_wheel_feedback_valid(side) || leg[side] == NULL ||
+         !isfinite(leg[side]->theta)) {
+         return 0U;
+     }
+@@ -1879,7 +1914,12 @@
+         bump_approach_speed_seen, wheel_speed, wheel_torque,
+         leg[side]->theta, torque_threshold,
+         BUMP_CONTACT_THETA_MIN_RAD, BUMP_CONTACT_THETA_MAX_RAD,
+-        BUMP_CONTACT_WHEEL_SPEED_MAX_RADPS);
++        /* A low curb can unload a drive wheel before the chassis clears it.
++         * Keep the usual stopped-wheel gate; allow real loaded-wheel spin
++         * only after the measured leg has swept far behind vertical. */
++        fabsf(leg[side]->theta) >= BUMP_CONTACT_SPIN_THETA_MIN_RAD ?
++            BUMP_CONTACT_SPIN_SPEED_MAX_RADPS :
++            BUMP_CONTACT_WHEEL_SPEED_MAX_RADPS);
+ }
+ 
+ static uint8_t bump_contacts_update(void)
+@@ -2263,8 +2303,41 @@
+         chassis_cmd.ctrl_mode == CHASSIS_FOLLOW_GIMBAL ||
+         chassis_cmd.ctrl_mode == CHASSIS_SPIN;
+ 
+-    const uint8_t request_release_can_cancel =
++    uint8_t request_release_can_cancel =
+         bump_request_release_can_cancel(bump_state);
++    /* A taller approach must lower continuously before ordinary
++     * LOW/MID support takes ownership. Only the leg reference is retained:
++     * drive/yaw commands stay live; feedback, attitude and airborne guards
++     * retain their existing authority. A released switch cannot start a
++     * new obstacle action during this bounded exit. */
++    if (!request && !bump_air_lockout && bump_state == BUMP_STATE_APPROACH &&
++        isfinite(leg[LEFT]->l0) && isfinite(leg[RIGHT]->l0) &&
++        (bump_exit_lowering || fmaxf(leg[LEFT]->l0, leg[RIGHT]->l0) > BUMP_EXIT_START_LENGTH)) {
++        if (!bump_exit_lowering) {
++            bump_exit_length_ref = 0.5f *
++                (bump_length_ref[LEFT] + bump_length_ref[RIGHT]);
++        }
++        bump_exit_lowering = 1U;
++        bump_exit_lower_elapsed_s += dt;
++        const float exit_target = chassis_cmd.leg_level == LEG_MID ? LEN_LEN_MID : LEN_LEN_LOW;
++        bump_exit_length_ref = move_towards_f32(bump_exit_length_ref, exit_target, BUMP_EXIT_LENGTH_REF_RATE * dt);
++        if (fabsf(bump_exit_length_ref - exit_target) < 0.001f &&
++            fmaxf(leg[LEFT]->l0, leg[RIGHT]->l0) <= exit_target + BUMP_EXIT_LENGTH_TOLERANCE &&
++            fabsf(ins.pitch) < BUMP_EXIT_ATTITUDE_DEG &&
++            fabsf(ins.roll) < BUMP_EXIT_ATTITUDE_DEG) {
++            bump_exit_lower_stable_s += dt;
++        } else {
++            bump_exit_lower_stable_s = 0.0f;
++        }
++        if (bump_exit_lower_stable_s < BUMP_EXIT_STABLE_TIME_S &&
++            bump_exit_lower_elapsed_s < BUMP_EXIT_TIMEOUT_S) {
++            request_release_can_cancel = 0U;
++        }
++    } else {
++        bump_exit_lowering = 0U;
++        bump_exit_lower_elapsed_s = 0.0f;
++        bump_exit_lower_stable_s = 0.0f;
++    }
+     if (!request && !bump_air_lockout && request_release_can_cancel) {
+         /* 2026-10-07 (bump2.csv): 拨杆松开 = 操作手不想再爬了，应该**平滑回普通
+          * 控制**，而不是走 ABORT。原实现把松开也送进 ABORT，而 ABORT 会把腿收到
+@@ -2304,7 +2377,8 @@
+     }
+ 
+     chassis_safety_module_set_bump_active(bump_control_active());
+-    chassis_safety_module_set_bump_action_active(bump_action_active());
++    chassis_safety_module_set_bump_action_active(
++        bump_action_active() || bump_stand_transfer_active());
+     if (!bump_control_active()) {
+         chassis_safety_module_set_wheel_shut(0U);
+     }
+@@ -2360,7 +2434,8 @@
+     const float elapsed_ms = bump_state_elapsed_s_accum * 1000.0f;
+     switch (bump_state) {
+     case BUMP_STATE_APPROACH: {
+-        bump_target_length = BUMP_APPROACH_LENGTH;
++        if (fabsf(chassis_cmd.vx) > 20.0f) bump_operator_drive_seen = 1U;
++        bump_target_length = bump_exit_lowering ? bump_exit_length_ref : BUMP_APPROACH_LENGTH;
+         /* chassis_kf_update() runs before leg_calc(); require fresh hip/INS
+          * and both wheel streams before latching real forward motion. */
+         const uint8_t approach_speed_feedback_fresh =
+@@ -2386,7 +2461,7 @@
+          *
+          * 现在改为：接触前无限等待，就是正常行驶。退出只由两种情况触发 ——
+          * 拨杆松开（回 IDLE 平滑交接）或全局故障判据（真故障才 ABORT）。 */
+-        if (bump_contacts_update()) {
++        if (request && !bump_exit_lowering && bump_contacts_update()) {
+             bump_state_enter(bump_sequence_transition(
+                 bump_state, 1U, 0U));
+         }
+@@ -2551,7 +2626,8 @@
+      * 的整个爬台阶序列就关轮子；DONE 交回普通控制时恢复。ABORT 仍然关断。 */
+     chassis_safety_module_set_wheel_shut(bump_wheel_shut_requested());
+     chassis_safety_module_set_bump_active(bump_control_active());
+-    chassis_safety_module_set_bump_action_active(bump_action_active());
++    chassis_safety_module_set_bump_action_active(
++        bump_action_active() || bump_stand_transfer_active());
+ }
+ 
+ static void Leg_FN_Calculation(float ROLL_TARGET, float L_TARGET_L, float L_TARGET_R);
+@@ -4614,7 +4690,14 @@
+              (jump_landing_entry_length - JUMP_LANDING_COMPRESS_MIN));
+         const uint8_t stable_ground =
+             !chassis_safety_module_off_ground() &&
+-            posture_settled && legs_settled && legs_compressed;
++            posture_settled && legs_settled && legs_compressed &&
++            (fabsf(jump_launch_vx) < 0.2f ||
++             ((chassis_safety_module_landing_buffer_phase() == 0U ||
++               chassis_safety_module_landing_buffer_phase() == 3U) &&
++              jump_landing_length_rate_valid &&
++              fabsf(jump_landing_length_rate[LEFT]) < 0.3f &&
++              fabsf(jump_landing_length_rate[RIGHT]) < 0.3f &&
++              fabsf(jump_body_pitch_rate_feedback()) < 1.0f));
+ 
+         if (stable_ground) {
+             jump_landing_ground_timer += dt;
+@@ -6386,6 +6469,13 @@
+         chassis_safety_module_set_wheel_shut(0U);
+ 
+         memcpy(MatLQR_K, lqr_k_transition_current, sizeof(MatLQR_K));
++        /* Keep acceleration unchanged; strengthen stop/reverse speed feedback
++         * only after the operator has actually driven in this approach. */
++        if (bump_state == BUMP_STATE_APPROACH && bump_operator_drive_seen && 
++            chassis_cmd.vx <= 20.0f) {
++            MatLQR_K[0][3] *= 2.0f;
++            MatLQR_K[1][3] *= 2.0f;
++        }
+ 
+     }
+ }
+@@ -6500,7 +6590,9 @@
+         memset(vmc_out_r, 0, sizeof(vmc_out_r));
+         return;
+     }
+-    if (chassis_safety_module_landing_fast_exit_ready(
++    /* Running impacts keep the full buffer through RETURN. A short HOLD
++     * crossing can still carry enough pitch/leg momentum to rebound. */
++    if (fabsf(jump_launch_vx) < 0.2f && chassis_safety_module_landing_fast_exit_ready(
+             leg[LEFT]->l0, leg[RIGHT]->l0)) {
+         /* Run the normal jump guards first. Then finish while the landing
+          * owner is still active so theta/wheel history survives buffer reset. */
+@@ -6602,7 +6694,7 @@
+         chassis_safety_module_apply_airborne_control();
+     if (!safety_airborne_override) {
+         dbg_theta_sync_p = -theta_pid->Output;
+-        if (jump_state == JUMP_STATE_THRUST) {
++        if (jump_state == JUMP_STATE_THRUST || jump_state == JUMP_STATE_PRELOAD) {
+             dbg_theta_sync_p = JUMP_THRUST_THETA_DIFF_KP *
+                 (leg[LEFT]->theta - leg[RIGHT]->theta);
+             LIMIT_MIN_MAX(dbg_theta_sync_p,
+@@ -6925,6 +7017,26 @@
+         memset(vmc_out_l, 0, sizeof(vmc_out_l));
+         memset(vmc_out_r, 0, sizeof(vmc_out_r));
+         return;
++    }
++
++    if (jump_state == JUMP_STATE_THRUST && jump_thrust_active) {
++        float force_saved[2] = {leg[LEFT]->support_force, leg[RIGHT]->support_force};
++        float tp_saved[2] = {leg[LEFT]->Tp, leg[RIGHT]->Tp};
++        float safe_force[2];
++        for (uint8_t side = LEFT; side < CHASSIS_SIDE_COUNT; ++side) {
++            safe_force[side] = bump_force_with_torque_reserve(leg[side], force_saved[side], tp_saved[side], 40.0f);
++            leg[side]->Tp = tp_saved[side];
++        }
++        float scale = 1.0f;
++        for (uint8_t side = LEFT; side < CHASSIS_SIDE_COUNT; ++side) {
++            if (fabsf(force_saved[side]) > 1e-4f) {
++                scale = fminf(scale, fabsf(safe_force[side] / force_saved[side]));
++            }
++        }
++        safe_force[LEFT] = scale * force_saved[LEFT];
++        safe_force[RIGHT] = scale * force_saved[RIGHT];
++        leg[LEFT]->support_force = safe_force[LEFT];
++        leg[RIGHT]->support_force = safe_force[RIGHT];
+     }
+ 
+     /* 最终 VMC 力矩映射 */
+@@ -7576,7 +7688,13 @@
+         }
+         /* INS publishes roll=-QEKF Pitch and gyro Y without a sign change.
+          * Near upright, roll_dot=-gyro[1]; gyro[0] belongs to pitch. */
+-        const float roll_rate_rad_s = -ins.gyro[1] +
++        float launch_roll_bias = 0.0f;
++        if (jump_state == JUMP_STATE_THRUST && jump_thrust_active) {
++            float progress = (0.5f * (leg[LEFT]->l0 + leg[RIGHT]->l0) - 0.25f) / 0.07f;
++            LIMIT_MIN_MAX(progress, 0.0f, 1.0f);
++            launch_roll_bias = 1.000f * progress * fmaxf(0.5f * (jump_length_rate(LEFT) + jump_length_rate(RIGHT)), 0.0f);
++        }
++        const float roll_rate_rad_s = launch_roll_bias - ins.gyro[1] +
+             (jump_state == JUMP_STATE_THRUST ?
+                 JUMP_ROLL_MOMENTUM_RATE_GAIN *
+                     (jump_length_rate(RIGHT) -
+@@ -8435,6 +8553,10 @@
+ void chassis_control_module_bump_reset(void)
+ {
+     bump_state = BUMP_STATE_IDLE;
++    bump_exit_lowering = 0U;
++    bump_exit_lower_elapsed_s = 0.0f;
++    bump_exit_lower_stable_s = 0.0f;
++    bump_exit_length_ref = LEN_LEN_LOW;
+     bump_state_elapsed_s_accum = 0.0f;
+     bump_request_consumed = 0U;
+     bump_abort_reason = BUMP_ABORT_NONE;
+--- a/src/task/chassis/control/jump_torque_budget.h
++++ b/src/task/chassis/control/jump_torque_budget.h
+@@ -4,7 +4,7 @@
+ #include <math.h>
+ #include <stdint.h>
+ 
+-#define JUMP_HIP_TORQUE_BUDGET_NM 120.0f
++#define JUMP_HIP_TORQUE_BUDGET_NM 160.0f
+ #define JUMP_HIP_TORQUE_SLOT_COUNT 4U
+ 
+ typedef enum {

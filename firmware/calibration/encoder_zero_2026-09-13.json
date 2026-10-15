@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "calibration_id": "flat_bottom_rear_stop_visual_2026-09-13_v1",
+  "joint_order": [
+    "l_j1",
+    "l_j2",
+    "r_j1",
+    "r_j2"
+  ],
+  "units": "radians",
+  "native_joint_coordinate": "cad_q_unchanged",
+  "encoder_coordinate": "continuous_e_equals_q_minus_znew",
+  "encoder_zero_cad_rad": [
+    0.8888879963997892,
+    1.831365792476727,
+    -0.8601638293762661,
+    -1.802641625453204
+  ],
+  "legacy_fk_zero_cad_rad": [
+    0.8640252461997929,
+    1.8065030422767308,
+    -0.8640252461997929,
+    -1.8065030422767308
+  ],
+  "legacy_firmware_offset_rad": [
+    -0.024862750199996286,
+    -0.024862750199996286,
+    -0.0038614168235268087,
+    -0.0038614168235266977
+  ],
+  "encoder_to_cad_sign": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "runtime_native_cad_path_changed": false,
+  "mechanical_stop_independently_measured": false,
+  "compression_assumption_deg": 27,
+  "confirmation": "user_visual_confirmation_recorded_in_firmware_header_flag_1",
+  "physical_zero_definition": "CAD base bottom horizontal on ground, rear leg stops, both 58mm-radius tires on same ground; compression retains historical 27deg assumption",
+  "native_stand_pose": "assets/calibrated_stand_pose.json",
+  "migration_scope": "Explicit encoder E boundary and versioned metadata only; native Q, legacy FK, actor observations, standing pose and actuation unchanged. No asset rebasing. No new hardware measurement.",
+  "source_sha256": {
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/docs/RL_ZERO_UNIFICATION_PLAN.md": "0cb725b8edf33ecc81fe14ab8766e89f1fc1145d556529cea3d101ccfd72467e",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/docs/RL_ZERO_RECALIBRATION.md": "5c0a77b08dd40a372c53eebf31f70be9b0d68c176880b821d242c633a5a9d5bf",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/artifacts/encoder_zero_review/candidate_pose.json": "8894eea37fbaa96e2d81ffeb688ae58637326190c394c63b58c50e4db307e002",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/artifacts/encoder_zero_review/geometry_report.json": "1451ad177936e4d03e30b00c2c7b9f95530678749a816dd4a5fefb36e977279c",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/artifacts/encoder_zero_review/isaac_audit/report.json": "460e8228b670261ac44ff94c4452327c03afe03faffee0f60dc01b9b8c2203be",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/src/rl/rl_zero_candidate.h": "244a2f4f1cdb23435d348a6a4ad6423e887254c1a924548b1fdd8baa62340abd",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/src/rl/rl_config.h": "5c3d058ac5ab13d874fb1420ef6e9f0d18ab552bc768b01806581042f747877a",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/src/rl/rl_adapter.c": "76123eb4d17b21afbfe0d91465b87b5785cdb0f7087c1a0cb1306c08123c5176",
+    "/home/kaiser/robomaster/HNU_Serial_Balance_H723/src/rl/rl_math.c": "dad729a5062c729c9cf02e057cc2d58a26405a880ab6dad8422a988638123e29"
+  },
+  "native_geometry_sha256": {
+    "assets/mjcf/whole_body_headless.xml": "a14437d94af736dd6c66629f10d7dc6315df4b587d7a9c7f61efaef32b7d0d7b",
+    "assets/mjcf/whole_body_visual.xml": "f42ffa44be6dd2c2bb732d22de565b5b1261a79722a92fe1adab3bbd9e89d34f"
+  },
+  "bundled_evidence_sha256": {
+    "evidence/encoder_zero_candidate_pose.json": "8894eea37fbaa96e2d81ffeb688ae58637326190c394c63b58c50e4db307e002",
+    "evidence/encoder_zero_geometry_summary.json": "d0dd621793b88e68ada97473b1314c15c27c345ad7853312b6b322ff472dfa9c",
+    "evidence/encoder_zero_usd_audit.json": "460e8228b670261ac44ff94c4452327c03afe03faffee0f60dc01b9b8c2203be"
+  }
+}

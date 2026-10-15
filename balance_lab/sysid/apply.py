@@ -299,12 +299,15 @@ def _body_collision_geoms(model: mujoco.MjModel, body_name: str) -> list[int]:
 def apply_model_parameters(
     model: mujoco.MjModel,
     params: ModelParameters,
+    *, ground_geom_names: tuple[str, ...] | None = None,
 ) -> dict[str, float]:
     """Write plant-side identified parameters onto ``model`` (in place).
 
     Returns a human-readable record of every field written, suitable for
     logs and for tests.  Raises if the model is missing any expected
     actuator/geom, so a renamed MJCF cannot silently skip identification.
+    ``ground_geom_names`` selects explicit terrain surfaces; an empty tuple
+    preserves an external terrain's own materials instead of overriding them.
     """
     applied: dict[str, float] = {}
     actuators = params.section("actuators")
@@ -338,14 +341,17 @@ def apply_model_parameters(
         for geom in _body_collision_geoms(model, body_name):
             model.geom_friction[geom, 0] = wheel_sliding
     applied["friction[wheel]"] = wheel_sliding
-    for name in GROUND_GEOM_NAMES:
+    if ground_geom_names is None and not any(mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name) >= 0
+               for name in ("ground", "ground_outer")):
+        raise ValueError("model has no ground or ground_outer geom")
+    names = GROUND_GEOM_NAMES if ground_geom_names is None else ground_geom_names
+    for name in names:
         geom = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
         if geom < 0:
-            if name == "ground":
-                raise ValueError("model has no ground geom")
             continue  # platform layers only exist in the platform scene
         model.geom_friction[geom, 0] = ground_sliding
-    applied["friction[ground]"] = ground_sliding
+    if names:
+        applied["friction[ground]"] = ground_sliding
     # contacts.restitution is nominal 0, and MuJoCo encodes restitution via a
     # negative-solref parametrization; applying it is deferred until a
     # non-zero value is actually identified.

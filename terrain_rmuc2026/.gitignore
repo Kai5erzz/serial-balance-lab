@@ -1,0 +1,9 @@
+build
+pack
+research/*.stp
+research/*.pdf
+research/*.html
+__pycache__/
+checks/
+preview/
+*.zip

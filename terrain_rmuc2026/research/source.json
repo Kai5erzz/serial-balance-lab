@@ -1,0 +1,13 @@
+{
+  "page": "https://bbs.robomaster.com/article/814728?source=8",
+  "version": "RMUC2026 Finals V2.0.0",
+  "source": {
+    "url": "https://hz-rm-bbs-web-prod.oss-cn-hangzhou.aliyuncs.com/f637e13eadfc4602a76c7a05c54f71271782803452461/RMUC2026_V2.0.0.stp",
+    "name": "RMUC2026_V2.0.0.stp",
+    "md5": "cb3da25791d000eca9c0e9bcd259f5b1",
+    "size": "1254821405"
+  },
+  "sha256": "8dfe9ebd761e44d91361b3e593bc05416329112217b58cb35800b3cde2ffae33",
+  "review_date": "2026-10-15",
+  "storage": "/media/kaiser/D盘2/rl-lab-terrain/rmuc2026"
+}

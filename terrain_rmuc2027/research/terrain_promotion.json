@@ -1,0 +1,36 @@
+{
+  "source_sha256": "a5ad3ede3b7674fc98f2e73b71717216383cb2b4b5dcdbe900c2038918bea8e0",
+  "solid_ids": [
+    417,
+    418
+  ],
+  "reason": "large watertight CAD road shells must be terrain, never facility hull proxies",
+  "parts": [
+    {
+      "original_shell_id": 3123,
+      "solid_id": 417,
+      "triangles": 35954,
+      "area_m2": 72.04265004457568,
+      "volume_m3": 5.987979317905702,
+      "extents_m": [
+        10.7917616673871,
+        4.268309672568001,
+        1.1420297308806
+      ],
+      "collision": "inward 1 mm boundary prisms, no filled gaps"
+    },
+    {
+      "original_shell_id": 3124,
+      "solid_id": 418,
+      "triangles": 36012,
+      "area_m2": 72.0426430638692,
+      "volume_m3": 5.987980940402228,
+      "extents_m": [
+        10.791761667377502,
+        4.268309672575,
+        1.1420297308716
+      ],
+      "collision": "inward 1 mm boundary prisms, no filled gaps"
+    }
+  ]
+}

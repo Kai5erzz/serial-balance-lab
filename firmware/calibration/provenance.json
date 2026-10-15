@@ -1,0 +1,9 @@
+{
+  "source": "/home/kaiser/robomaster/rl-serial-balance-jointpd/configs/calibration",
+  "files": {
+    "encoder_zero_2026-09-13.json": "2ef7a637eca3f94a9556622e8bcbdace48aa39359129a07eaa9137cf55357a3f",
+    "evidence/encoder_zero_candidate_pose.json": "8894eea37fbaa96e2d81ffeb688ae58637326190c394c63b58c50e4db307e002",
+    "evidence/encoder_zero_geometry_summary.json": "d0dd621793b88e68ada97473b1314c15c27c345ad7853312b6b322ff472dfa9c",
+    "evidence/encoder_zero_usd_audit.json": "460e8228b670261ac44ff94c4452327c03afe03faffee0f60dc01b9b8c2203be"
+  }
+}

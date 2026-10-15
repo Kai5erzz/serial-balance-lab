@@ -1,0 +1,19 @@
+.caddeps/
+.caddeps78/
+research/*.stp
+research/*.pdf
+research/*.html
+research/reference_*
+research/*.txt
+build/
+pack/
+__pycache__/
+checks/
+preview/
+*.zip
+research
+
+# These paths can be local symlinks rather than directories.
+.caddeps
+.caddeps78
+build

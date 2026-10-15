@@ -1,0 +1,15 @@
+{
+  "page": "https://bbs.robomaster.com/wiki/20204847/1969149?source=7",
+  "version": "V1.0.0",
+  "publication_date": "2026-10-15",
+  "url": "https://bbs-web-static.robomaster.com/451e5737ba5d4463909a3013456a4e551792055647969/RoboMaster%202027%20%E6%9C%BA%E7%94%B2%E5%A4%A7%E5%B8%88%E8%B6%85%E7%BA%A7%E5%AF%B9%E6%8A%97%E8%B5%9B%E6%AF%94%E8%B5%9B%E8%A7%84%E5%88%99%E6%89%8B%E5%86%8CV1.0.0%EF%BC%8820261015%EF%BC%89.pdf",
+  "sha256": "9e2eed9295536c6fd547b62d634df1d5e70a2e1e2250e5dff3521d557e5d54be",
+  "bytes": 22455861,
+  "overview_pdf_page_1based": 30,
+  "overview_printed_page": 29,
+  "official_core_size_m": [
+    28,
+    15
+  ],
+  "official_perimeter_height_m": 2.4
+}

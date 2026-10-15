@@ -1,0 +1,944 @@
+{
+  "units": "position metres, angles degrees unless radians explicit",
+  "assets": {
+    "assets/generated/headless/whole_body_headless.usd": "074614a8c17c22ff2409ec8442f9d0fbc50384c7c46a68728842507ebf25066f",
+    "assets/generated/headless/configuration/whole_body_headless_physics.usd": "cf8f0198f726ce66dd041c2984bf559fec5e29f9804656a0e07e5513d3cb9dda",
+    "assets/generated/headless/configuration/whole_body_headless_robot.usd": "f515c1406b74aae5c5ccaaa8e22e7f50c6dfe1be0ff213085109de8db699913a",
+    "assets/generated/headless/configuration/whole_body_headless_base.usd": "2c338377b68a189df18f241678b8a4029baf6fea16dea7677ef4cdd0b1ad04ff",
+    "assets/generated/headless/configuration/whole_body_headless_sensor.usd": "d5139d5d626eec7e34ed6ee9611e232c239f17c8d5ea63049b2476f87a59a3fb",
+    "assets/generated/visual/configuration/whole_body_visual_sensor.usd": "6f5c3a3f8a1dc4a80db0e88736d088a9568dfd14a31cd4edfe4236193057f576",
+    "assets/generated/visual/whole_body_visual.usd": "e91b86db7e252172bda89ddeda465066f43b9348b0c41b1a78fb2219c850709a",
+    "assets/generated/visual/configuration/whole_body_visual_physics.usd": "339116c1ca05df815b13ac62ff836dc9bb893ffdf8b01e329bfcdcd8884167d3",
+    "assets/generated/visual/configuration/whole_body_visual_robot.usd": "b888aeecb628b5e4844f869fee3c636ecc08f467e3dddde2987a654571e7ad36",
+    "assets/generated/visual/configuration/whole_body_visual_base.usd": "675027eedaa6c22968be9bfe68896856051d4defaf74fff7502263e443ce96bf",
+    "assets/mjcf/whole_body_headless.xml": "a14437d94af736dd6c66629f10d7dc6315df4b587d7a9c7f61efaef32b7d0d7b",
+    "configs/model/nominal.yaml": "62648380ba8612ec33dbad667a667d452e656db4b105ee32d4530c8fa2419763",
+    "source/serial_balance_isaac/control/kinematics.py": "a2e32d7c8d281e1c46e5c526becbc6c0eb40b134f1c43b27529e2449b05daa3e"
+  },
+  "stages": {
+    "headless": {
+      "meters_per_unit": 1.0,
+      "up_axis": "Z",
+      "joints": {
+        "l_j2": {
+          "usd_path": "/whole_body_headless_no_eq/joints/l_j2",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                0.08122403174638748,
+                0.006050020456314087,
+                -0.16609004139900208
+              ],
+              "localRot_wxyz": [
+                0.6532816290855408,
+                0.6532822251319885,
+                0.2705965042114258,
+                -0.2705986499786377
+              ]
+            },
+            {
+              "body": "l_j2",
+              "translation_error_m": 2.4848749406809826e-08,
+              "rotation_error_deg": 9.558408939214145e-06,
+              "usd_world_pos": [
+                0.08122401684522629,
+                0.1660900115966797,
+                0.2610499858856201
+              ],
+              "usd_world_quat_wxyz": [
+                -0.27059721946716325,
+                -0.6532806270721295,
+                -0.27059783040647245,
+                0.6532827728389868
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071070671081543,
+                0.0,
+                0.7071070075035095,
+                1.4901161193847656e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "l_j2",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(0.08122403, 0.0060500205, -0.16609004)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(0.6532816, 0.6532822, 0.2705965, -0.27059865)",
+            "physics:localRot1": "(0.70710707, 0, 0.707107, 1.4901161e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            0.7071079817809395,
+            0.707105580586082,
+            -2.388957848278861e-06
+          ],
+          "usd_axis_world": [
+            0.7071079954668673,
+            0.70710556689945,
+            -2.576008712185981e-06
+          ],
+          "axis_dot": 0.9999999999999825,
+          "anchor_error_m": 5.323159026885242e-08,
+          "usd_rest_joint_relative_angle_deg": 7.449883399659054e-06,
+          "usd_anchor_closure_error_m": 3.486236860537582e-08
+        },
+        "l_j1": {
+          "usd_path": "/whole_body_headless_no_eq/joints/l_j1",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                0.06884972751140594,
+                0.006050020456314087,
+                -0.1537170261144638
+              ],
+              "localRot_wxyz": [
+                0.9069477319717407,
+                -0.17606696486473083,
+                0.37567028403282166,
+                0.07292935252189636
+              ]
+            },
+            {
+              "body": "l_j1",
+              "translation_error_m": 2.199936696706694e-08,
+              "rotation_error_deg": 2.1749747305652457e-05,
+              "usd_world_pos": [
+                0.06884971261024475,
+                0.1537170112133026,
+                0.2610499858856201
+              ],
+              "usd_world_quat_wxyz": [
+                0.69287770986557,
+                0.5897399165127809,
+                -0.39013671821391094,
+                -0.14114053685678318
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071070075035095,
+                1.30385160446167e-08,
+                0.7071070671081543,
+                1.4901161193847656e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "l_j1",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(0.06884973, 0.0060500205, -0.15371703)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(0.90694773, -0.17606696, 0.37567028, 0.07292935)",
+            "physics:localRot1": "(0.707107, 1.3038516e-8, 0.70710707, 1.4901161e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            0.7071065636625536,
+            0.7071069987104744,
+            1.4227187372650718e-08
+          ],
+          "usd_axis_world": [
+            0.7071064753062419,
+            0.7071070870667098,
+            -1.2667733789717417e-07
+          ],
+          "axis_dot": 0.9999999999999827,
+          "anchor_error_m": 3.881511445599376e-08,
+          "usd_rest_joint_relative_angle_deg": 1.3242104254312875e-05,
+          "usd_anchor_closure_error_m": 2.3509170447935448e-08
+        },
+        "r_j1": {
+          "usd_path": "/whole_body_headless_no_eq/joints/r_j1",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                -0.1484440565109253,
+                0.006050020456314087,
+                0.06357701122760773
+              ],
+              "localRot_wxyz": [
+                -0.3767445683479309,
+                -0.06715899705886841,
+                0.9095413684844971,
+                -0.162136048078537
+              ]
+            },
+            {
+              "body": "r_j1",
+              "translation_error_m": 3.12045980881541e-08,
+              "rotation_error_deg": 6.656834754740514e-06,
+              "usd_world_pos": [
+                -0.1484440267086029,
+                -0.06357700377702713,
+                0.2610500156879425
+              ],
+              "usd_world_quat_wxyz": [
+                0.38104587793350214,
+                0.15175085120919363,
+                0.6906313377845626,
+                0.5956543236954442
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071069478988647,
+                0.0,
+                0.7071069478988647,
+                2.9802322387695312e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "r_j1",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(-0.14844406, 0.0060500205, 0.06357701)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(-0.37674457, -0.067159, 0.90954137, -0.16213605)",
+            "physics:localRot1": "(0.70710695, 0, 0.70710695, 2.9802322e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            -0.7071064942047854,
+            -0.7071070681681931,
+            1.5761811467118747e-08
+          ],
+          "usd_axis_world": [
+            -0.7071065157490602,
+            -0.7071070466239315,
+            7.371813937062655e-08
+          ],
+          "axis_dot": 0.9999999999999982,
+          "anchor_error_m": 6.236223197228639e-08,
+          "usd_rest_joint_relative_angle_deg": 9.388781415609513e-06,
+          "usd_anchor_closure_error_m": 3.170497792113925e-08
+        },
+        "r_j2": {
+          "usd_path": "/whole_body_headless_no_eq/joints/r_j2",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                -0.1739000678062439,
+                0.006050020456314087,
+                0.08903282135725021
+              ],
+              "localRot_wxyz": [
+                -0.27059799432754517,
+                0.27059799432754517,
+                0.6532816886901855,
+                0.6532816886901855
+              ]
+            },
+            {
+              "body": "r_j2",
+              "translation_error_m": 4.3402823035914986e-08,
+              "rotation_error_deg": 5.908980550325992e-06,
+              "usd_world_pos": [
+                -0.1739000380039215,
+                -0.08903281390666962,
+                0.2610500156879425
+              ],
+              "usd_world_quat_wxyz": [
+                -0.2705979645252229,
+                0.6532815219507137,
+                0.27059794483758554,
+                0.6532815219507137
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071069478988647,
+                -1.4901161193847656e-08,
+                0.7071069478988647,
+                -1.4901161193847656e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "r_j2",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(-0.17390007, 0.0060500205, 0.08903282)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(-0.270598, 0.270598, 0.6532817, 0.6532817)",
+            "physics:localRot1": "(0.70710695, -1.4901161e-8, 0.70710695, -1.4901161e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            -0.7071070579058574,
+            -0.7071065044671294,
+            -1.3877787807814457e-17
+          ],
+          "usd_axis_world": [
+            -0.707107042049233,
+            -0.7071065203237594,
+            9.500602349917955e-08
+          ],
+          "axis_dot": 0.9999999999999953,
+          "anchor_error_m": 7.605456357341141e-08,
+          "usd_rest_joint_relative_angle_deg": 9.405230870190453e-06,
+          "usd_anchor_closure_error_m": 3.279230595610286e-08
+        }
+      }
+    },
+    "visual": {
+      "meters_per_unit": 1.0,
+      "up_axis": "Z",
+      "joints": {
+        "l_j2": {
+          "usd_path": "/whole_body_visual_no_eq/joints/l_j2",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                0.08122403174638748,
+                0.006050020456314087,
+                -0.16609004139900208
+              ],
+              "localRot_wxyz": [
+                0.6532816290855408,
+                0.6532822251319885,
+                0.2705965042114258,
+                -0.2705986499786377
+              ]
+            },
+            {
+              "body": "l_j2",
+              "translation_error_m": 2.4848749406809826e-08,
+              "rotation_error_deg": 9.558408939214145e-06,
+              "usd_world_pos": [
+                0.08122401684522629,
+                0.1660900115966797,
+                0.2610499858856201
+              ],
+              "usd_world_quat_wxyz": [
+                -0.27059721946716325,
+                -0.6532806270721295,
+                -0.27059783040647245,
+                0.6532827728389868
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071070671081543,
+                0.0,
+                0.7071070075035095,
+                1.4901161193847656e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "l_j2",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(0.08122403, 0.0060500205, -0.16609004)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(0.6532816, 0.6532822, 0.2705965, -0.27059865)",
+            "physics:localRot1": "(0.70710707, 0, 0.707107, 1.4901161e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            0.7071079817809395,
+            0.707105580586082,
+            -2.388957848278861e-06
+          ],
+          "usd_axis_world": [
+            0.7071079954668673,
+            0.70710556689945,
+            -2.576008712185981e-06
+          ],
+          "axis_dot": 0.9999999999999825,
+          "anchor_error_m": 5.323159026885242e-08,
+          "usd_rest_joint_relative_angle_deg": 7.449883399659054e-06,
+          "usd_anchor_closure_error_m": 3.486236860537582e-08
+        },
+        "l_j1": {
+          "usd_path": "/whole_body_visual_no_eq/joints/l_j1",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                0.06884972751140594,
+                0.006050020456314087,
+                -0.1537170261144638
+              ],
+              "localRot_wxyz": [
+                0.9069477319717407,
+                -0.17606696486473083,
+                0.37567028403282166,
+                0.07292935252189636
+              ]
+            },
+            {
+              "body": "l_j1",
+              "translation_error_m": 2.199936696706694e-08,
+              "rotation_error_deg": 2.1749747305652457e-05,
+              "usd_world_pos": [
+                0.06884971261024475,
+                0.1537170112133026,
+                0.2610499858856201
+              ],
+              "usd_world_quat_wxyz": [
+                0.69287770986557,
+                0.5897399165127809,
+                -0.39013671821391094,
+                -0.14114053685678318
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071070075035095,
+                1.30385160446167e-08,
+                0.7071070671081543,
+                1.4901161193847656e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "l_j1",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(0.06884973, 0.0060500205, -0.15371703)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(0.90694773, -0.17606696, 0.37567028, 0.07292935)",
+            "physics:localRot1": "(0.707107, 1.3038516e-8, 0.70710707, 1.4901161e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            0.7071065636625536,
+            0.7071069987104744,
+            1.4227187372650718e-08
+          ],
+          "usd_axis_world": [
+            0.7071064753062419,
+            0.7071070870667098,
+            -1.2667733789717417e-07
+          ],
+          "axis_dot": 0.9999999999999827,
+          "anchor_error_m": 3.881511445599376e-08,
+          "usd_rest_joint_relative_angle_deg": 1.3242104254312875e-05,
+          "usd_anchor_closure_error_m": 2.3509170447935448e-08
+        },
+        "r_j1": {
+          "usd_path": "/whole_body_visual_no_eq/joints/r_j1",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                -0.1484440565109253,
+                0.006050020456314087,
+                0.06357701122760773
+              ],
+              "localRot_wxyz": [
+                -0.3767445683479309,
+                -0.06715899705886841,
+                0.9095413684844971,
+                -0.162136048078537
+              ]
+            },
+            {
+              "body": "r_j1",
+              "translation_error_m": 3.12045980881541e-08,
+              "rotation_error_deg": 6.656834754740514e-06,
+              "usd_world_pos": [
+                -0.1484440267086029,
+                -0.06357700377702713,
+                0.2610500156879425
+              ],
+              "usd_world_quat_wxyz": [
+                0.38104587793350214,
+                0.15175085120919363,
+                0.6906313377845626,
+                0.5956543236954442
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071069478988647,
+                0.0,
+                0.7071069478988647,
+                2.9802322387695312e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "r_j1",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(-0.14844406, 0.0060500205, 0.06357701)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(-0.37674457, -0.067159, 0.90954137, -0.16213605)",
+            "physics:localRot1": "(0.70710695, 0, 0.70710695, 2.9802322e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            -0.7071064942047854,
+            -0.7071070681681931,
+            1.5761811467118747e-08
+          ],
+          "usd_axis_world": [
+            -0.7071065157490602,
+            -0.7071070466239315,
+            7.371813937062655e-08
+          ],
+          "axis_dot": 0.9999999999999982,
+          "anchor_error_m": 6.236223197228639e-08,
+          "usd_rest_joint_relative_angle_deg": 9.388781415609513e-06,
+          "usd_anchor_closure_error_m": 3.170497792113925e-08
+        },
+        "r_j2": {
+          "usd_path": "/whole_body_visual_no_eq/joints/r_j2",
+          "body_frames": [
+            {
+              "body": "base_link",
+              "translation_error_m": 4.768371586472142e-09,
+              "rotation_error_deg": 7.698195416797339e-06,
+              "usd_world_pos": [
+                0.0,
+                0.0,
+                0.2549999952316284
+              ],
+              "usd_world_quat_wxyz": [
+                0.7071068286895752,
+                0.7071067336835166,
+                0.0,
+                0.0
+              ],
+              "localPos": [
+                -0.1739000678062439,
+                0.006050020456314087,
+                0.08903282135725021
+              ],
+              "localRot_wxyz": [
+                -0.27059799432754517,
+                0.27059799432754517,
+                0.6532816886901855,
+                0.6532816886901855
+              ]
+            },
+            {
+              "body": "r_j2",
+              "translation_error_m": 4.3402823035914986e-08,
+              "rotation_error_deg": 5.908980550325992e-06,
+              "usd_world_pos": [
+                -0.1739000380039215,
+                -0.08903281390666962,
+                0.2610500156879425
+              ],
+              "usd_world_quat_wxyz": [
+                -0.2705979645252229,
+                0.6532815219507137,
+                0.27059794483758554,
+                0.6532815219507137
+              ],
+              "localPos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localRot_wxyz": [
+                0.7071069478988647,
+                -1.4901161193847656e-08,
+                0.7071069478988647,
+                -1.4901161193847656e-08
+              ]
+            }
+          ],
+          "mjcf_joint_attributes": {
+            "name": "r_j2",
+            "pos": "0 0 0",
+            "axis": "0 0 -1",
+            "damping": ".35"
+          },
+          "usd_attributes": {
+            "drive:angular:physics:damping": "0.3499999940395355",
+            "drive:angular:physics:maxForce": "0.0",
+            "drive:angular:physics:stiffness": "0.0",
+            "drive:angular:physics:targetPosition": "0.0",
+            "drive:angular:physics:targetVelocity": "0.0",
+            "drive:angular:physics:type": "force",
+            "isaac:nameOverride": "None",
+            "isaac:physics:AccelerationLimit": "None",
+            "isaac:physics:index": "None",
+            "isaac:physics:JerkLimit": "None",
+            "isaac:physics:Rot_X:DofOffset": "None",
+            "isaac:physics:Rot_Y:DofOffset": "None",
+            "isaac:physics:Rot_Z:DofOffset": "None",
+            "isaac:physics:Tr_X:DofOffset": "None",
+            "isaac:physics:Tr_Y:DofOffset": "None",
+            "isaac:physics:Tr_Z:DofOffset": "None",
+            "physics:axis": "X",
+            "physics:breakForce": "3.4028234663852886e+38",
+            "physics:breakTorque": "3.4028234663852886e+38",
+            "physics:collisionEnabled": "False",
+            "physics:excludeFromArticulation": "False",
+            "physics:jointEnabled": "True",
+            "physics:localPos0": "(-0.17390007, 0.0060500205, 0.08903282)",
+            "physics:localPos1": "(0, 0, 0)",
+            "physics:localRot0": "(-0.270598, 0.270598, 0.6532817, 0.6532817)",
+            "physics:localRot1": "(0.70710695, -1.4901161e-8, 0.70710695, -1.4901161e-8)",
+            "physics:lowerLimit": "-inf",
+            "physics:upperLimit": "inf",
+            "physxJoint:armature": "0.0",
+            "physxLimit:X:damping": "0.3499999940395355",
+            "physxLimit:X:stiffness": "0.0",
+            "purpose": "default",
+            "visibility": "inherited"
+          },
+          "mjcf_axis_world": [
+            -0.7071070579058574,
+            -0.7071065044671294,
+            -1.3877787807814457e-17
+          ],
+          "usd_axis_world": [
+            -0.707107042049233,
+            -0.7071065203237594,
+            9.500602349917955e-08
+          ],
+          "axis_dot": 0.9999999999999953,
+          "anchor_error_m": 7.605456357341141e-08,
+          "usd_rest_joint_relative_angle_deg": 9.405230870190453e-06,
+          "usd_anchor_closure_error_m": 3.279230595610286e-08
+        }
+      }
+    }
+  }
+}

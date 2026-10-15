@@ -11,3 +11,7 @@ out/
 
 # External reference repositories (nested git checkouts)
 refer/
+
+# Local runtime locks and mesh-conversion scratch files
+.mujoco-validation/
+tetgen-tmpfile*

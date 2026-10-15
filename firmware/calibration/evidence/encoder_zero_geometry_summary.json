@@ -1,0 +1,261 @@
+{
+  "status": "candidate_awaiting_user_visual_confirmation",
+  "mechanical_stop_verified": false,
+  "assumption": "Preserve old visual compression=27deg (not an independently measured hard-stop angle); fix flat root, use lowest actual base visual mesh and H7/MJCF nominal 58mm tire cylinder. Solve each leg swing independently, preserving stop/compression coordinate.",
+  "root_height_m": 0.15744582065228274,
+  "old_flat_clearance": {
+    "l": {
+      "collision_tire_mm": -8.014206281909207,
+      "visual_tire_mm": -7.999786222793452
+    },
+    "r": {
+      "collision_tire_mm": 1.247766001302321,
+      "visual_tire_mm": 1.3165826164673184
+    }
+  },
+  "candidate": {
+    "compression_deg": 27.0,
+    "ground_datum_shift_mm": 0,
+    "q_zero_rad": [
+      0.8888879963997892,
+      1.831365792476727,
+      -0.8601638293762661,
+      -1.802641625453204
+    ],
+    "q_zero_deg": [
+      50.929530653547836,
+      104.92953065354783,
+      -49.283757113071104,
+      -103.2837571130711
+    ],
+    "delta_q_rad": [
+      0.024862750199996397,
+      0.024862750199996286,
+      0.0038614168235266977,
+      0.0038614168235266977
+    ],
+    "delta_q_deg": [
+      1.424530653547837,
+      1.4245306535478306,
+      0.22124288692889238,
+      0.22124288692889238
+    ],
+    "firmware_sensor_offset_rad": [
+      -0.024862750199996397,
+      -0.024862750199996286,
+      -0.0038614168235266977,
+      -0.0038614168235266977
+    ],
+    "loop_residual_max_m": 2.205536675237152e-07,
+    "wheel_collision_clearance_mm": [
+      -1.6167274505260088e-10,
+      1.5665726493799358e-11
+    ],
+    "wheel_visual_clearance_mm": [
+      0.06449158157832008,
+      0.08015374698411987
+    ],
+    "base_visual_clearance_mm": 1.3877787807814457e-14
+  },
+  "sensitivity": [
+    {
+      "compression_deg": 26,
+      "ground_datum_shift_mm": 0,
+      "q_zero_rad": [
+        0.9018187415817391,
+        1.8093899526187904,
+        -0.8730661399322472,
+        -1.7806373509692985
+      ],
+      "q_zero_deg": [
+        51.67040777843269,
+        103.67040777843269,
+        -50.023005053895915,
+        -102.02300505389591
+      ],
+      "delta_q_rad": [
+        0.03779349538194632,
+        0.0028869103420596787,
+        -0.009040893732454425,
+        0.025865691307432215
+      ],
+      "delta_q_deg": [
+        2.1654077784326913,
+        0.16540777843268842,
+        -0.5180050538959166,
+        1.4819949461040862
+      ],
+      "firmware_sensor_offset_rad": [
+        -0.03779349538194632,
+        -0.0028869103420596787,
+        0.009040893732454425,
+        -0.025865691307432215
+      ],
+      "loop_residual_max_m": 2.2706066518662915e-07,
+      "wheel_collision_clearance_mm": [
+        -2.7967291177372676e-10,
+        -4.922546614771414e-10
+      ],
+      "wheel_visual_clearance_mm": [
+        0.026143360594144127,
+        0.06304786182723121
+      ],
+      "base_visual_clearance_mm": 1.3877787807814457e-14
+    },
+    {
+      "compression_deg": 28,
+      "ground_datum_shift_mm": 0,
+      "q_zero_rad": [
+        0.875774817732659,
+        1.8531591988494835,
+        -0.847077959721409,
+        -1.8244623408382334
+      ],
+      "q_zero_deg": [
+        50.17820085992029,
+        106.1782008599203,
+        -48.53399201058948,
+        -104.53399201058947
+      ],
+      "delta_q_rad": [
+        0.011749571532866154,
+        0.046656156572752794,
+        0.01694728647838384,
+        -0.01795929856150269
+      ],
+      "delta_q_deg": [
+        0.6732008599202879,
+        2.6732008599202906,
+        0.9710079894105218,
+        -1.0289920105894748
+      ],
+      "firmware_sensor_offset_rad": [
+        -0.011749571532866154,
+        -0.046656156572752794,
+        -0.01694728647838384,
+        0.01795929856150269
+      ],
+      "loop_residual_max_m": 2.1391251348035212e-07,
+      "wheel_collision_clearance_mm": [
+        -1.7080640624108873e-10,
+        1.6612738962264918e-11
+      ],
+      "wheel_visual_clearance_mm": [
+        0.07878282381556384,
+        0.03655057113584326
+      ],
+      "base_visual_clearance_mm": 1.3877787807814457e-14
+    },
+    {
+      "compression_deg": 27,
+      "ground_datum_shift_mm": -1.0,
+      "q_zero_rad": [
+        0.8919759148787363,
+        1.8344537109556742,
+        -0.8632587336403731,
+        -1.805736529717311
+      ],
+      "q_zero_deg": [
+        51.10645534987196,
+        105.10645534987196,
+        -49.46108206540148,
+        -103.46108206540147
+      ],
+      "delta_q_rad": [
+        0.02795066867894347,
+        0.02795066867894347,
+        0.0007665125594197297,
+        0.0007665125594198408
+      ],
+      "delta_q_deg": [
+        1.601455349871961,
+        1.601455349871961,
+        0.043917934598521245,
+        0.04391793459852761
+      ],
+      "firmware_sensor_offset_rad": [
+        -0.02795066867894347,
+        -0.02795066867894347,
+        -0.0007665125594197297,
+        -0.0007665125594198408
+      ],
+      "loop_residual_max_m": 2.206564971574121e-07,
+      "wheel_collision_clearance_mm": [
+        -1.5867348143734587e-10,
+        1.6361277333008868e-11
+      ],
+      "wheel_visual_clearance_mm": [
+        0.07321127176162373,
+        0.07099744871957164
+      ],
+      "base_visual_clearance_mm": -0.999999999999987
+    },
+    {
+      "compression_deg": 27,
+      "ground_datum_shift_mm": 1.0,
+      "q_zero_rad": [
+        0.8857969669266386,
+        1.8282747630035765,
+        -0.8570657930136186,
+        -1.7995435890905565
+      ],
+      "q_zero_deg": [
+        50.75242771038576,
+        104.75242771038576,
+        -49.10625270471334,
+        -103.10625270471334
+      ],
+      "delta_q_rad": [
+        0.021771720726845745,
+        0.021771720726845745,
+        0.0069594531861741915,
+        0.0069594531861743025
+      ],
+      "delta_q_deg": [
+        1.2474277103857583,
+        1.2474277103857583,
+        0.39874729528665476,
+        0.3987472952866611
+      ],
+      "firmware_sensor_offset_rad": [
+        -0.021771720726845745,
+        -0.021771720726845745,
+        -0.0069594531861741915,
+        -0.0069594531861743025
+      ],
+      "loop_residual_max_m": 2.2044484379590834e-07,
+      "wheel_collision_clearance_mm": [
+        -1.660896198351989e-10,
+        1.588444820129361e-11
+      ],
+      "wheel_visual_clearance_mm": [
+        0.05631637352585678,
+        0.08987493443563671
+      ],
+      "base_visual_clearance_mm": 1.0000000000000147
+    }
+  ],
+  "joint_order": [
+    "l_j1",
+    "l_j2",
+    "r_j1",
+    "r_j2"
+  ],
+  "can_ids": [
+    1,
+    4,
+    2,
+    3
+  ],
+  "offset_convention": "q = z_training + e_raw - offset; offset = z_training - q_at_real_zero = -delta_q. No velocity/torque sign change.",
+  "sources_sha256": {
+    "/home/kaiser/robomaster/rl-serial-balance/assets/mjcf/whole_body_headless.xml": "a14437d94af736dd6c66629f10d7dc6315df4b587d7a9c7f61efaef32b7d0d7b",
+    "/home/kaiser/robomaster/rl-serial-balance/assets/mjcf/whole_body_visual.xml": "f42ffa44be6dd2c2bb732d22de565b5b1261a79722a92fe1adab3bbd9e89d34f",
+    "/home/kaiser/robomaster/rl-lab/encoder_zero_pose.json": "b09aba653a2aeeda84617f840badef656ffe19a1f323ce8a01476c3a1b77f51b"
+  },
+  "original_report_sha256": "1451ad177936e4d03e30b00c2c7b9f95530678749a816dd4a5fefb36e977279c",
+  "historical_status_preserved": true,
+  "later_confirmation": "RL_ZERO_CANDIDATE_CONFIRMED=1 in firmware; original report predates confirmation",
+  "mesh_hash_count": 313,
+  "mesh_hash_list_omitted": true
+}

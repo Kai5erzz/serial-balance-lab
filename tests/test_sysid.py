@@ -114,6 +114,27 @@ def test_application_is_idempotent() -> None:
     assert applied == again
 
 
+def test_external_terrain_can_retain_its_own_contact_materials() -> None:
+    model, _ = load_model("fast", plant="nominal")
+    ground = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "ground")
+    model.geom_friction[ground, :] = (.73, .014, .002)
+    original = model.geom_friction[ground].copy()
+    applied = apply_model_parameters(model, PARAMS, ground_geom_names=())
+    np.testing.assert_array_equal(model.geom_friction[ground], original)
+    assert "friction[ground]" not in applied
+    assert applied["friction[wheel]"] == PARAMS.number("contacts", "wheel_dynamic_friction")
+
+
+def test_identified_platform_applies_every_driving_surface() -> None:
+    model, applied = load_model("platform", plant=ASYMMETRIC)
+    friction = ASYMMETRIC.number("contacts", "ground_static_friction")
+    for name in ("ground_outer", "platform_top", "platform_step1", "platform_step2", "platform_step3"):
+        geom = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
+        assert geom >= 0
+        assert model.geom_friction[geom, 0] == friction
+    assert applied["friction[ground]"] == friction
+
+
 def test_nominal_plant_is_untouched() -> None:
     model, applied = load_model("fast")
     assert applied == {}

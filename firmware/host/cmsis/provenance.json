@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/ARM-software/CMSIS_4",
+  "commit": "f2cad4345783c948ed4a7f5cdb02cdc0856366f1",
+  "files": {
+    "FastMathFunctions/arm_sin_f32.c": "9801035c7d2af7d8df1964baa835d18ffb9dd39649bb6ecafbc1d4d4eee5b10d",
+    "FastMathFunctions/arm_cos_f32.c": "88667f5ef5dec06a87c8caa11d418086cfee195cb6c64444d00844193f01d840",
+    "MatrixFunctions/arm_mat_init_f32.c": "6ab1c16d561ce76e04b24643b16fd29bec459f96a01c4d9effebf8bb7c28d227",
+    "MatrixFunctions/arm_mat_add_f32.c": "b111948dc49966bb28aa27c2ef24e20e08441e684a1ca8c4a7deeac07e6fe7f1",
+    "MatrixFunctions/arm_mat_sub_f32.c": "74b07cad9f51085000c6a88b01805828b90a67297c53ca02cf75d3e2d16d8948",
+    "MatrixFunctions/arm_mat_mult_f32.c": "a9359459275e365bb52edafb0b930a5816e4725a1ae5d7747796d950eb397878",
+    "MatrixFunctions/arm_mat_trans_f32.c": "23aeee843c3662569a58e23e835aaaf8d05fdcc88219926caf1e202c5b3f95fd",
+    "MatrixFunctions/arm_mat_inverse_f32.c": "21901490857d63aa2824e2c29e0bc9bbf1e748b1c4831c224e00f957ff7abbe0"
+  },
+  "table_source_sha256": "2c90416f63bba658bdb05346f27b3e2945bd4ab99bb5f5f4a7d031dc26012636"
+}

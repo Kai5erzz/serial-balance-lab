@@ -1,0 +1,651 @@
+{
+  "original_visual_faces": 2052092,
+  "display_visual_faces": 1673197,
+  "components_preserved": true,
+  "collision_resources_modified": false,
+  "meshes": [
+    {
+      "mesh": "rmuc2027_visual_00_000.msh",
+      "original_faces": 176,
+      "display_faces": 176,
+      "components": 2,
+      "bounds_error_m": 3.2534503937031722e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_001.msh",
+      "original_faces": 20078,
+      "display_faces": 17944,
+      "components": 73,
+      "bounds_error_m": 4.788208007644457e-06,
+      "fallbacks": 1
+    },
+    {
+      "mesh": "rmuc2027_visual_00_002.msh",
+      "original_faces": 66,
+      "display_faces": 66,
+      "components": 7,
+      "bounds_error_m": 4.946899413660333e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_003.msh",
+      "original_faces": 3446,
+      "display_faces": 2362,
+      "components": 4,
+      "bounds_error_m": 3.847236633269802e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_004.msh",
+      "original_faces": 114634,
+      "display_faces": 102134,
+      "components": 160,
+      "bounds_error_m": 0.0004976495636865863,
+      "fallbacks": 55
+    },
+    {
+      "mesh": "rmuc2027_visual_00_005.msh",
+      "original_faces": 12,
+      "display_faces": 12,
+      "components": 6,
+      "bounds_error_m": 3.082427978640112e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_006.msh",
+      "original_faces": 128,
+      "display_faces": 102,
+      "components": 4,
+      "bounds_error_m": 0.0008131241035461145,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_00_007.msh",
+      "original_faces": 1542,
+      "display_faces": 1542,
+      "components": 11,
+      "bounds_error_m": 4.982299804723311e-06,
+      "fallbacks": 1
+    },
+    {
+      "mesh": "rmuc2027_visual_00_008.msh",
+      "original_faces": 2966,
+      "display_faces": 2904,
+      "components": 39,
+      "bounds_error_m": 4.982299804723311e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_009.msh",
+      "original_faces": 6341,
+      "display_faces": 5989,
+      "components": 9,
+      "bounds_error_m": 9.664118998697901e-05,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_010.msh",
+      "original_faces": 7174,
+      "display_faces": 6080,
+      "components": 46,
+      "bounds_error_m": 0.0007016064834592939,
+      "fallbacks": 3
+    },
+    {
+      "mesh": "rmuc2027_visual_00_011.msh",
+      "original_faces": 20264,
+      "display_faces": 19838,
+      "components": 42,
+      "bounds_error_m": 4.788208007644457e-06,
+      "fallbacks": 8
+    },
+    {
+      "mesh": "rmuc2027_visual_00_012.msh",
+      "original_faces": 1297,
+      "display_faces": 1281,
+      "components": 27,
+      "bounds_error_m": 4.788208007644457e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_00_013.msh",
+      "original_faces": 2072,
+      "display_faces": 2072,
+      "components": 64,
+      "bounds_error_m": 4.144401550276733e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_000.msh",
+      "original_faces": 2048,
+      "display_faces": 2048,
+      "components": 32,
+      "bounds_error_m": 4.995193481516225e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_001.msh",
+      "original_faces": 3636,
+      "display_faces": 2034,
+      "components": 2,
+      "bounds_error_m": 4.6700191498327825e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_002.msh",
+      "original_faces": 838,
+      "display_faces": 838,
+      "components": 2,
+      "bounds_error_m": 4.622154236022524e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_01_003.msh",
+      "original_faces": 168821,
+      "display_faces": 164247,
+      "components": 104,
+      "bounds_error_m": 4.337615966631958e-06,
+      "fallbacks": 49
+    },
+    {
+      "mesh": "rmuc2027_visual_01_004.msh",
+      "original_faces": 97632,
+      "display_faces": 69395,
+      "components": 1999,
+      "bounds_error_m": 4.788150787304879e-06,
+      "fallbacks": 18
+    },
+    {
+      "mesh": "rmuc2027_visual_01_005.msh",
+      "original_faces": 1886,
+      "display_faces": 1822,
+      "components": 4,
+      "bounds_error_m": 2.7706213603595486e-05,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_006.msh",
+      "original_faces": 5280,
+      "display_faces": 1832,
+      "components": 6,
+      "bounds_error_m": 0.0004057828903196725,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_007.msh",
+      "original_faces": 466,
+      "display_faces": 310,
+      "components": 6,
+      "bounds_error_m": 4.780311584517971e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_01_008.msh",
+      "original_faces": 10030,
+      "display_faces": 6912,
+      "components": 116,
+      "bounds_error_m": 3.7753868102896604e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_009.msh",
+      "original_faces": 18906,
+      "display_faces": 10434,
+      "components": 107,
+      "bounds_error_m": 4.711914062482947e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_01_010.msh",
+      "original_faces": 2852,
+      "display_faces": 2444,
+      "components": 2,
+      "bounds_error_m": 0.0003735728560200213,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_011.msh",
+      "original_faces": 3216,
+      "display_faces": 3216,
+      "components": 52,
+      "bounds_error_m": 4.945201873773897e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_012.msh",
+      "original_faces": 32,
+      "display_faces": 32,
+      "components": 2,
+      "bounds_error_m": 4.394836425669624e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_01_013.msh",
+      "original_faces": 476,
+      "display_faces": 476,
+      "components": 86,
+      "bounds_error_m": 4.514999389693131e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_000.msh",
+      "original_faces": 436,
+      "display_faces": 420,
+      "components": 4,
+      "bounds_error_m": 2.852338552482292e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_02_001.msh",
+      "original_faces": 9028,
+      "display_faces": 3062,
+      "components": 26,
+      "bounds_error_m": 0.0010864854290129067,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_002.msh",
+      "original_faces": 836,
+      "display_faces": 836,
+      "components": 28,
+      "bounds_error_m": 3.1382119655559704e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_003.msh",
+      "original_faces": 14,
+      "display_faces": 14,
+      "components": 3,
+      "bounds_error_m": 4.900436401555908e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_004.msh",
+      "original_faces": 256,
+      "display_faces": 60,
+      "components": 2,
+      "bounds_error_m": 4.2739105219347095e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_005.msh",
+      "original_faces": 422,
+      "display_faces": 358,
+      "components": 4,
+      "bounds_error_m": 0.00045674034118636797,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_006.msh",
+      "original_faces": 60,
+      "display_faces": 60,
+      "components": 6,
+      "bounds_error_m": 4.742584228445423e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_007.msh",
+      "original_faces": 146258,
+      "display_faces": 136884,
+      "components": 90,
+      "bounds_error_m": 3.744506835712258e-06,
+      "fallbacks": 28
+    },
+    {
+      "mesh": "rmuc2027_visual_02_008.msh",
+      "original_faces": 9944,
+      "display_faces": 8340,
+      "components": 4,
+      "bounds_error_m": 3.6557006839466055e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_009.msh",
+      "original_faces": 4651,
+      "display_faces": 4581,
+      "components": 27,
+      "bounds_error_m": 4.950561523386909e-06,
+      "fallbacks": 1
+    },
+    {
+      "mesh": "rmuc2027_visual_02_010.msh",
+      "original_faces": 14182,
+      "display_faces": 11318,
+      "components": 2,
+      "bounds_error_m": 3.6557006839466055e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_011.msh",
+      "original_faces": 4648,
+      "display_faces": 1904,
+      "components": 4,
+      "bounds_error_m": 0.00046354433634920866,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_012.msh",
+      "original_faces": 5184,
+      "display_faces": 4906,
+      "components": 20,
+      "bounds_error_m": 3.5154724118413583e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_013.msh",
+      "original_faces": 3956,
+      "display_faces": 3736,
+      "components": 4,
+      "bounds_error_m": 3.5773468016753185e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_014.msh",
+      "original_faces": 5,
+      "display_faces": 5,
+      "components": 2,
+      "bounds_error_m": 3.696975707789818e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_015.msh",
+      "original_faces": 1902,
+      "display_faces": 1902,
+      "components": 2,
+      "bounds_error_m": 3.6289978031511794e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_02_016.msh",
+      "original_faces": 3240,
+      "display_faces": 2250,
+      "components": 36,
+      "bounds_error_m": 4.373760223441714e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_017.msh",
+      "original_faces": 3322,
+      "display_faces": 3302,
+      "components": 95,
+      "bounds_error_m": 2.7911376960787493e-06,
+      "fallbacks": 7
+    },
+    {
+      "mesh": "rmuc2027_visual_02_018.msh",
+      "original_faces": 217788,
+      "display_faces": 164294,
+      "components": 256,
+      "bounds_error_m": 2.370605468371423e-06,
+      "fallbacks": 8
+    },
+    {
+      "mesh": "rmuc2027_visual_02_019.msh",
+      "original_faces": 702,
+      "display_faces": 702,
+      "components": 2,
+      "bounds_error_m": 3.7790679936478e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_02_020.msh",
+      "original_faces": 10134,
+      "display_faces": 6840,
+      "components": 172,
+      "bounds_error_m": 3.4963989268277373e-06,
+      "fallbacks": 8
+    },
+    {
+      "mesh": "rmuc2027_visual_02_021.msh",
+      "original_faces": 2420,
+      "display_faces": 1820,
+      "components": 4,
+      "bounds_error_m": 6.0155732866107314e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_02_022.msh",
+      "original_faces": 1515,
+      "display_faces": 1515,
+      "components": 67,
+      "bounds_error_m": 4.523620606988743e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_03_000.msh",
+      "original_faces": 468,
+      "display_faces": 456,
+      "components": 9,
+      "bounds_error_m": 4.6714401247260895e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_03_001.msh",
+      "original_faces": 10260,
+      "display_faces": 3156,
+      "components": 32,
+      "bounds_error_m": 6.572319030784257e-05,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_03_002.msh",
+      "original_faces": 317910,
+      "display_faces": 301520,
+      "components": 788,
+      "bounds_error_m": 3.7320709229682336e-06,
+      "fallbacks": 40
+    },
+    {
+      "mesh": "rmuc2027_visual_03_003.msh",
+      "original_faces": 72661,
+      "display_faces": 16631,
+      "components": 17,
+      "bounds_error_m": 3.7905883782940464e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_03_004.msh",
+      "original_faces": 24054,
+      "display_faces": 21620,
+      "components": 57,
+      "bounds_error_m": 0.0008220041275024403,
+      "fallbacks": 8
+    },
+    {
+      "mesh": "rmuc2027_visual_03_005.msh",
+      "original_faces": 3780,
+      "display_faces": 1544,
+      "components": 48,
+      "bounds_error_m": 0.0001265166434458731,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_03_006.msh",
+      "original_faces": 4989,
+      "display_faces": 4515,
+      "components": 136,
+      "bounds_error_m": 4.93484497066099e-06,
+      "fallbacks": 5
+    },
+    {
+      "mesh": "rmuc2027_visual_03_007.msh",
+      "original_faces": 72390,
+      "display_faces": 42656,
+      "components": 138,
+      "bounds_error_m": 4.8305511475277285e-06,
+      "fallbacks": 5
+    },
+    {
+      "mesh": "rmuc2027_visual_03_008.msh",
+      "original_faces": 438,
+      "display_faces": 426,
+      "components": 6,
+      "bounds_error_m": 4.9761199951425805e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_03_009.msh",
+      "original_faces": 1758,
+      "display_faces": 1758,
+      "components": 58,
+      "bounds_error_m": 4.874572754332007e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_000.msh",
+      "original_faces": 52,
+      "display_faces": 52,
+      "components": 2,
+      "bounds_error_m": 2.370605468371423e-06,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_04_001.msh",
+      "original_faces": 4,
+      "display_faces": 4,
+      "components": 2,
+      "bounds_error_m": 4.5682799816176844e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_002.msh",
+      "original_faces": 256,
+      "display_faces": 60,
+      "components": 2,
+      "bounds_error_m": 4.5797729493202155e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_003.msh",
+      "original_faces": 177182,
+      "display_faces": 156804,
+      "components": 448,
+      "bounds_error_m": 6.990259699235502e-05,
+      "fallbacks": 17
+    },
+    {
+      "mesh": "rmuc2027_visual_04_004.msh",
+      "original_faces": 49216,
+      "display_faces": 48502,
+      "components": 54,
+      "bounds_error_m": 4.3899536112945725e-06,
+      "fallbacks": 12
+    },
+    {
+      "mesh": "rmuc2027_visual_04_005.msh",
+      "original_faces": 3178,
+      "display_faces": 2846,
+      "components": 36,
+      "bounds_error_m": 2.4857368469244356e-05,
+      "fallbacks": 6
+    },
+    {
+      "mesh": "rmuc2027_visual_04_006.msh",
+      "original_faces": 536,
+      "display_faces": 536,
+      "components": 2,
+      "bounds_error_m": 4.993896484339899e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_007.msh",
+      "original_faces": 16260,
+      "display_faces": 10774,
+      "components": 122,
+      "bounds_error_m": 0.00024606865815002266,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_008.msh",
+      "original_faces": 4,
+      "display_faces": 4,
+      "components": 2,
+      "bounds_error_m": 3.082427978640112e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_009.msh",
+      "original_faces": 212554,
+      "display_faces": 189932,
+      "components": 160,
+      "bounds_error_m": 4.253845213852969e-06,
+      "fallbacks": 26
+    },
+    {
+      "mesh": "rmuc2027_visual_04_010.msh",
+      "original_faces": 3714,
+      "display_faces": 2666,
+      "components": 10,
+      "bounds_error_m": 0.0011746940717488885,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_011.msh",
+      "original_faces": 684,
+      "display_faces": 488,
+      "components": 6,
+      "bounds_error_m": 0.00013233245849519903,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_04_012.msh",
+      "original_faces": 96,
+      "display_faces": 72,
+      "components": 2,
+      "bounds_error_m": 3.5186767561867782e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_013.msh",
+      "original_faces": 2980,
+      "display_faces": 2928,
+      "components": 48,
+      "bounds_error_m": 4.11247253406799e-06,
+      "fallbacks": 4
+    },
+    {
+      "mesh": "rmuc2027_visual_04_014.msh",
+      "original_faces": 25716,
+      "display_faces": 15322,
+      "components": 36,
+      "bounds_error_m": 0.00045933175042733865,
+      "fallbacks": 3
+    },
+    {
+      "mesh": "rmuc2027_visual_04_015.msh",
+      "original_faces": 94494,
+      "display_faces": 52464,
+      "components": 578,
+      "bounds_error_m": 4.642601013182812e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_016.msh",
+      "original_faces": 17900,
+      "display_faces": 6470,
+      "components": 40,
+      "bounds_error_m": 0.00048686189109736766,
+      "fallbacks": 2
+    },
+    {
+      "mesh": "rmuc2027_visual_04_017.msh",
+      "original_faces": 60,
+      "display_faces": 60,
+      "components": 10,
+      "bounds_error_m": 4.979476928734794e-06,
+      "fallbacks": 0
+    },
+    {
+      "mesh": "rmuc2027_visual_04_018.msh",
+      "original_faces": 1280,
+      "display_faces": 1280,
+      "components": 34,
+      "bounds_error_m": 3.01528930712891e-06,
+      "fallbacks": 2
+    }
+  ],
+  "archive": "assets/operator_visual.zip",
+  "bytes": 13057834,
+  "sha256": "0d98921cb386af02d2b39da0990784c430e5bf75cfadbd832b1fc586c10365be"
+}

@@ -1,0 +1,5 @@
+# Firmware/calibration manifests depend on byte-exact source snapshots.
+firmware/vehicle/** -text
+firmware/host/** -text
+firmware/profiles/*.patch -text
+terrain_rmuc2027/assets/*.zip binary

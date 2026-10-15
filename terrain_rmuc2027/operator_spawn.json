@@ -1,0 +1,10 @@
+{
+  "xy_m": [
+    -6.25,
+    -4.75
+  ],
+  "collision_height_m": 0.012843875282475992,
+  "cad_visual_height_m": 0.012843845082544304,
+  "source": "checks/spawns.json: ground-floor checked candidate",
+  "facility_proxy_sample": false
+}

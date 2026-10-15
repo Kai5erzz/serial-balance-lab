@@ -1,0 +1,41 @@
+{
+  "page": "https://bbs.robomaster.com/article/1970956?source=4",
+  "version": "RMUC2027 V1.0.0",
+  "source": {
+    "url": "https://bbs-web-static.robomaster.com/080ae7230f6c469c9bec9d2c892797b61791994813953/RMUC2027_V1.0.0.stp",
+    "name": "RMUC2027_V1.0.0.stp",
+    "md5": "3d3d6a411f44e9a4983794261b3f0bf7",
+    "size": "653443279"
+  },
+  "sha256": "a5ad3ede3b7674fc98f2e73b71717216383cb2b4b5dcdbe900c2038918bea8e0",
+  "review_date": "2026-10-15",
+  "storage": "/media/kaiser/D盘2/rl-lab-terrain/rmuc2027",
+  "http_headers": {
+    "Server": "Tengine",
+    "Content-Type": "application/octet-stream",
+    "Content-Length": "653443279",
+    "Connection": "close",
+    "Date": "Thu, 15 Oct 2026 11:13:55 GMT",
+    "x-oss-request-id": "6AD0B573AB8D903630B957CF",
+    "x-oss-cdn-auth": "success",
+    "Accept-Ranges": "bytes",
+    "ETag": "\"565CACC9B50AB83FCC3C9176C80AA798-624\"",
+    "Last-Modified": "Wed, 14 Oct 2026 16:21:06 GMT",
+    "x-oss-object-type": "Multipart",
+    "x-oss-hash-crc64ecma": "3969629224219509678",
+    "x-oss-storage-class": "Standard",
+    "Content-Disposition": "attachment; filename=\"RMUC2027_V1.0.0.stp\"; filename*=UTF-8\"\"RMUC2027_V1.0.0.stp",
+    "x-oss-version-id": "CAEQiAEYgYCA4Knv7IkaIiBlODQyOGRjNGYwYjY0MzA1YjMzYTgwOTYyZDc2NjA1Ng--",
+    "x-oss-server-time": "126",
+    "Via": "cache3.l2cn8428[159,159,200-0,M], cache25.l2cn8428[163,0], ens-cache4.cn9367[173,172,200-0,M], ens-cache18.cn9367[180,0]",
+    "Ali-Swift-Global-Savetime": "1792062835",
+    "X-Cache": "MISS TCP_MISS dirn:-2:-2",
+    "X-Swift-SaveTime": "Thu, 15 Oct 2026 11:13:55 GMT",
+    "X-Swift-CacheTime": "3600",
+    "X-Content-Type-Options": "nosniff",
+    "Timing-Allow-Origin": "*",
+    "EagleId": "65e3162617920628354715959e"
+  },
+  "hash_note": "MD5 and SHA-256 computed from downloaded official attachment; HTTP metadata retained",
+  "download_seconds": 275.0663844359806
+}

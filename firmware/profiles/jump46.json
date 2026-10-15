@@ -1,0 +1,38 @@
+{
+  "label": "仿真 46 cm",
+  "hip_peak_nm": 40,
+  "hip_total_request_nm": 160,
+  "modified_files": [
+    "src/modules/motor/DM_motor/DM_motor.h",
+    "src/rm_config.h",
+    "src/task/chassis/chassis_task.c",
+    "src/task/chassis/control/chassis_control.c",
+    "src/task/chassis/control/jump_torque_budget.h"
+  ],
+  "description": "Simulation-only C profile; leaves code_914 and the imported firmware mirror unchanged.",
+  "moving_landing": "Reverse velocity pitch bias smoothly over 0.2--0.8 m/s; retain buffer until RETURN and paired leg/pitch rates settle.",
+  "low_step_bump": {
+    "approach_rc_limit": 660,
+    "contact_wheel_speed_max_rad_s": 10,
+    "contact_confirm_ms": 20,
+    "contact_pair_window_ms": 50,
+    "contact_hold_ms": 20,
+    "swing_clearance_phi0_deg": 40,
+    "stand_owner_transfer_ms": 500,
+    "stop_reverse_velocity_gain": 2,
+    "forward_command_required_for_contact": true,
+    "contact_spin_leg_theta_min_rad": 0.9,
+    "contact_spin_wheel_speed_max_rad_s": 250,
+    "tested_vertical_heights_cm": [
+      3,
+      5,
+      8,
+      10
+    ],
+    "approach_length_m": 0.32,
+    "exit_length_ref_rate_mps": 0.1,
+    "exit_stable_time_s": 0.08,
+    "exit_timeout_s": 3.0,
+    "exit_actual_length_tolerance_m": 0.025
+  }
+}

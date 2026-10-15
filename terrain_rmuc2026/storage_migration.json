@@ -1,0 +1,26 @@
+[
+  {
+    "original": "/home/kaiser/robomaster/rl-lab/terrain_rmuc2025/build",
+    "destination": "/media/kaiser/D\u76d82/rl-lab-terrain/rmuc2025/build",
+    "files_sha256_verified": 1830,
+    "bytes": 129076332
+  },
+  {
+    "original": "/home/kaiser/robomaster/rl-lab/terrain_rmuc2025/.caddeps",
+    "destination": "/media/kaiser/D\u76d82/rl-lab-terrain/rmuc2025/.caddeps",
+    "files_sha256_verified": 2341,
+    "bytes": 477704423
+  },
+  {
+    "original": "/home/kaiser/robomaster/rl-lab/terrain_rmuc2025/.caddeps78",
+    "destination": "/media/kaiser/D\u76d82/rl-lab-terrain/rmuc2025/.caddeps78",
+    "files_sha256_verified": 705,
+    "bytes": 268721233
+  },
+  {
+    "original": "/home/kaiser/robomaster/rl-lab/terrain_rmuc2025/research",
+    "destination": "/media/kaiser/D\u76d82/rl-lab-terrain/rmuc2025/research",
+    "files_sha256_verified": 13,
+    "bytes": 292089135
+  }
+]

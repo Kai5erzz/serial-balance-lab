@@ -1,0 +1,9 @@
+{
+  "archive": "/home/kaiser/robomaster/rl-lab/terrain_rmuc2025/rmuc2025_mujoco.zip",
+  "bytes": 96006341,
+  "sha256": "1355653d0df3454a9a257368bd6d9038f7779e078a39f261f59cade8dd9f3229",
+  "runtime_files_verified": 9166,
+  "crc_verified": true,
+  "contains_original_step_or_dependencies": false,
+  "executable_wrapper_preserved": true
+}

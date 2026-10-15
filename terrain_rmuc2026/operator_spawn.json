@@ -1,0 +1,8 @@
+{
+  "xy_m": [-8.75, -2.25],
+  "collision_height_m": 0.0998949097327726,
+  "cad_visual_height_m": 0.0998949261256998,
+  "collision_geom": "rmuc2026_contact_00006_55",
+  "facility_proxy_sample": false,
+  "source": "checks/height_rays.json; open floor, away from the original facility-side example spawn"
+}
